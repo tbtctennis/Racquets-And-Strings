@@ -1,0 +1,171 @@
+# Maintainability map
+
+## Dependency map
+
+```text
+Route/page
+  -> feature hook/controller
+    -> pure domain rule or feature service
+      -> repository/data access (where a meaningful boundary exists)
+        -> Firebase SDK / Cloud Functions
+```
+
+Diagram: [client layer map](../architecture/diagrams/client-layer-map.md).
+
+The current application is partway through this shape. The tournament scoring and Round Robin
+primitives now live in `src/features/tournament/domain/`; page compatibility exports keep existing
+callers stable while further persistence extraction can happen without a rewrite. Signup field
+validation is similarly isolated in `src/features/signup/signupForm.ts`. Event registration and
+tournament-slot lookup now use `src/features/events/services/eventRepository.ts`, with the document
+shape tested independently in `eventParticipant.ts`.
+Shared tournament-match and leaderboard row types now live under feature-owned type modules rather
+than making data-access code import from a page or hook. Tournament placement, zone normalization,
+and skill-band rules are likewise owned by `src/features/tournament/domain/placement.ts`; page
+modules retain compatibility exports only. Parsed court records are owned by
+`src/features/courts/`, so check-in and photo-report features do not import court types from the
+CourtMap page.
+Server-authoritative tournament result persistence now crosses
+`src/features/tournament/services/tournamentResultService.ts` into the idempotent
+`functions/tournamentResults.js` transaction. The page hook constructs intent only; score
+validation, auto-approval/reconciliation, and statistics/points/advancement application no longer
+depend on client subscriptions or presentation state. Ladder challenge confirmation and Round Robin
+group bonuses use the same callable boundary.
+
+## Quality commands
+
+- `npm run typecheck` runs the TypeScript compiler without emitting files.
+- The root `tsconfig.json` enables full TypeScript `strict` mode plus no-implicit-return and
+  no-fallthrough checks. `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` remain
+  intentionally deferred because they require a broad legacy data-model migration.
+- `npm run lint` runs ESLint over first-party React/TypeScript source, scripts, tests, and Functions.
+  Existing warnings for legacy hook dependency choices, explicit `any`, and unused legacy values
+  remain visible; new errors fail the command.
+- `npm run format:check` enumerates every tracked first-party working file rather than only a diff,
+  so an up-to-date branch cannot silently check zero files. Generated and vendored paths are
+  excluded explicitly, as is the behavior-source `docs/planning/` history, which the sprint runbook
+  protects from mechanical rewrites. New working files cannot fall outside the gate. A one-time
+  repository-wide mechanical normalization was reviewed separately from behavior changes. **This
+  gate does not currently run on Windows:** it launches Prettier through the `node_modules/.bin`
+  shim, and Node refuses to spawn a `.cmd` without `shell: true` (CVE-2024-27980), so the command
+  exits non-zero having formatted nothing. Run directly against every in-scope tracked file,
+  Prettier reports no formatting debt, so the red result is the launcher and not the source. See
+  Known debt.
+- `npm run test:rules` and `npm run test:storage` select temporary emulator ports and use local
+  OpenJDK when it is installed outside the default PATH. The repository pins `firebase-tools` so
+  the emulator wrapper does not download an unbounded CLI version at execution time.
+- `npm run test:fixtures` starts temporary Auth/Firestore emulators and exercises the synthetic
+  seed command; the full `npm run emulators` launcher retains conventional fixed ports for app
+  development and adds the same local Java fallback.
+- `npm run verify` runs the local type, lint, format, documentation, unit, Functions unit and
+  emulator integration, Rules, Storage, fixture-smoke, isolated Chromium user journeys,
+  build, generated-artifact freshness, and working-tree/committed-range diff checks in one command.
+  Run `npm run test:functions:integration` directly to debug reward, friendly, or tournament
+  callable/trigger boundaries; use `npm run test:e2e` for the browser boundary.
+
+## Architecture freshness
+
+`npm run docs:verify` checks the primary architecture, domain, security, engineering, and recovery
+documents and fails when a mapped architecture-sensitive change set has no directly relevant
+documentation review. The mapping covers Firebase configuration/rules, callable and reward
+boundaries, tournament/data-access modules, and migration tooling. Expand it when a new durable
+boundary is introduced.
+
+The comparison baseline is always the `dev-anuj` branch, resolved through
+`scripts/lib/comparison-base.mjs`: an explicit `ARCHITECTURE_BASE_SHA` first (CI supplies the real
+push or pull-request base), then `origin/dev-anuj`, then the same branch on any other configured
+remote, then the local branch. The indirection is not decoration. In a clone that also has the
+production repository attached, `origin` is not necessarily the repository `dev-anuj` lives in, and
+the earlier hard-coded `origin/dev-anuj` silently failed to resolve there. The gate then fell back
+to treating every file as changed and printed a pass, so it reported success without performing the
+check it exists to perform. Resolution now fails loudly when no candidate exists, and the pass line
+names the baseline it used, so a green result can be checked rather than trusted.
+
+### Sprint D1 review note
+
+The D1 implementation keeps tournament score submission and result application Function-authoritative,
+uses a shared overlay stack for nested Escape handling, and treats legacy P/G counters as read-only
+compatibility data. New profile and tournament writes do not create those counters. Validation for this
+slice is local-only; production deployment and production data mutation are explicitly out of scope,
+with staging deferred until an isolated project and recovery path are approved.
+
+### Sprint D3 review note
+
+The D3 UI foundation centralizes the page/card/recess color tokens, field and button geometry,
+keyboard focus/reduced-motion behavior, and the design assertion suite in
+`scripts/verify-design-d3.mjs`. Routing preserves legacy tournament query parameters, and the
+notification triggers deduplicate draw notices, digest event joins, include assigned organizers,
+and omit the retired ladder-reset/bye noise. Validation is local-only; no production deployment,
+data mutation, or staging promotion was performed. Staging remains deferred until an authorized
+isolated project and verified recovery path exist.
+
+## Vendor boundary
+
+### Sprint D4 review note
+
+The D4 slice makes event placement, withdrawal, zone state, and knockout seating explicit at the
+data boundary. Participant creation is server-triggered; browser and nightly placement paths are
+not used. Withdrawal is a callable workflow that preserves played matches, records unplayed
+walkovers, and notifies affected members. The client no longer gates Matches on profile completion,
+rewrites event skill snapshots from profile edits, or auto-seeds knockout seats. Rules now use
+allowlisted participant/preference fields. Validation is local-only; production deployment and
+data mutation remain out of scope, with staging deferred until an authorized project and verified
+recovery path exist.
+
+### Sprint D5 review note
+
+The D5 slice adds typed component primitives with real call-site consumption, a real 404 route,
+event-scoped organizer checks, flag-only task checklist writes, server-issued provider records,
+the `services` catalog, callable-owned booking transitions, and callable claim review. Legacy task
+offers and preference provider fields remain read-only compatibility fallbacks until a separately
+authorized migration. Group lessons are retired from the active client/Rules surface. Validation
+is local-only; no production deployment or data mutation was performed, and staging is deferred
+until an authorized project and verified recovery path exist.
+
+### Sprint D6 preparation review note
+
+This slice is groundwork, not feature work. The emulator launcher moves around a busy port instead
+of refusing to start, so a developer with something already bound to 8080 is not blocked;
+`--strict-ports` keeps the old refusal for CI, where a busy port is a real signal rather than an
+inconvenience. The Windows `spawn EINVAL` workaround — resolve a package's real CLI entry and launch
+it with `process.execPath` instead of going through the `.bin` `.cmd` shim — was carried across the
+emulator, integration, browser-test, and deploy launchers so the repository survives a clean clone
+on Windows. `scripts/run-prettier.mjs` was missed by that sweep and still uses the shim; that is the
+single reason the formatting gate is red.
+
+Test data and the document shape are now declared and enforced rather than described: a shape
+reference under test, a transform that produces a pseudonymised local dataset from a live snapshot,
+and a seeder that refuses any project but `rands-local`. The walkover field rename is the one
+behavioural-surface change, and it is a naming cleanup with no data migration behind it.
+
+Validation is local-only; no production deployment or data mutation was performed, and staging
+remains deferred until an authorized isolated project and verified recovery path exist.
+
+`.agents/skills/gstack/` is tracked third-party agent tooling kept for reproducible local workflows.
+`.gitattributes` marks it as vendored for repository language metrics; ESLint and application tests
+also exclude it. Security review must still inspect the vendor tree when its source or lock changes.
+The pinned source and update procedure remain in `docs/engineering/AGENT_SKILLS.md` and
+`skills-lock.json`.
+
+## Known debt
+
+- Some route hooks still mix Firestore subscriptions and presentation state; extract only when a
+  repository boundary centralizes paths, normalization, or transaction behavior.
+- Tournament result application, ladder challenge points, and Round Robin group bonuses are
+  Function-authoritative. Production deployment and migration remain out of scope; staging waits
+  for an authorized project and verified recovery path.
+- Functions remain JavaScript. Shared callable validation is centralized first; TypeScript
+  migration should follow where integration coverage is strong.
+- Signup intentionally has a pre-auth email-existence check so secondary-email migration remains
+  usable. The callable requires App Check outside the Functions emulator; staging provider setup and
+  abuse-rate verification remain external environment gates.
+- The focused Hosting-emulator suite covers login/profile, signup bootstrap, event join, and one
+  tournament scoring/advancement journey. Reward and friendly edge cases remain at the more
+  deterministic callable/trigger emulator boundary.
+- `npm run format:check` cannot launch Prettier on Windows: `scripts/run-prettier.mjs` spawns the
+  `node_modules/.bin/prettier.cmd` shim directly, which Node refuses without `shell: true`. The fix
+  is the pattern already used by the emulator, integration, browser-test, and deploy launchers —
+  resolve the package's real CLI entry and run it with `process.execPath`. Until then the gate is
+  red on Windows and green on Linux CI, which is the worst of both: contributors see a failure they
+  cannot act on, and no one learns anything from the pass.
+- `npm audit` remains non-zero through transitive development tooling. Dependency upgrades need a
+  separate compatibility review; this block does not use an automatic mass-fix.

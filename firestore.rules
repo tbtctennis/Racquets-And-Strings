@@ -1,0 +1,767 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && request.auth.uid == "7PvfzNtDmsOq5GLMieId7QRT7wH3";
+    }
+
+    // Location is derived by Cloud Functions from preferred courts. Keep the read here so
+    // location-aware authorization can use the canonical stats field without granting members
+    // permission to forge or edit it. An unset location is intentionally compatible with any
+    // player: the event location is the scope for members who have not selected courts yet.
+    function playableLocationPair(playerOne, playerTwo) {
+      let first = get(/databases/$(database)/documents/stats/$(playerOne)).data.get('location', '');
+      let second = get(/databases/$(database)/documents/stats/$(playerTwo)).data.get('location', '');
+      return first == '' || second == '' || first == second;
+    }
+
+    function hasEventCreatorRole() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/preferences/$(request.auth.uid)).data.get('event_creator', false) == true;
+    }
+
+    // Task fields a player may write on their own tasks/{uid} doc. DELIBERATELY SHORT: a progress
+    // doc carries 45 fields, but the counters (matchesPlayed, boardPhotos…), tier flags
+    // (board5, streak3…), setupComplete, and bonusPoints are awarded by Cloud Functions. Adding
+    // them here would let a player write their own counters and mint a redeemable balance, so the
+    // doc's uniform shape is maintained server-side instead — never by widening this list.
+    function ownerTaskFields() {
+      return [
+        'uid', 'name', 'updatedAt',
+        'followSocial', 'tagPost', 'whatsappGroup',
+        'profileComplete', 'profilePhoto',
+      ];
+    }
+
+    // The full contacts shape — all owner data, no points, so every field is safely self-writable.
+    // `secondary_email` already existed on real documents but was missing here, which meant an
+    // owner could not write their own field.
+    function ownerContactFields() {
+      return [
+        'email', 'phone', 'preferred_mode_of_contact',
+        'whatsapp_contact', 'whatsapp_same_as_phone',
+        'contactable', 'updated_at', 'secondary_email',
+      ];
+    }
+
+    // Member-editable preferences only. Role flags and provider identifiers are assigned by the
+    // super-admin service path; allowing them through the owner update rule would let a member
+    // self-identify as a provider and pass isProviderFor() checks on redemptions.
+    function ownerPreferenceFields() {
+      return [
+        'uid', 'preferred_courts', 'favourite_players',
+        'scheduling_preference', 'event_creator', 'preferred_zone',
+        'preferred_zone_manual', 'email_notifications', 'availability_tags', 'available_to_play',
+      ];
+    }
+
+    // Marketplace listing fields a member may write. Contact channels stay on the server-written
+    // public_contacts projection — stuffing them onto a world-readable listing is the side channel
+    // this allowlist closes.
+    function listingFields() {
+      return [
+        'kind', 'title', 'description', 'condition', 'price', 'pickup',
+        'duration', 'photo_paths', 'status', 'uid', 'user_name',
+        'created_at', 'updated_at', 'id',
+      ];
+    }
+
+    // Event participant documents are a shared roster projection. Clients may create their own
+    // registration and organizers may manage placement, but neither side may smuggle arbitrary
+    // fields into the projection.
+    function eventParticipantFields() {
+      return [
+        'id', 'uid', 'user_name', 'event_id', 'event_name', 'tournament_choice', 'division',
+        'doubles', 'partner_in_app', 'partner_uid', 'partner_name', 'skill', 'skill_group', 'seed',
+        'dateselected', 'created_at', 'status', 'withdrawn_reason', 'withdrawn_note',
+        'withdrawn_at', 'withdrawn_by', 'zone', 'zone_override', 'req_zone_change', 'new_zone',
+        'zone_change_requested', 'zone_change_requested_at', 'merged_zone', 'merged_into',
+        'removal', 'removal_at',
+      ];
+    }
+
+    // Order-independent id for a pair of players. MUST match pairId() in functions/connections.js
+    // exactly — the trigger writes the doc, this recomputes the same name to look it up.
+    function pairId(a, b) {
+      return a < b ? a + '__' + b : b + '__' + a;
+    }
+
+    // "These two are opponents." Written only by the onMatchConnection trigger, on an accepted
+    // rally/challenge or a tournament fixture. This is what unlocks reading someone's contacts.
+    function isConnectedTo(userId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/connections/$(pairId(request.auth.uid, userId)));
+    }
+
+    // An organizer is a public point of contact by role — players have to be able to reach them
+    // for help with an event they're running.
+    function isOrganizerAccount(userId) {
+      return get(/databases/$(database)/documents/preferences/$(userId)).data.get('event_creator', false) == true;
+    }
+
+    // Someone who has invited contact by posting a marketplace listing. Marker doc maintained by
+    // the onListingContact trigger; present only while they actually have a listing up.
+    function hasPublicContact(userId) {
+      return exists(/databases/$(database)/documents/public_contacts/$(userId));
+    }
+
+    function isProviderFor(providerId) {
+      return isAuthenticated() && providerId != null &&
+        (
+          (exists(/databases/$(database)/documents/providers/$(providerId)) &&
+            get(/databases/$(database)/documents/providers/$(providerId)).data.get('member_uid', '') == request.auth.uid) ||
+          get(/databases/$(database)/documents/preferences/$(request.auth.uid)).data.get('stringer_id', '') == providerId ||
+          get(/databases/$(database)/documents/preferences/$(request.auth.uid)).data.get('coach_id', '') == providerId
+        );
+    }
+
+    function isManagerOfEvent(eventId) {
+      return isAuthenticated() &&
+        (
+          isSuperAdmin() ||
+          get(/databases/$(database)/documents/events/$(eventId)).data.creator_id == request.auth.uid ||
+          request.auth.uid in get(/databases/$(database)/documents/events/$(eventId)).data.get('organizer_ids', [])
+        );
+    }
+
+    function isOwnerOfEvent(eventId) {
+      return isAuthenticated() &&
+        (
+          isSuperAdmin() ||
+          get(/databases/$(database)/documents/events/$(eventId)).data.creator_id == request.auth.uid
+        );
+    }
+
+    // Friendly/challenge result fields are client-submitted before a second party confirms them.
+    // Restrict the winner and score shape here so a forged report cannot become a redeemable
+    // payout. The Functions trigger repeats the check for Admin SDK/imported legacy writes.
+    function reportedWinnerIsPlayer(result) {
+      let winner = result.get('winner_uid', '');
+      return winner == result.player_1_uid || winner == result.player_2_uid;
+    }
+
+    function boundedScore(result, field) {
+      return !(field in result) ||
+        (result[field] is number && result[field] >= 0 && result[field] <= 21 && result[field] == int(result[field]));
+    }
+
+    function reportedScoresAreBounded(result) {
+      // The callable performs the complete score validation. Rules keep a compact upper-bound
+      // guard here so a malformed report cannot be written while staying below the emulator's
+      // per-request expression budget.
+      return result.get('set_1_player_1', 0) <= 21 && result.get('set_1_player_2', 0) <= 21;
+    }
+
+    // Score-submission documents are untrusted intent. Bind every submission to the existing
+    // official match so outsiders cannot name an arbitrary match, participants, or winner.
+    function isValidTournamentScoreSubmission(result) {
+      let officialPath = /databases/$(database)/documents/matches/$(result.match_id);
+      let official = get(officialPath).data;
+      return result.match_id is string &&
+        exists(officialPath) &&
+        official.category in ['singles', 'doubles'] &&
+        official.tournament_choice in ['Singles', 'Doubles'] &&
+        official.status in ['scheduled', 'pending', 'open'] &&
+        (request.auth.uid == official.player_1_uid || request.auth.uid == official.player_2_uid) &&
+        result.player_1_uid == official.player_1_uid &&
+        result.player_2_uid == official.player_2_uid &&
+        result.event_id == official.event_id &&
+        reportedWinnerIsPlayer(result) &&
+        reportedScoresAreBounded(result);
+    }
+
+    // ===============================================================
+    // Users Collection
+    // ===============================================================
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isOwner(userId) &&
+        request.resource.data.keys().hasOnly([
+          'uid', 'name', 'avatar', 'bio', 'display_badges',
+          'created_at', 'lastActive', 'isVerified', 'welcomeEmailSent'
+        ]) &&
+        (!request.resource.data.keys().hasAny(['uid']) || request.resource.data.uid == userId);
+      allow update: if isOwner(userId) &&
+        request.resource.data.keys().hasOnly([
+          'uid', 'name', 'avatar', 'bio', 'display_badges',
+          'created_at', 'lastActive', 'isVerified', 'welcomeEmailSent'
+        ]) &&
+        (!request.resource.data.keys().hasAny(['uid']) || request.resource.data.uid == userId) &&
+        !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['secondary_email', 'created_at']) &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['welcomeEmailSent'])
+          || request.resource.data.welcomeEmailSent == true) &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['isVerified'])
+          || request.resource.data.isVerified == true);
+      allow delete: if false;
+    }
+
+    // ===============================================================
+    // Contacts Collection
+    // ===============================================================
+    // Phone / email / WhatsApp. Readable by the owner, by someone who is actually their opponent
+    // (accepted rally or challenge, a shared tournament fixture, or a coaching-session join).
+    //
+    // This used to be `isAuthenticated()`, i.e. every member could read every other member's
+    // phone number. The app shares contact details rather than carrying messages, so they have to
+    // be readable by SOMEONE — but only by the person you're actually arranging a game with.
+    match /contacts/{userId} {
+      // Coaching-session joins use the same server-owned connection marker as match joins. This
+      // keeps the access mutual and avoids a client-readable roster or a privileged coach flag.
+      allow read: if isOwner(userId) || isConnectedTo(userId);
+      allow create: if isOwner(userId) &&
+        request.resource.data.keys().hasOnly(ownerContactFields());
+      allow update: if isOwner(userId) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(ownerContactFields());
+      allow delete: if false;
+    }
+
+    // ===============================================================
+    // Stats Collection
+    // ===============================================================
+    match /stats/{userId} {
+      allow read: if true;
+      allow create: if isOwner(userId) &&
+          request.resource.data.keys().hasOnly([
+            'uid', 'name', 'skill_level', 'tournament_preference', 'league',
+            'leaguePoints26', 'wins', 'loses', 'matchesPlayed', 'tournamentsPlayed'
+          ]) &&
+          request.resource.data.get('uid', userId) == userId &&
+          request.resource.data.get('leaguePoints26', 0) == 0 &&
+          request.resource.data.get('wins', 0) == 0 &&
+          request.resource.data.get('loses', 0) == 0 &&
+          request.resource.data.get('matchesPlayed', 0) == 0 &&
+          request.resource.data.get('tournamentsPlayed', 0) == 0 &&
+          request.resource.data.get('name', '') is string &&
+          request.resource.data.get('skill_level', 2) is number &&
+          request.resource.data.get('league', '') is string &&
+          request.resource.data.get('tournament_preference', 'Challengers') in
+            ['Beginners', 'Challengers', 'Masters'];
+      allow update: if isOwner(userId) &&
+          request.resource.data.get('uid', userId) == userId &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['skill_level', 'tournament_preference', 'name', 'uid', 'league']);
+      allow delete: if false;
+    }
+
+    // ===============================================================
+    // Preferences Collection
+    // ===============================================================
+    match /preferences/{userId} {
+      allow read: if true;
+      allow create: if isOwner(userId) &&
+        request.resource.data.keys().hasOnly(ownerPreferenceFields()) &&
+        request.resource.data.get('uid', userId) == userId &&
+        request.resource.data.event_creator == false;
+      allow update: if isSuperAdmin() ||
+        (isOwner(userId) &&
+          request.resource.data.get('uid', userId) == userId &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly([
+              'uid', 'preferred_courts', 'favourite_players',
+              'scheduling_preference', 'preferred_zone', 'preferred_zone_manual',
+              'email_notifications', 'availability_tags', 'available_to_play'
+            ]));
+      allow delete: if false;
+    }
+
+    // Provider identity and role membership are server-issued. The catalogue is public, but a
+    // browser cannot elevate itself by writing a provider row.
+    match /providers/{providerId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Booking documents are callable-owned state. Members can read their own bookings and the
+    // linked provider can read its queue; every lifecycle transition goes through Functions.
+    match /bookings/{bookingId} {
+      allow read: if isAuthenticated() &&
+        (
+          resource.data.uid == request.auth.uid ||
+          isSuperAdmin() ||
+          isProviderFor(resource.data.provider_id)
+        );
+      allow write: if false;
+    }
+
+    // Payments are Functions-authoritative (webhook create, callable cancel/refund). Members
+    // read their own rows. Every client write is denied. No card data is stored.
+    match /payments/{paymentId} {
+      allow read: if isAuthenticated() && resource.data.uid == request.auth.uid;
+      allow write: if false;
+    }
+
+    // Reserved projection boundary. Keep closed until product owners approve an explicit
+    // field-level disclosure/consent contract and a server projection is deployed.
+    match /public_preferences/{userId} {
+      allow read, write: if false;
+    }
+
+    // ===============================================================
+    // Events Collection
+    // organizer_ids is callable-owned (`assignEventOrganizers`) so every assignment is audited.
+    // ===============================================================
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if hasEventCreatorRole() &&
+        request.resource.data.creator_id == request.auth.uid &&
+        (!('type' in request.resource.data) ||
+          request.resource.data.type in ['Socials', 'Tournaments', 'Specials', 'League Ladder']) &&
+        (
+          !('organizer_ids' in request.resource.data) ||
+          request.resource.data.organizer_ids.size() == 0
+        );
+      allow update: if isManagerOfEvent(eventId) &&
+        request.resource.data.creator_id == resource.data.creator_id &&
+        (!('type' in request.resource.data) ||
+          request.resource.data.type in ['Socials', 'Tournaments', 'Specials', 'League Ladder']) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'organizer_ids', 'assigned_organizer_uids', 'organizer_uids'
+        ]);
+      allow delete: if false;
+    }
+
+    // ===============================================================
+    // Site Stats — PUBLIC. Anything here is readable by the entire internet.
+    // ===============================================================
+    match /site_stats/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ===============================================================
+    // Admin Stats — business metrics for the admin dashboard.
+    // Deliberately NOT in site_stats, which is world-readable: these are membership, activity and
+    // marketplace numbers, and putting them there would publish them. Written only by
+    // aggregateAdminMetrics.
+    // ===============================================================
+    match /admin_stats/{docId} {
+      allow read: if isSuperAdmin();
+      allow write: if false;
+    }
+
+    // ===============================================================
+    // Tasks Collection (new)
+    // Per-user progress docs at tasks/{uid}; group award entries and offer
+    // catalog entries coexist with different type fields.
+    // ===============================================================
+    match /tasks/{docId} {
+      allow read: if true;
+      allow create: if docId == request.auth.uid &&
+        request.resource.data.keys().hasOnly(ownerTaskFields());
+      allow update: if docId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(ownerTaskFields());
+      allow delete: if false;
+    }
+
+    // ===============================================================
+    // Event Participants
+    // ===============================================================
+    match /event_participants/{docId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAuthenticated() &&
+        (
+          request.resource.data.uid == request.auth.uid ||
+          isManagerOfEvent(request.resource.data.event_id)
+        ) &&
+        request.resource.data.keys().hasOnly(eventParticipantFields()) &&
+        request.resource.data.event_id is string &&
+        request.resource.data.created_at is string;
+
+      allow update: if isAuthenticated() &&
+        (
+          (
+            isManagerOfEvent(resource.data.event_id) &&
+            request.resource.data.event_id == resource.data.event_id &&
+            request.resource.data.uid == resource.data.uid &&
+            request.resource.data.keys().hasOnly(eventParticipantFields())
+          ) ||
+          (
+            resource.data.uid == request.auth.uid &&
+            request.resource.data.event_id == resource.data.event_id &&
+            // `req_zone_change`/`new_zone` are the live pair. The `zone_change_*` names are legacy
+            // and only listed so the currently-deployed client keeps working; drop them once the
+            // new hosting build is out.
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'dateselected', 'req_zone_change', 'new_zone', 'partner_uid', 'partner_name',
+              'zone_change_requested', 'zone_change_requested_at',
+              'doubles', 'partner_in_app', 'skill'
+            ])
+          )
+        );
+
+      allow delete: if isAuthenticated() &&
+        (resource.data.uid == request.auth.uid || isManagerOfEvent(resource.data.event_id));
+    }
+
+    // ===============================================================
+    // Partner Pool
+    // ===============================================================
+    // Pool membership is stored under the event so contacts access can be checked with one
+    // membership lookup. Members are readable by any signed-in user; contact projections are
+    // private to players currently in that event's pool and are written by Cloud Functions only.
+    match /partner_pool/{eventId}/members/{uid} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && uid == request.auth.uid &&
+        request.resource.data.keys().hasOnly(['uid', 'name', 'category', 'skill', 'created_at']);
+      allow update: if false;
+      allow delete: if isAuthenticated() &&
+        (uid == request.auth.uid || isManagerOfEvent(eventId));
+    }
+
+    match /partner_pool/{eventId}/contacts/{uid} {
+      allow read: if isAuthenticated() &&
+        exists(/databases/$(database)/documents/partner_pool/$(eventId)/members/$(request.auth.uid));
+      allow write: if false;
+    }
+
+    // ===============================================================
+    // Matches (NEW)
+    // ===============================================================
+    // A rally carries no event_id, so every isManagerOfEvent() call here is guarded by an
+    // existence check — reading a missing field would error and deny the whole request.
+    match /matches/{matchId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAuthenticated() &&
+        !request.resource.data.keys().hasAny(['no_show']) && (
+        // A player opens their own rally / challenge (incl. a proposed conversion).
+        (
+          request.resource.data.category in ['rally', 'challenge'] &&
+          request.resource.data.player_1_uid == request.auth.uid &&
+          request.resource.data.status == 'open' &&
+          playableLocationPair(request.resource.data.player_1_uid, request.resource.data.player_2_uid)
+        ) ||
+        (
+          'event_id' in request.resource.data &&
+          isManagerOfEvent(request.resource.data.event_id) &&
+          request.resource.data.category in ['singles', 'doubles'] &&
+          request.resource.data.tournament_choice in ['Singles', 'Doubles'] &&
+          request.resource.data.status == 'pending'
+        )
+      );
+
+      allow update: if isAuthenticated() &&
+        !request.resource.data.keys().hasAny(['no_show']) && (
+        // Recipient accepts / declines / rejects a still-open rally or challenge.
+        (
+          resource.data.category in ['rally', 'challenge'] &&
+          resource.data.status == 'open' &&
+          request.auth.uid == resource.data.player_2_uid &&
+          request.resource.data.status in ['accepted', 'declined', 'rejected'] &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'responded_at'])
+        ) ||
+        // Either player reports the result of an accepted challenge or rally; the organizer
+        // confirms it. Keep this as one branch so the Rules evaluator does not duplicate the
+        // expensive score-shape and affected-key checks.
+        (
+          resource.data.category in ['challenge', 'rally'] &&
+          resource.data.status == 'accepted' &&
+          (request.auth.uid == resource.data.player_1_uid || request.auth.uid == resource.data.player_2_uid) &&
+          request.resource.data.reported_by == request.auth.uid &&
+          request.resource.data.status == 'reported' &&
+          reportedWinnerIsPlayer(request.resource.data) &&
+          reportedScoresAreBounded(request.resource.data) &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            // Result fields are the single tournament/rally shape.
+            .hasOnly(['status', 'winner_uid', 'winner_name',
+                      'set_1_player_1', 'set_1_player_2', 'set_2_player_1', 'set_2_player_2',
+                      'set_3_player_1', 'set_3_player_2',
+                      'court', 'reported_by', 'reported_at'])
+        ) ||
+        // A SECOND party confirms that report — the other player, or any admin. The
+        // `reported_by` check is the whole security of friendly points: without it one player
+        // reports themselves the winner, confirms it, and mints points on demand. Points are paid
+        // by functions/rallyPoints.js on this transition; no client may write leaguePoints26.
+        (
+          resource.data.category == 'rally' &&
+          resource.data.status == 'reported' &&
+          request.auth.uid != resource.data.reported_by &&
+          (
+            request.auth.uid == resource.data.player_1_uid ||
+            request.auth.uid == resource.data.player_2_uid ||
+            isSuperAdmin()
+          ) &&
+          request.resource.data.status in ['confirmed', 'disputed'] &&
+          request.resource.data.confirmed_by == request.auth.uid &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            // `completed_at` is stamped here too — a confirm is the moment a friendly becomes a
+            // played result. Omitting it rejected every confirm, which is the payout transition.
+            .hasOnly(['status', 'confirmed_at', 'confirmed_by', 'completed_at'])
+        ) ||
+        // A player may only ask the event manager to schedule the match. Authoritative dates,
+        // slots, and schedule status remain event-manager controlled by the branch below.
+        (
+          (request.auth.uid == resource.data.player_1_uid || request.auth.uid == resource.data.player_2_uid) &&
+          resource.data.category in ['singles', 'doubles'] &&
+          resource.data.tournament_choice in ['Singles', 'Doubles'] &&
+          resource.data.status != 'complete' &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['schedule_requested']) &&
+          request.resource.data.schedule_requested == true
+        ) ||
+        (
+          'event_id' in resource.data &&
+          isManagerOfEvent(resource.data.event_id) &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+            'event_id', 'category', 'tournament_choice',
+            'player_1_uid', 'player_2_uid', 'player_1_partner_uid', 'player_2_partner_uid',
+            'source_match_id', 'source_submission_id', 'status', 'winner_uid', 'winner_name',
+            'set_1_player_1', 'set_1_player_2', 'set_2_player_1', 'set_2_player_2',
+            'set_3_player_1', 'set_3_player_2', 'walkover', 'completed_at', 'applied_at', 'result_hash'
+          ])
+        )
+      );
+
+      allow delete: if isAuthenticated() && (
+        // Sender retracts their own still-open rally / challenge.
+        (
+          resource.data.category in ['rally', 'challenge'] &&
+          resource.data.status == 'open' &&
+          request.auth.uid == resource.data.player_1_uid
+        ) ||
+        (
+          'event_id' in resource.data &&
+          isManagerOfEvent(resource.data.event_id) &&
+          (!(resource.data.category in ['singles', 'doubles'] &&
+             resource.data.tournament_choice in ['Singles', 'Doubles']) ||
+           resource.data.status != 'complete')
+        )
+      );
+    }
+
+    // ===============================================================
+    // Rankings History (Admin-only)
+    // ===============================================================
+    match /ranking_history/{userId}/entries/{entryId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ===============================================================
+    // Courts (NEW)
+    // ===============================================================
+    match /courts/{id} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.type == 'check-in' &&
+        request.resource.data.uid == request.auth.uid &&
+        id.matches(request.auth.uid + '_.*') &&
+        request.resource.data.court_key is string &&
+        request.resource.data.dist_m is number &&
+        request.resource.data.dist_m <= 400 &&
+        request.resource.data.created_at is string;
+      allow create: if isAuthenticated() && request.resource.data.type == 'attendance' &&
+        request.resource.data.uid == request.auth.uid &&
+        id.matches(request.auth.uid + '_.*') &&
+        request.resource.data.court_key is string &&
+        request.resource.data.dist_m is number &&
+        request.resource.data.dist_m <= 400 &&
+        request.resource.data.created_at is string;
+      allow create: if
+        request.resource.data.type in ['condition', 'waiting_board', 'queue'] &&
+        request.resource.data.court_key is string &&
+        request.resource.data.photo_paths is list &&
+        request.resource.data.note is string &&
+        request.resource.data.note.size() > 0 &&
+        request.resource.data.status == 'approved' &&
+        (
+          (isAuthenticated() && request.resource.data.uid == request.auth.uid) ||
+          request.resource.data.uid == 'no_account'
+        );
+      allow update, delete: if false;
+    }
+
+    // Runtime court → zone overlay. Shipped CSV/`courts.json` stay immutable; writes go through
+    // the resolveCourtZone callable. Authenticated members read names and zones to derive placement.
+    match /court_resolutions/{courtKey} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    match /court_resolution_audit/{id} {
+      allow read: if isSuperAdmin();
+      allow write: if false;
+    }
+
+    // Organizer assignment is callable-owned (`assignEventOrganizers`). Every organizer_ids
+    // change writes an append-only actor/target/before/after/time row. Clients never write.
+    match /organizer_assignment_audit/{id} {
+      allow read: if isSuperAdmin();
+      allow write: if false;
+    }
+
+    // ===============================================================
+    // Mailing List
+    // ===============================================================
+    match /mailing_list/{id} {
+      allow create: if
+        request.resource.data.email is string &&
+        request.resource.data.email.size() > 0 &&
+        request.resource.data.email.size() < 320;
+      allow read, update, delete: if isSuperAdmin();
+    }
+
+    // ===============================================================
+    // Notifications
+    // ===============================================================
+    match /notifications/{id} {
+      allow create: if false;
+      allow read: if isAuthenticated() && resource.data.uid == request.auth.uid;
+      allow update: if isAuthenticated() &&
+        resource.data.uid == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'read_at']);
+      allow delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
+    }
+
+    // ===============================================================
+    // Offers (NEW)
+    // ===============================================================
+    match /offers/{userId} {
+      allow read: if isOwner(userId) || isSuperAdmin();
+      allow write: if false;
+    }
+
+    // Services are a public catalogue. Mutations remain server-only so providers cannot
+    // publish or rewrite catalogue entries from an untrusted client.
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ===============================================================
+    // Redemptions
+    // ===============================================================
+    match /redemptions/{code} {
+      allow read: if isAuthenticated() &&
+        (
+          isSuperAdmin() ||
+          resource.data.uid == request.auth.uid ||
+          isProviderFor(resource.data.stringer_id)
+        );
+      allow write: if false;
+    }
+
+    // ===============================================================
+    // Marketplace Listings
+    // ===============================================================
+    match /listings/{id} {
+      allow read: if true;
+      allow create: if isAuthenticated()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == 'available'
+        && request.resource.data.kind in ['rent', 'sell']
+        && request.resource.data.keys().hasOnly(listingFields());
+      allow update: if (isOwner(resource.data.uid) || isSuperAdmin())
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.kind == resource.data.kind
+        && request.resource.data.kind in ['rent', 'sell']
+        && request.resource.data.status in ['available', 'sold', 'rented']
+        && request.resource.data.keys().hasOnly(listingFields());
+      allow delete: if isOwner(resource.data.uid);
+    }
+
+    // ===============================================================
+    // Task Claims
+    // ===============================================================
+    match /task_claims/{id} {
+      allow read: if isSuperAdmin() || isOwner(resource.data.uid) ||
+        (resource.data.get('event_id', '') is string && resource.data.get('event_id', '') != '' &&
+          isManagerOfEvent(resource.data.get('event_id', '')));
+      allow create: if isAuthenticated() &&
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.status == 'pending' &&
+        (
+          (
+            request.resource.data.type in ['volunteer', 'host'] &&
+            !id.matches('ambassador_.*')
+          ) ||
+          (
+            request.resource.data.type == 'ambassador' &&
+            request.resource.data.invitee_id is string &&
+            request.resource.data.invitee_id != request.auth.uid &&
+            id == 'ambassador_' + request.resource.data.invitee_id &&
+            request.resource.data.keys().hasOnly([
+              'type', 'uid', 'user_name', 'invitee_id', 'invitee_name', 'status', 'created_at'
+            ])
+          )
+        );
+      // A rejected deterministic claim may be resubmitted by either claimant. The fixed document
+      // makes that transition atomic: after one write changes it to pending, every competing write
+      // is denied. Pending/approved claims and every other client-authored update remain closed.
+      allow update: if isSuperAdmin() ||
+        (
+          isAuthenticated() &&
+          resource.data.type == 'ambassador' &&
+          resource.data.status == 'rejected' &&
+          request.resource.data.type == 'ambassador' &&
+          request.resource.data.status == 'pending' &&
+          request.resource.data.uid == request.auth.uid &&
+          request.resource.data.invitee_id == resource.data.invitee_id &&
+          request.resource.data.invitee_id != request.auth.uid &&
+          id == 'ambassador_' + request.resource.data.invitee_id &&
+          request.resource.data.keys().hasOnly([
+            'type', 'uid', 'user_name', 'invitee_id', 'invitee_name', 'status', 'created_at'
+          ])
+        );
+      allow delete: if false;
+    }
+
+    match /group_lesson_contact_access/{documentId} {
+      allow read, write: if false;
+    }
+
+    // ===============================================================
+    // Connections — who may read whose contact details.
+    // Written ONLY by the onMatchConnection trigger; a client that could create these could
+    // grant itself access to anyone's phone number.
+    // ===============================================================
+    match /connections/{pair} {
+      allow read: if isAuthenticated() && request.auth.uid in resource.data.uids;
+      allow write: if false;
+    }
+
+    // Deliberate listing-contact projection. It contains only contact-channel fields and never
+    // account-recovery metadata such as contacts.secondary_email.
+    match /public_contacts/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // ===============================================================
+    // Consolidation archive — Admin SDK only, never reachable from a client.
+    // ===============================================================
+    match /_archive_database_consolidation/{document=**} {
+      allow read, write: if false;
+    }
+
+    // ===============================================================
+    // RR Drafts (creator pre-generation drafts)
+    // ===============================================================
+    // Nested under the event, matching where useTournament.ts actually writes. Rules do NOT
+    // cascade into subcollections, so the old top-level /rr_drafts/{id} block could never match
+    // this path and every draft read/write was denied by default — silently, because the
+    // onSnapshot error path just sets the draft to null.
+    match /events/{eventId}/rr_drafts/{drawKey} {
+      // Draft groups and withdrawals are unpublished organizer state. Participants see the
+      // generated match documents after release, not this pre-generation workspace. Assigned
+      // organizer co-management remains a stakeholder decision, so the client and Rules both
+      // stay creator-only until that authority is explicitly approved.
+      allow read, write: if isOwnerOfEvent(eventId);
+    }
+
+  }
+}

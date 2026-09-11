@@ -1,0 +1,188 @@
+import { doc, setDoc, updateDoc, getDocs, query, where, collection, writeBatch } from 'firebase/firestore';
+import {
+  EmailAuthProvider,
+  getRedirectResult,
+  reauthenticateWithCredential,
+  reauthenticateWithPopup as firebaseReauthenticateWithPopup,
+  reauthenticateWithRedirect as firebaseReauthenticateWithRedirect,
+  verifyBeforeUpdateEmail as firebaseVerifyBeforeUpdateEmail,
+  type User,
+} from 'firebase/auth';
+import { appleProvider, auth, db, googleProvider } from '../../../lib/firebase';
+import type { ContactMethod } from '../../../types';
+import { NAME_RULE } from '../../signup/signupForm';
+import {
+  clearPendingEmailChange,
+  readPendingEmailChange,
+  runChangeEmail,
+  runCompletePendingEmailChange,
+  writePendingEmailChange,
+  type EmailChangeAdapters,
+  type EmailChangeUser,
+  type SupportedOAuthProviderId,
+} from '../changeEmailAuth';
+
+// Sync the display name onto stats/preferences and every event_participants doc.
+const syncName = async (userId: string, name: string) => {
+  await updateDoc(doc(db, 'stats', userId), { name });
+  const snap = await getDocs(query(collection(db, 'event_participants'), where('uid', '==', userId)));
+  if (!snap.empty) {
+    const batch = writeBatch(db);
+    snap.docs.forEach((d) => batch.update(d.ref, { user_name: name }));
+    await batch.commit();
+  }
+};
+
+export const updateName = async (userId: string, name: string) => {
+  const trimmed = name.trim();
+  if (trimmed.length < 3 || trimmed.length > 80 || /\d/.test(trimmed)) throw new Error(NAME_RULE);
+  await updateDoc(doc(db, 'users', userId), { name: trimmed });
+  await syncName(userId, trimmed);
+};
+
+// Contact details live in `contacts/{uid}`, not `users` — see the ContactData doc comment.
+// setDoc(merge) rather than updateDoc so a legacy account with no contacts doc yet can still
+// save (updateDoc fails outright on a missing document).
+export const updatePhone = async (userId: string, phone: string) => {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length !== 10) throw new Error('Phone number must be exactly 10 digits.');
+  await setDoc(
+    doc(db, 'contacts', userId),
+    {
+      phone: `(${digits.slice(0, 3)})-${digits.slice(3, 6)}-${digits.slice(6, 10)}`,
+      updated_at: new Date().toISOString(),
+    },
+    { merge: true },
+  );
+};
+
+export const updateWhatsappContact = async (userId: string, whatsappContact: string, sameAsPhone: boolean) => {
+  if (!sameAsPhone && whatsappContact && !/^\+[1-9]\d{6,14}$/.test(whatsappContact)) {
+    throw new Error('Enter a valid WhatsApp number.');
+  }
+  await setDoc(
+    doc(db, 'contacts', userId),
+    {
+      whatsapp_contact: sameAsPhone ? '' : whatsappContact,
+      whatsapp_same_as_phone: sameAsPhone,
+      // Consent is implied by giving a reachable messaging number, either by saying the phone
+      // doubles as WhatsApp or by supplying a separate one. Clearing both withdraws it.
+      contactable: sameAsPhone || !!whatsappContact,
+      updated_at: new Date().toISOString(),
+    },
+    { merge: true },
+  );
+};
+
+/**
+ * Which channels the member wants to be reached on. An EMPTY array is a meaningful value — it means
+ * "no preference", and every channel they've filled in is offered. It is not the same as "email".
+ * `setDoc(..., { merge: true })` rather than `updateDoc` so a member whose contacts doc was never
+ * backfilled can still set this.
+ */
+export const updateContactMethods = async (userId: string, methods: ContactMethod[]) => {
+  await setDoc(
+    doc(db, 'contacts', userId),
+    {
+      preferred_mode_of_contact: methods,
+      updated_at: new Date().toISOString(),
+    },
+    { merge: true },
+  );
+};
+
+export const updateBio = async (userId: string, bio: string) => {
+  await updateDoc(doc(db, 'users', userId), { bio: bio.trim().slice(0, 300) });
+};
+
+export const updateAvatar = async (userId: string, avatar: string) => {
+  await updateDoc(doc(db, 'users', userId), { avatar });
+};
+
+export const updateSkills = async (userId: string, skillLevel: number, tournamentPreference: string) => {
+  if (Number.isNaN(skillLevel)) throw new Error('Please select a valid skill level.');
+  await updateDoc(doc(db, 'stats', userId), { skill_level: skillLevel, tournament_preference: tournamentPreference });
+};
+
+// League (gender + optional Retired Pro/Juniors age category) lives on stats.league as one
+// string, e.g. "Men's Retired Pro" — the same field the Leagues page and League Ladder split on
+// (see leagueDivision/leagueAgeCategory in utils/skillLevels.ts). The "visible to others" flag
+// lives on the users doc.
+export const updateLeagueAndAgeCategory = async (
+  userId: string,
+  league: "Men's" | "Women's" | '',
+  ageCategory: 'Retired Pro' | 'Juniors' | '',
+) => {
+  // Only write the league when one is chosen — never clobber an existing value with ''.
+  if (league) {
+    const leagueValue = ageCategory ? `${league} ${ageCategory}` : league;
+    await updateDoc(doc(db, 'stats', userId), { league: leagueValue });
+  }
+};
+
+// The up-to-three badges a player chose to display.
+export const updateDisplayBadges = async (userId: string, badgeIds: string[]) => {
+  await updateDoc(doc(db, 'users', userId), { display_badges: badgeIds.slice(0, 3) });
+};
+
+export const updatePreferredCourts = async (userId: string, courts: string[], zone: string) => {
+  const current = await getDocs(query(collection(db, 'preferences'), where('__name__', '==', userId)));
+  const currentData = current.docs[0]?.data() || {};
+  const nextZone = currentData.preferred_zone_manual === true ? currentData.preferred_zone || zone : zone;
+  await updateDoc(doc(db, 'preferences', userId), { preferred_courts: courts, preferred_zone: nextZone });
+};
+
+// Picked by hand on the profile card. Never unseats them: matches already generated are left
+// alone, and `onZoneChanged` (functions/zoneMoves.js) only tells the organizer.
+export const updatePreferredZone = async (userId: string, zone: string) => {
+  await updateDoc(doc(db, 'preferences', userId), { preferred_zone: zone, preferred_zone_manual: true });
+};
+
+export const updateFavouritePlayers = async (userId: string, players: string[]) => {
+  await updateDoc(doc(db, 'preferences', userId), { favourite_players: players });
+};
+
+export const updateEmailNotifications = async (userId: string, enabled: boolean) => {
+  await updateDoc(doc(db, 'preferences', userId), { email_notifications: enabled });
+};
+
+export const updateAvailabilityTags = async (userId: string, tags: string[]) => {
+  await updateDoc(doc(db, 'preferences', userId), { availability_tags: tags });
+};
+
+export const updateAvailableToPlay = async (userId: string, available: boolean) => {
+  await updateDoc(doc(db, 'preferences', userId), { available_to_play: available });
+};
+
+const oauthProvider = (providerId: SupportedOAuthProviderId) =>
+  providerId === 'google.com' ? googleProvider : appleProvider;
+
+const emailChangeAdapters: EmailChangeAdapters = {
+  reauthenticateWithPassword: async (user, password) => {
+    const credential = EmailAuthProvider.credential(user.email || '', password);
+    await reauthenticateWithCredential(user as User, credential);
+  },
+  reauthenticateWithPopup: async (user, providerId) => {
+    await firebaseReauthenticateWithPopup(user as User, oauthProvider(providerId));
+  },
+  reauthenticateWithRedirect: async (user, providerId) => {
+    await firebaseReauthenticateWithRedirect(user as User, oauthProvider(providerId));
+  },
+  verifyBeforeUpdateEmail: async (user, email) => {
+    await firebaseVerifyBeforeUpdateEmail(user as User, email);
+  },
+  getRedirectResult: () => getRedirectResult(auth),
+  readPending: readPendingEmailChange,
+  writePending: writePendingEmailChange,
+  clearPending: clearPendingEmailChange,
+};
+
+export const changeEmail = (user: EmailChangeUser, newEmail: string, password = '') =>
+  runChangeEmail(user, newEmail, password, emailChangeAdapters);
+
+export const completePendingEmailChange = (user: EmailChangeUser) =>
+  runCompletePendingEmailChange(user, emailChangeAdapters);
+
+export const updateEventParticipantDates = async (participantId: string, dateselected: string[]) => {
+  await updateDoc(doc(db, 'event_participants', participantId), { dateselected });
+};

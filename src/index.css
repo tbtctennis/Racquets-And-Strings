@@ -1,0 +1,259 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+@import 'tailwindcss';
+
+/* Court Map: clear the collapsed pull-up results handle (~48px) at the bottom of the map so the
+   zoom +/- controls (moved to bottom-right to stop the top Search/Filters bar covering them)
+   don't sit half-behind it. */
+:root {
+  --nav-clearance: calc(4.5rem + env(safe-area-inset-bottom));
+}
+
+.maplibregl-ctrl-bottom-right {
+  bottom: var(--nav-clearance);
+}
+
+@theme {
+  --font-sans: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+  /* Clay stays the accent color in both themes — only the neutrals below flip. */
+  --color-clay: #e84a27;
+  --color-clay-press: #d6401f;
+  --color-clay-fg: #ff8a65;
+  --color-tennis-dark: #0b3027;
+  --color-tennis-surface: #143d34;
+  --color-tennis-deep: #06211b;
+  /* Page fill. Same hex as tennis-dark so existing bg-tennis-dark sites keep working. */
+  --color-page: #0b3027;
+  /* Allowed tints (CT-8) and the one hairline (CT-6). Follow fg / surface / clay. */
+  --color-tint: color-mix(in srgb, var(--color-fg) 5%, transparent);
+  --color-tint-hover: color-mix(in srgb, var(--color-fg) 10%, transparent);
+  --color-tint-ghost: color-mix(in srgb, var(--color-tennis-surface) 30%, transparent);
+  --color-tint-card: var(--color-tennis-surface);
+  --color-tint-tone: color-mix(in srgb, var(--color-clay) 10%, transparent);
+  --color-hairline: color-mix(in srgb, var(--color-fg) 10%, transparent);
+  /* Primary text/icon color — white in dark mode, brand-dark-green in light. Every
+     `text-white`/`border-white` in the app is being migrated to `text-fg`/`border-fg` so it
+     follows the toggle; see ThemeContext.tsx for how `data-theme` gets set on <html>. */
+  --color-fg: #ffffff;
+  /* Fixed dark text — NEVER flips with the theme. For text on elements that are always a light
+     fill by design (e.g. Button's `white` variant, a solid-white chip state), not page body
+     text. Using --color-tennis-dark there would break in light mode, since that token IS the
+     page background and flips to a light color. */
+  --color-ink: #143d34;
+  /* Badge/skill-tier pill text — amber-300 reads fine on the dark surface but is nearly
+     invisible on light theme's near-white surface, so it flips to a darker amber there. */
+  --color-badge: #fcd34d;
+  /* Win/Loss pill text — same contrast problem as --color-badge above: green-300/red-300 read
+     fine on the dark surface but wash out on light theme's near-white surface. */
+  --color-badge-win: #86efac;
+  --color-badge-loss: #fca5a5;
+  /* Court-map markers. Fixed hues — MapLibre tiles stay light in both themes (Q-15). */
+  --color-map-active: var(--color-green-700);
+  --color-map-programs: var(--color-yellow-500);
+  --color-map-open: var(--color-blue-500);
+  --color-map-club: var(--color-orange-500);
+  --color-map-idle: var(--color-slate-400);
+  /* Radius ladder (BT-23): xl ≤42px · 2xl 43–56px · 3xl cards · 4xl sheets · full tokens. */
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2rem;
+  /* Motion (BT-25): three named durations. Unspecified transitions use --duration-motion. */
+  --duration-fast: 150ms;
+  --duration-motion: 200ms;
+  --duration-hero: 1000ms;
+  --default-transition-duration: 200ms;
+}
+
+/* Light theme overrides — these are the SAME CSS variables the @theme block above registers,
+   so every utility built from them (bg-page, bg-tennis-dark, bg-tennis-surface, text-fg, …)
+   picks up the new values automatically with no component changes needed. Toggled by
+   ThemeContext.tsx setting data-theme="light" on <html> (defaults to dark; persisted). */
+:root[data-theme='light'] {
+  --color-tennis-dark: #deded5;
+  --color-tennis-surface: #ffffff;
+  --color-tennis-deep: #d2d2c7;
+  --color-page: #deded5;
+  /* Light clay fill so bg-clay / shadow-clay / accent-clay inherit. clay-fg stays #9e2d12 — #ff6b35 as text is 2.8:1. */
+  --color-clay: #ff6b35;
+  --color-clay-fg: #9e2d12;
+  --color-fg: #143d34;
+  --color-badge: #92400e;
+  --color-badge-win: #166534;
+  --color-badge-loss: #b91c1c;
+  color-scheme: light;
+}
+
+/* Horizontally scrollable rows (chip rows, card strips) — scrollable but chromeless. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@layer base {
+  html,
+  body {
+    @apply overflow-x-hidden;
+  }
+  body {
+    @apply bg-page text-fg font-sans antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display font-bold;
+  }
+  :disabled,
+  [aria-disabled='true'] {
+    @apply text-fg/70 opacity-50;
+  }
+  :where(
+    a[href],
+    button,
+    input,
+    select,
+    textarea,
+    summary,
+    [role='button'],
+    [role='option'],
+    [role='radio'],
+    [role='tab'],
+    [role='combobox'],
+    [tabindex]:not([tabindex='-1'])
+  ):focus-visible {
+    outline: 2px solid var(--color-clay);
+    outline-offset: 2px;
+  }
+}
+
+@utility focus-visible {
+  &:focus-visible {
+    outline: 2px solid var(--color-clay);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin,
+  .animate-pulse {
+    animation: none !important;
+  }
+}
+
+:root {
+  --card-shadow: none;
+  --featured-shadow: none;
+  --shadow-pullup: 0 -8px 24px rgb(0 0 0 / 0.4);
+}
+
+:root[data-theme='light'] {
+  --card-shadow: 0 8px 24px rgb(20 61 52 / 0.08);
+  --featured-shadow: 0 12px 32px rgb(20 61 52 / 0.14);
+  --shadow-pullup: 0 -8px 24px rgb(20 61 52 / 0.12);
+}
+
+.card-shadow {
+  box-shadow: var(--card-shadow, none);
+}
+.featured-shadow {
+  box-shadow: var(--featured-shadow, none);
+}
+.shadow-pullup {
+  box-shadow: var(--shadow-pullup);
+}
+
+/* ── Dropdown popups (theme-aware) ──────────────────────────────────────────────
+   Native <select> popups and third-party widgets (e.g. intl-tel-input's country list)
+   don't inherit the page background — they default to the browser's white popup chrome.
+   `color-scheme` (set per-theme above) tells the browser to theme its native form-control
+   popups automatically; the explicit rules below are the cross-browser fallback/override,
+   built from the same CSS variables so they flip with the toggle too. */
+:root {
+  color-scheme: dark;
+}
+select,
+option,
+optgroup {
+  background-color: var(--color-tennis-deep);
+  color: var(--color-fg);
+}
+
+/* intl-tel-input country dropdown — ships with no background/text color of its own
+   (relies on inheriting the page), so it renders invisible without an explicit override. */
+.iti__country-list {
+  background-color: var(--color-tennis-deep);
+  border: 1px solid var(--color-hairline);
+}
+.iti__country {
+  color: var(--color-fg);
+}
+.iti__country.iti__highlight {
+  background-color: color-mix(in srgb, var(--color-clay) 18%, transparent);
+}
+.iti__country-name,
+.iti__dial-code {
+  color: inherit;
+}
+.iti__search-input {
+  background-color: var(--color-tennis-deep);
+  color: var(--color-fg);
+}
+.iti__search-input::placeholder {
+  color: color-mix(in srgb, var(--color-fg) 50%, transparent);
+}
+.iti__no-results {
+  color: color-mix(in srgb, var(--color-fg) 60%, transparent);
+}
+.iti__selected-country-primary {
+  color: var(--color-fg);
+}
+
+/* Range input — orange track, white thumb */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+input[type='range']::-webkit-slider-runnable-track {
+  background: var(--color-clay);
+  border-radius: 9999px;
+  height: 0.5rem;
+}
+input[type='range']::-moz-range-track {
+  background: var(--color-clay);
+  border-radius: 9999px;
+  height: 0.5rem;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #ffffff;
+  border-radius: 9999px;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: -0.375rem;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-clay) 40%, transparent);
+}
+input[type='range']::-moz-range-thumb {
+  background: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  width: 1.25rem;
+  height: 1.25rem;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-clay) 40%, transparent);
+}
+
+.clay-gradient {
+  background: linear-gradient(135deg, var(--color-clay) 0%, var(--color-clay-press) 100%);
+}
+
+.dark-gradient {
+  background: linear-gradient(180deg, var(--color-tennis-deep) 0%, var(--color-tennis-dark) 100%);
+}

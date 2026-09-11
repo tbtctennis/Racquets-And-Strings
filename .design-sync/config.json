@@ -1,0 +1,33 @@
+{
+  "componentSrcMap": {
+    "EntityCard": "src/components/EntityCard.tsx",
+    "PersonChip": "src/components/PersonChip.tsx",
+    "PersonInline": "src/components/PersonInline.tsx",
+    "ListGroup": "src/components/ListGroup.tsx",
+    "ListRow": "src/components/ListRow.tsx",
+    "Skeleton": "src/components/Skeleton.tsx",
+    "ReviewPanel": "src/components/ReviewPanel.tsx",
+    "ProfileCard": "src/components/ProfileCard.tsx",
+    "DrawerLayout": "src/components/DrawerLayout.tsx",
+    "StatGrid": "src/components/StatGrid.tsx",
+    "Popover": "src/components/Popover.tsx",
+    "SelectSheet": "src/components/SelectSheet.tsx",
+    "Spinner": "src/components/Spinner.tsx"
+  },
+  "previews": {
+    "EntityCard": ".design-sync/entry.tsx#EntityCard",
+    "PersonChip": ".design-sync/entry.tsx#PersonChip",
+    "PersonInline": ".design-sync/entry.tsx#PersonInline",
+    "ListGroup": ".design-sync/entry.tsx#ListGroup",
+    "ListRow": ".design-sync/entry.tsx#ListRow",
+    "Skeleton": ".design-sync/entry.tsx#Skeleton",
+    "ReviewPanel": ".design-sync/entry.tsx#ReviewPanel",
+    "ProfileCard": ".design-sync/entry.tsx#ProfileCard",
+    "DrawerLayout": ".design-sync/entry.tsx#DrawerLayout",
+    "StatGrid": ".design-sync/entry.tsx#StatGrid",
+    "Popover": ".design-sync/entry.tsx#Popover",
+    "SelectSheet": ".design-sync/entry.tsx#SelectSheet",
+    "Spinner": ".design-sync/entry.tsx#Spinner"
+  },
+  "themes": ["light", "dark"]
+}
