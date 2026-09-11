@@ -1,0 +1,62 @@
+{
+  "task": "TASK-651",
+  "legacyId": "BLG0043",
+  "project": "rands-local",
+  "productionProject": "toronto-tennis-league",
+  "productionAction": false,
+  "mode": "in-memory rands-local fixture; no Firestore writes",
+  "before": {
+    "events": 3,
+    "stats": 3,
+    "matches": 1,
+    "preferences": 2,
+    "providers": 0,
+    "eventTypeLegacy": 1,
+    "statsWithLoses": 3,
+    "drawHidingFields": 1,
+    "providersLinked": 0
+  },
+  "after": {
+    "events": 3,
+    "stats": 3,
+    "matches": 1,
+    "preferences": 2,
+    "providers": 1,
+    "eventTypeLegacy": 0,
+    "statsWithLoses": 0,
+    "drawHidingFields": 0,
+    "providersLinked": 1
+  },
+  "reconciliation": {
+    "before": {
+      "ok": true,
+      "scanned": 3,
+      "replayed": 2,
+      "unexplainedDrift": false,
+      "unexplained": [],
+      "diffs": []
+    },
+    "after": {
+      "ok": true,
+      "scanned": 3,
+      "replayed": 2,
+      "unexplainedDrift": false,
+      "unexplained": [],
+      "diffs": []
+    }
+  },
+  "rollback": {
+    "restored": true,
+    "after": {
+      "events": 3,
+      "stats": 3,
+      "matches": 1,
+      "preferences": 2,
+      "providers": 0,
+      "eventTypeLegacy": 1,
+      "statsWithLoses": 3,
+      "drawHidingFields": 1,
+      "providersLinked": 0
+    }
+  }
+}

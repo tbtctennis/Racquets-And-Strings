@@ -5,7 +5,7 @@
 | **Task id**    | TASK-651                                                                                   |
 | **Title**      | Record non-production migration and reconciliation evidence                                |
 | **TLDR**       | Rehearsal records before/after counts, recompute-and-diff, rollback, no production action. |
-| **Status**     | new                                                                                        |
+| **Status**     | completed                                                                                  |
 | **Tags**       | Data, QA                                                                                   |
 | **Sprint**     | DC06 Spiderman                                                                             |
 | **Legacy ids** | BLG0043                                                                                    |
@@ -43,6 +43,8 @@ When **execute sprint spiderman** reaches this item:
 
 ## Comments
 
-| Date       | Who                    | Note                                                                                 |
-| ---------- | ---------------------- | ------------------------------------------------------------------------------------ |
+| Date       | Who                    | Note |
+| ---------- | ---------------------- | ---- |
 | 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live. |
+| 2026-09-11 | Grok Build · worker    | Started. BLG0043/D4 data-safety gate: before/after counts, recompute-and-diff, rollback, no production action. Use current planners and TASK-647 `planRecomputeDiff`; do not treat this as a backup drill (TASK-646). |
+| 2026-09-11 | Grok Build · worker    | `scripts/lib/migration-rehearsal.mjs` rehearses event-type, loses, draw-hiding, and provider-role on a `rands-local` fixture and writes `docs/engineering/migration-rehearsal-artifact.json`. Evidence: `docs/engineering/MIGRATION_REHEARSAL.md`. Tests: `tests/unit/migrationRehearsal.test.mjs`. Tracker not edited. |
