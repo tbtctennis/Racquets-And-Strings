@@ -3,10 +3,12 @@ name: CI
 on:
   push:
     branches:
+      - main
       - spiderman
       - dev-anuj
   pull_request:
     branches:
+      - main
       - spiderman
       - dev-anuj
 

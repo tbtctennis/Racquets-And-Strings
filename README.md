@@ -2,7 +2,7 @@
 
 Racquets & Strings is a React/Vite tennis-league platform backed by Firebase. The current application includes member profiles, events and tournaments, matches and rankings, tasks and rewards, marketplace listings, court data, notifications, and provider-related service flows.
 
-This repository is technical project documentation and application source. The working branch for the current engineering block is `spiderman`.
+This repository is technical project documentation and application source. The default branch is `main`.
 
 ## Verified stack
 
@@ -26,7 +26,7 @@ The Functions package declares Node.js 22. Use that runtime for both root and Fu
 ```bash
 git clone https://github.com/tbtctennis/Racquets-And-Strings.git ~/Developer/RandS-Tennis
 cd ~/Developer/RandS-Tennis
-git checkout spiderman
+git checkout main
 npm ci
 cd functions && npm ci
 cd ..
@@ -69,7 +69,7 @@ it does not download an unbounded CLI version during tests.
 `npm run test:fixtures` starts an isolated temporary Auth/Firestore emulator pair and exercises the
 same seed command without using the fixed ports needed by the full local app suite.
 
-GitHub CI runs on pushes and pull requests targeting `spiderman`, installs Node 22 and Java 21, and
+GitHub CI runs on pushes and pull requests targeting `main`, installs Node 22 and Java 21, and
 runs the same `npm run verify` quality gates plus a separate Functions dependency install. It does
 not deploy or connect to Firebase.
 
@@ -134,7 +134,7 @@ The remaining environment work is to establish:
 - [Firestore backup and recovery runbook](docs/runbooks/FIRESTORE_BACKUP_AND_RECOVERY.md)
 - [Domain rules](docs/domain/TOURNAMENT_RULES.md)
 
-Use the project-local skills under `.agents/skills/` for Firebase work, architecture diagrams, security review, investigation, QA, and documentation. Keep commits issue-sized and push completed work to `origin/spiderman`.
+Use the project-local skills under `.agents/skills/` for Firebase work, architecture diagrams, security review, investigation, QA, and documentation. Keep commits issue-sized and push completed work to `origin/main`.
 
 ## Common troubleshooting
 
