@@ -1,10 +1,9 @@
 import { execFileSync } from 'node:child_process';
 
-// The review baseline is always the `dev-anuj` branch. It is not always reachable under the same
-// name: CI supplies an explicit SHA, and local clones may carry `dev-anuj` on a remote other than
-// `origin` (or only as a local branch). Resolve it explicitly so a missing ref fails loudly rather
-// than silently degrading a gate into "everything changed, nothing checked".
-export const BASE_BRANCH = 'dev-anuj';
+// The review baseline is the default product branch `main`. CI supplies an explicit SHA when
+// available. Resolve it explicitly so a missing ref fails loudly rather than silently degrading
+// a gate into "everything changed, nothing checked".
+export const BASE_BRANCH = 'main';
 
 const tryGit = (args, cwd) => {
   try {
