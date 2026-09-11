@@ -137,7 +137,8 @@ Full record: [coaching pool](COACHING_POOL.md). Diagram: [coaching pool](diagram
    discount** calls `redeemReward`. Coaching has no third action.
 3. `recordServiceLead` writes `providers/{id}/leads/{uid}` and, when the provider has
    `member_uid`, a `connections` pair with reason `service-lead`. That pair is the live
-   coach↔player contacts path.
+   coach↔player contacts path. Booking and redemption provider reads use the same
+   `providers.member_uid` link; leftover preference flags are not consulted.
 4. There is no `lesson_pool` collection and no **Book group lesson** action. `group_lessons`
    is retired (TASK-511). `events.lesson` is an unratified placeholder read by nothing.
 5. Target (not built): pooling on **any event** that offers coaching, stored at

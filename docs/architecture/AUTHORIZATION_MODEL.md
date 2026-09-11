@@ -4,7 +4,7 @@ Diagram: [authorization boundaries](diagrams/authorization-boundaries.md).
 
 ## Current state
 
-Firebase Auth supplies identity. Firestore Rules are the effective client authorization boundary; React private routes only control navigation. Event creation remains a compatibility path for `preferences/{uid}.event_creator`; later event mutations require `creator_id`, explicit membership in `organizer_ids`, or the super-admin bootstrap. Provider access is now scoped to server-issued `providers` rows; legacy preference IDs are read-only compatibility fallbacks during cutover.
+Firebase Auth supplies identity. Firestore Rules are the effective client authorization boundary; React private routes only control navigation. Event creation remains a compatibility path for `preferences/{uid}.event_creator`; later event mutations require `creator_id`, explicit membership in `organizer_ids`, or the super-admin bootstrap. Provider checks read only server-issued `providers/{id}.member_uid`. Leftover `preferences` stringer/coach flags are not an authorization path; `scripts/migrations/004-provider-role.mjs` lifts them onto `providers` rows.
 
 ## Current permission layers
 
@@ -56,5 +56,5 @@ Everyone remains a Member. Organizer, Provider, and Admin stack on top of member
   Clients cannot write `organizer_ids`. A durable assignment UI remains future work.
 - Cross-member preference decoration fails closed until an approved event-scoped or consented projection exists.
 - The hardcoded super-admin UID is operationally brittle and requires a documented bootstrap/recovery process. **Owner ruling 2026-08-31: it stays hardcoded** ([VISION.md](../planning/VISION.md) §10.6) — the brittleness is accepted and the recovery process is still owed. One consequence is load-bearing: the deployed rules must carry a UID that exists in the project they are deployed to, and a second Firebase project has its own Auth tenant, so staging otherwise has no super-admin at all.
-- Provider access is inferred from preference fields and is not consistently represented as a role boundary.
+- Provider access is the `providers/{id}` row linked by `member_uid`. Preference flags do not grant it.
 - Admin SDK functions bypass Firestore Rules, so trigger/callable authorization and input validation need separate tests.

@@ -45,8 +45,8 @@ migration. Coupon documents store the service id in `redemptions.reward_id`, so 
 stable.
 
 Provider identity is `providers/{providerId}` (roles `stringer` | `coach` | `other`, optional
-`member_uid`). Preference flags `coach` / `coach_id` are a read-only compatibility fallback
-while those rows are bootstrapped. They do not grant a privileged coach Rules predicate.
+`member_uid`). That row is the only provider-role authority. Leftover preference flags
+`coach` / `coach_id` do not grant a privileged coach Rules predicate.
 
 ## 3. Actions on a coaching service today
 

@@ -14,8 +14,9 @@ connection the participant trigger writes for that event's managers (`reason: ev
 A marketplace listing exposes only an allowlisted projection through `public_contacts/{uid}` to
 authenticated members; it does not unlock the private `contacts/{uid}` document. The monthly
 `group_lessons` roster and `isCurrentGroupLessonCoachFor` are gone (TASK-511). Coach↔player
-access uses the same connection marker: a **Book** on a service whose provider has `member_uid`
-writes `reason: service-lead`. There is no live writer of `reason: coaching session`.
+access uses the same connection marker: a **Book** on a service whose provider row has
+`member_uid` writes `reason: service-lead`. Preference stringer/coach flags do not identify
+the provider. There is no live writer of `reason: coaching session`.
 **Partner-pool contacts** are a third projection: `partner_pool/{eventId}/contacts/{uid}`,
 written by Functions, readable only by members of that event's pool. Empty channels are omitted.
 See [partner-pool diagram](../architecture/diagrams/partner-pool.md) and

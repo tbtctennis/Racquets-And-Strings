@@ -56,9 +56,8 @@ service cloud.firestore {
       ];
     }
 
-    // Member-editable preferences only. Role flags and provider identifiers are assigned by the
-    // super-admin service path; allowing them through the owner update rule would let a member
-    // self-identify as a provider and pass isProviderFor() checks on redemptions.
+    // Member-editable preferences only. Role flags and provider identifiers are leftover
+    // compatibility fields; isProviderFor() reads only providers/{id}.member_uid.
     function ownerPreferenceFields() {
       return [
         'uid', 'preferred_courts', 'favourite_players',
@@ -348,12 +347,8 @@ service cloud.firestore {
 
     function isProviderFor(providerId) {
       return isAuthenticated() && providerId != null &&
-        (
-          (exists(/databases/$(database)/documents/providers/$(providerId)) &&
-            get(/databases/$(database)/documents/providers/$(providerId)).data.get('member_uid', '') == request.auth.uid) ||
-          get(/databases/$(database)/documents/preferences/$(request.auth.uid)).data.get('stringer_id', '') == providerId ||
-          get(/databases/$(database)/documents/preferences/$(request.auth.uid)).data.get('coach_id', '') == providerId
-        );
+        exists(/databases/$(database)/documents/providers/$(providerId)) &&
+        get(/databases/$(database)/documents/providers/$(providerId)).data.get('member_uid', '') == request.auth.uid;
     }
 
     function isManagerOfEvent(eventId) {

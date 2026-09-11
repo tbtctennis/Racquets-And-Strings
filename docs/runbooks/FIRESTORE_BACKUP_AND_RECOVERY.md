@@ -52,6 +52,11 @@ preference projection: existing records do not prove consent. A future migration
 the exact fields, audience, consent source, deletion behavior, staging validation, and rollback.
 Rollback must delete projections without changing private source documents.
 
+Provider-role cutover (`scripts/migrations/004-provider-role.mjs`) is additive. Rollback unlinks
+`providers/{id}.member_uid` on rows the migration wrote or merged; it does not rewrite leftover
+`preferences` stringer/coach flags. Do not apply it against production without the confirmation
+triple and a verified export.
+
 - Add an isolated staging alias and environment-specific Firebase CLI commands.
 - Add synthetic fixtures and a repeatable restore validation script.
 - Document data retention and PII handling requirements before exporting any real dataset.

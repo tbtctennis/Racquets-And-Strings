@@ -10,6 +10,7 @@ import {
   normalizeEventType,
   planEventTypeUpdates,
 } from '../../scripts/lib/event-type-casing.mjs';
+import { migrateProviderRoles, planProviderRoleMigration } from '../../scripts/lib/provider-role.mjs';
 
 test('migration arguments require an explicit project and default to dry-run', () => {
   assert.throws(() => parseMigrationArgs([]), /Missing explicit --project/);
@@ -187,6 +188,78 @@ test('event type migration dry-run is idempotent after applying its plan', async
   assert.equal(applied.changed, 1);
   assert.equal(docs.get('legacy').type, 'Tournaments');
   assert.equal((await migrateEventTypes(db, { dryRun: true, logger: { log() {} } })).planned, 0);
+});
+
+test('provider-role migration lifts inferred preference flags onto providers rows', () => {
+  assert.deepEqual(
+    planProviderRoleMigration({
+      preferences: [
+        { id: 'member-a', data: { uid: 'member-a', stringer: true, stringer_id: 'karan' } },
+        { id: 'member-b', data: { uid: 'member-b', coach: true, coach_id: 'archie' } },
+        { id: 'member-c', data: { uid: 'member-c', preferred_zone: 'north' } },
+      ],
+      providers: [{ id: 'archie', data: { id: 'archie', name: 'Archie', roles: ['coach'] } }],
+    }),
+    {
+      updates: [
+        {
+          id: 'karan',
+          name: 'karan',
+          roles: ['stringer'],
+          member_uid: 'member-a',
+          action: 'create',
+        },
+        {
+          id: 'archie',
+          name: 'Archie',
+          roles: ['coach'],
+          member_uid: 'member-b',
+          action: 'merge',
+        },
+      ],
+      invalid: [],
+      inferredClaims: 2,
+      skippedClaims: 0,
+      skipped: 1,
+    },
+  );
+});
+
+test('provider-role migration is idempotent and refuses a conflicting member link', async () => {
+  const store = {
+    preferences: new Map([
+      ['member-a', { uid: 'member-a', stringer: true, stringer_id: 'karan' }],
+      ['member-b', { uid: 'member-b', preferred_zone: 'north' }],
+    ]),
+    providers: new Map(),
+  };
+  const db = {
+    collection: (name) => ({
+      get: async () => ({ docs: [...store[name]].map(([id, data]) => ({ id, data: () => data })) }),
+    }),
+    doc: (path) => ({ path }),
+    batch: () => ({
+      set: (ref, patch) => {
+        const [, id] = ref.path.split('/');
+        store.providers.set(id, { ...(store.providers.get(id) || {}), ...patch });
+      },
+      commit: async () => {},
+    }),
+  };
+
+  const dryRun = await migrateProviderRoles(db, { dryRun: true, logger: { log() {} } });
+  assert.equal(dryRun.planned, 1);
+  assert.equal(store.providers.size, 0);
+
+  const applied = await migrateProviderRoles(db, { dryRun: false, logger: { log() {} } });
+  assert.equal(applied.changed, 1);
+  assert.equal(store.providers.get('karan').member_uid, 'member-a');
+  assert.deepEqual(store.providers.get('karan').roles, ['stringer']);
+  assert.equal(store.preferences.get('member-a').stringer_id, 'karan');
+  assert.equal((await migrateProviderRoles(db, { dryRun: true, logger: { log() {} } })).planned, 0);
+
+  store.preferences.set('member-c', { uid: 'member-c', stringer: true, stringer_id: 'karan' });
+  await assert.rejects(() => migrateProviderRoles(db, { dryRun: true, logger: { log() {} } }), /already linked/);
 });
 
 test('event draw-hiding migration plans only retired fields and is idempotent', async () => {

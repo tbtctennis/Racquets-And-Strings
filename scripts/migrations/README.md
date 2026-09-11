@@ -26,6 +26,9 @@ node scripts/migrations/002-event-type-casing.mjs --project rands-local --key se
 
 # Remove retired per-event draw-hiding fields after reviewing the dry-run report.
 node scripts/migrations/003-event-draw-hiding.mjs --project rands-local --key serviceAccount.json --dry-run
+
+# Lift leftover preference stringer/coach flags onto providers/{id}.member_uid.
+node scripts/migrations/004-provider-role.mjs --project rands-local --key serviceAccount.json --dry-run
 ```
 
 ## Authoring a real migration

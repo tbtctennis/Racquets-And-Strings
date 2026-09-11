@@ -4,6 +4,7 @@ import { db } from '../../lib/firebase';
 import { useAuth } from '../../context/AuthContext';
 import { useTasks } from '../tasks/useTasks';
 import { normalizeProvider } from '../../lib/firestoreNormalization';
+import { resolveProviderRole } from './providerRole';
 import { Booking, MIN_REWARD_COST, ProviderRecord, Redemption, Reward, ServiceCategory } from './types';
 
 export * from './types';
@@ -235,12 +236,9 @@ export function useMyBookings() {
   return { bookings, loading };
 }
 
-/**
- * The provider id this account owns, if any. Provider rows are authoritative; the preferences
- * lookup is a read-only compatibility fallback for accounts not yet bootstrapped.
- */
+/** The provider id this account owns, if any. Only a server-issued providers row grants it. */
 export function useProviderRole() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [provider, setProvider] = useState<ProviderRecord | null>(null);
 
   useEffect(() => {
@@ -258,20 +256,7 @@ export function useProviderRole() {
     );
   }, [user?.uid]);
 
-  // Keep the legacy projection as a read-only compatibility fallback while providers is rolled
-  // out. It cannot grant write access because Rules and Functions consult providers first.
-  if (!provider) {
-    const prefs = profile?.preferences as
-      { stringer?: boolean; stringer_id?: string; coach?: boolean; coach_id?: string } | undefined;
-    if (prefs?.stringer === true && prefs.stringer_id)
-      return { providerId: prefs.stringer_id, role: 'stringer' as const };
-    if (prefs?.coach === true && prefs.coach_id) return { providerId: prefs.coach_id, role: 'coach' as const };
-  }
-  const role =
-    provider?.roles.find(
-      (candidate): candidate is 'stringer' | 'coach' => candidate === 'stringer' || candidate === 'coach',
-    ) || null;
-  return { providerId: provider?.id || null, role };
+  return resolveProviderRole(provider);
 }
 
 /** Coupons issued against the signed-in provider's own offers. */

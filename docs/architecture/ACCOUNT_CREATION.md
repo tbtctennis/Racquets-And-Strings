@@ -12,7 +12,8 @@ Diagram: [account creation](diagrams/account-creation.md). The overview sits in
 journey is email gate → password (or Google/Apple) → profile completion. Pre-auth contact lookup
 goes through the `checkSignupEmail` callable so the browser never queries `contacts` anonymously.
 Missing profile documents are created by `ensureUserProfileDocuments`; the completion step then
-overwrites them atomically.
+overwrites them atomically. Signup does not assign a provider role; that identity is a
+server-issued `providers/{id}` row linked by `member_uid`.
 
 ## 1. Email gate
 
