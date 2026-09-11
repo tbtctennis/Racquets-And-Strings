@@ -17,6 +17,7 @@ export { parseCsvLine };
 
 export const extractDropdownCourts = (csvText: string) => {
   const [headerLine, ...lines] = csvText.split(/\r?\n/).filter(Boolean);
+  if (!headerLine) return [];
   const headers = parseCsvLine(headerLine);
   const dropdownIndex = headers.indexOf('Dropdown');
   if (dropdownIndex < 0) return [];
@@ -31,6 +32,7 @@ export const mergeCourtOptions = (courts: string[]) =>
 
 export const extractCourtsWithCoords = (csvText: string): Map<string, { lat: number; lng: number }> => {
   const [headerLine, ...lines] = csvText.split(/\r?\n/).filter(Boolean);
+  if (!headerLine) return new Map();
   const headers = parseCsvLine(headerLine);
   const iDropdown = headers.indexOf('Dropdown');
   const iName = headers.indexOf('Name');

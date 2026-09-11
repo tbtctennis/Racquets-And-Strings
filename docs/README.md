@@ -23,15 +23,15 @@ Branch for this work: **`main`** (sprint branch `spiderman` still exists with sp
 | | |
 | --- | --- |
 | **Updated** | 2026-09-11 |
-| **Sprint board** | 146 / 167 closed (**87%**) |
-| **Tasks** | 139 completed · **20 open** · 15 backlog |
+| **Sprint board** | 162 / 167 closed (**97%**) |
+| **Tasks** | 155 completed · **4 open** · 15 backlog |
 | **Bugs** | 7 completed · **1 blocked** |
 
 | Still open | Count | Where |
 | --- | --- | --- |
 | Blocked | 1 | [BUG-502](development/bug/BUG-502-DETAILS.md) — no group-lesson coach UI |
 | Needs a staging Firebase project | 4 | [TASK-622](development/task/TASK-622-DETAILS.md)–[625](development/task/TASK-625-DETAILS.md) |
-| Open on `main` (can do without staging) | 16 | listed in [NOW.md](development/NOW.md) |
+| Open leftover (non-staging) | 0 | listed in [NOW.md](development/NOW.md) |
 | Later (M6–M9, legal, PWA, live email) | 15 | [BACKLOG.md](development/BACKLOG.md) |
 
 **Waves 0–5 landed** (D6–D9, vision gaps that block staging, emulator backlog). **Wave 6 (M5 staging live) is stopped** until the team names an isolated Firebase project.

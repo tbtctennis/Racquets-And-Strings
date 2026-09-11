@@ -32,7 +32,7 @@ ensures that a player can have only one open coupon for an offer, even when two 
 **Important exception:** A stringer may act only on coupons for that provider; organizers have the
 separate review path.
 
-**Code:** `functions/rewards.js`, `functions/lib/redemptionLock.js`, `functions/lib/callable.js`,
+**Code:** `functions/rewards.js`, `functions/lib/redemptionLock.js`, `functions/lib/callable.ts`,
 `firestore.rules`.
 
 **Regression test:** Rules tests cover client write protections; callable integration against the

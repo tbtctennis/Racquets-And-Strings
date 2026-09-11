@@ -15,6 +15,11 @@ This runbook separates repository-verifiable preparation from Firebase/GCP conso
 - `.firebaserc` has no production default and contains only `local -> rands-local`; this is safer
   for routine CLI use, but it does not replace a staging project or a tested recovery workflow.
 - Firestore rules include an Admin SDK-only archive path, but that path is not a backup system and must not be treated as recovery evidence.
+- Non-production migration rehearsal evidence is
+  [MIGRATION_REHEARSAL.md](../engineering/MIGRATION_REHEARSAL.md)
+  (`scripts/lib/migration-rehearsal.mjs`). The `rands-local` fixture records before/after counts,
+  recompute-and-diff, and rollback. It is never a production action and is not a backup/restore
+  drill.
 
 ## Required authorized console work
 
@@ -47,10 +52,17 @@ Run only against an isolated non-production project populated with synthetic or 
 
 ## Open engineering work
 
-`preferences/{uid}` is private and `public_preferences/{uid}` is deny-all. Do not backfill a
-preference projection: existing records do not prove consent. A future migration must first define
-the exact fields, audience, consent source, deletion behavior, staging validation, and rollback.
-Rollback must delete projections without changing private source documents.
+`public_preferences/{uid}` is deny-all. The approved discovery path is the per-event consented
+slice in [PREFERENCE_PROJECTION.md](../domain/PREFERENCE_PROJECTION.md). Do not backfill it:
+existing `preferences/{uid}` records do not prove consent. Rollback deletes projection documents
+without changing the private source.
+
+Every numbered migration finishes through recompute-and-diff (`scripts/migrations/005-recompute-diff.mjs`
+or `finalizeMigration` on the others). Completion is refused when award, R6, or baseline+replay
+drift is unexplained. Provider-role cutover (`scripts/migrations/004-provider-role.mjs`) is additive.
+Rollback unlinks `providers/{id}.member_uid` on rows the migration wrote or merged; it does not
+rewrite leftover `preferences` stringer/coach flags. Do not apply it against production without the
+confirmation triple and a verified export.
 
 - Add an isolated staging alias and environment-specific Firebase CLI commands.
 - Add synthetic fixtures and a repeatable restore validation script.

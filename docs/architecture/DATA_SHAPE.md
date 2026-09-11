@@ -5,7 +5,7 @@
 | **Date**      | 2026-08-28, revised 2026-09-11 (D6/D7/D8 shape corrections)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | **Scope**     | The field-level target shape for every surviving collection, the old→new delta that produces it, and the two tiers of test data that conform to it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | **Authority** | Product rulings live in [`DECISIONS_BRIEF.md`](../planning/history/planning-2026-08-23/notes/DECISIONS_BRIEF.md) (PD) and [`HARMONIZATION_REPORT.md`](../planning/history/planning-2026-08-23/notes/HARMONIZATION_REPORT.md) (D/L/N/S/R). Later D6–D8 rulings in [`DECISIONS-2026-08-29.md`](../planning/decisions/DECISIONS-2026-08-29.md) and the D6/D7/D8 sprint docs override those where they collide. The delta spine is [`WORKFLOW-STATES.md`](../planning/history/planning-2026-08-23/notes/WORKFLOW-STATES.md) section 0. This file says what the documents look like once those rulings land; it does not make product decisions of its own. |
-| **Companion** | [`DATA_MODEL.md`](DATA_MODEL.md) — collections and access. [`FIRESTORE_SCHEMA_ASSESSMENT.md`](FIRESTORE_SCHEMA_ASSESSMENT.md) — findings and the migration contract.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **Companion** | [`DATA_MODEL.md`](DATA_MODEL.md) — collections and access. [`PUBLIC_FIELD_SENSITIVITY.md`](PUBLIC_FIELD_SENSITIVITY.md) — which fields may live on a public document. [`FIRESTORE_SCHEMA_ASSESSMENT.md`](FIRESTORE_SCHEMA_ASSESSMENT.md) — findings and the migration contract.                                                                                                                                                                                                                                                                                                                                                                        |
 
 ## 1. Two environments, one shape
 
@@ -20,7 +20,7 @@ disk and produces local test data.
 
 | Tier          | Where                                 | Size            | For                                                                        |
 | ------------- | ------------------------------------- | --------------- | -------------------------------------------------------------------------- |
-| **Canonical** | `tests/fixtures/local-fixtures.mjs`   | 74 documents    | Rules tests, browser tests, one document per lifecycle state               |
+| **Canonical** | `tests/fixtures/local-fixtures.mjs`   | 75 documents    | Rules tests, browser tests, one document per lifecycle state               |
 | **Volume**    | `tests/fixtures/dataset/` (generated) | 3,233 documents | Driving the UI — real brackets, rosters, leaderboards, notification counts |
 
 The two tiers are not interchangeable. **The volume tier contains no disputed result** — production
@@ -94,36 +94,39 @@ the contract covers the original remodel plus the stored partner pool and a mode
 collection (D9 writes it; this sprint only declares the document). Four collections still retire
 outright.
 
-| Collection                              | Change                                                                                                              |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `users/{uid}`                           | Contact fields and `profile_details_visible` removed                                                                |
-| `contacts/{uid}`                        | Unchanged shape; readership narrows (L13)                                                                           |
-| `stats/{uid}`                           | `pointswon` / `totalPointsPlayed` restored; `tournamentsPlayed` counts joins; `rankPosition` kept; `location` added |
-| `preferences/{uid}`                     | Role and provider flags move out; two new member toggles                                                            |
-| `providers/{providerId}`                | **New** — roles, never assignments                                                                                  |
-| `services/{serviceId}`                  | **New** — the catalog, from `tasks` rows with `type: 'offer'`                                                       |
-| `bookings/{bookingId}`                  | **New** — the stringing lifecycle; stamp is `marked_completed_at`                                                   |
-| `events/{eventId}`                      | `organizer_ids`, `zones`, deadlines keyed by draw and round, lesson block                                           |
-| `events/{eventId}/rr_drafts/{drawKey}`  | The `withdrawn` array retires                                                                                       |
-| `event_participants/{id}`               | One `status` replaces the removal flag and the RR withdrawn list                                                    |
-| `partner_pool/{eventId}/members/{uid}`  | **New** (D6 F1) — stored doubles pool membership                                                                    |
-| `partner_pool/{eventId}/contacts/{uid}` | **New** (D6 F1) — server contact projection, pool-member read                                                       |
-| `matches/{id}`                          | The largest delta — see 4.6. `points_winner` / `points_loser` stored; `result_application` gone                     |
-| `ranking_history/{uid}/entries/{id}`    | Unchanged                                                                                                           |
-| `courts/{id}`                           | Unchanged                                                                                                           |
-| `tasks/{id}`                            | Progress documents only — catalog and award rows move out                                                           |
-| `task_claims/{id}`                      | Deterministic ids for volunteer and host                                                                            |
-| `awards/{awardId}`                      | **New** — one document per award with the winners' receipt (PD10)                                                   |
-| `offers/{uid}`                          | Only `pointsSpent` survives                                                                                         |
-| `redemptions/{code}`                    | Two review states retire; provider fields renamed                                                                   |
-| `listings/{id}`                         | Unchanged                                                                                                           |
-| `public_contacts/{uid}`                 | Unchanged (a field projection, not a marker)                                                                        |
-| `connections/{pair}`                    | Unchanged                                                                                                           |
-| `notifications/{id}`                    | Unchanged                                                                                                           |
-| `mailing_list/{id}`                     | Unchanged                                                                                                           |
-| `site_stats/{id}`                       | `updatedAt` normalises to `updated_at`                                                                              |
-| `admin_stats/{id}`                      | Unchanged                                                                                                           |
-| `payments/{paymentId}`                  | **Modelled** (D9) — donations now, court-booking rows later. No live source                                         |
+| Collection                                      | Change                                                                                                              |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `users/{uid}`                                   | Contact fields and `profile_details_visible` removed                                                                |
+| `contacts/{uid}`                                | Unchanged shape; readership narrows (L13)                                                                           |
+| `stats/{uid}`                                   | `pointswon` / `totalPointsPlayed` restored; `tournamentsPlayed` counts joins; `rankPosition` kept; `location` added |
+| `preferences/{uid}`                             | Role and provider flags move out; two new member toggles                                                            |
+| `providers/{providerId}`                        | **New** — roles, never assignments                                                                                  |
+| `services/{serviceId}`                          | **New** — the catalog, from `tasks` rows with `type: 'offer'`                                                       |
+| `bookings/{bookingId}`                          | **New** — the stringing lifecycle; stamp is `marked_completed_at`                                                   |
+| `events/{eventId}`                              | `organizer_ids`, `zones`, deadlines keyed by draw and round, lesson block                                           |
+| `events/{eventId}/rr_drafts/{drawKey}`          | The `withdrawn` array retires                                                                                       |
+| `events/{eventId}/preference_projections/{uid}` | **New** (TASK-654) — consented courts/zone/availability slice; `public_preferences` stays retired                   |
+| `event_participants/{id}`                       | One `status` replaces the removal flag and the RR withdrawn list                                                    |
+| `partner_pool/{eventId}/members/{uid}`          | **New** (D6 F1) — stored doubles pool membership                                                                    |
+| `partner_pool/{eventId}/contacts/{uid}`         | **New** (D6 F1) — server contact projection, pool-member read                                                       |
+| `matches/{id}`                                  | The largest delta — see 4.6. `points_winner` / `points_loser` stored; `result_application` gone                     |
+| `ranking_history/{uid}/entries/{id}`            | Unchanged                                                                                                           |
+| `courts/{id}`                                   | Unchanged                                                                                                           |
+| `tasks/{id}`                                    | Progress documents only — catalog and award rows move out                                                           |
+| `task_claims/{id}`                              | Deterministic ids for volunteer and host                                                                            |
+| `awards/{awardId}`                              | **New** — one document per award with the winners' receipt (PD10)                                                   |
+| `offers/{uid}`                                  | Only `pointsSpent` survives                                                                                         |
+| `redemptions/{code}`                            | Two review states retire; provider fields renamed                                                                   |
+| `listings/{id}`                                 | Unchanged                                                                                                           |
+| `public_contacts/{uid}`                         | Unchanged (a field projection, not a marker)                                                                        |
+| `connections/{pair}`                            | Unchanged                                                                                                           |
+| `notifications/{id}`                            | Unchanged                                                                                                           |
+| `mailing_list/{id}`                             | Unchanged                                                                                                           |
+| `site_stats/{id}`                               | `updatedAt` normalises to `updated_at`                                                                              |
+| `admin_stats/{id}`                              | Unchanged                                                                                                           |
+| `payments/{paymentId}`                          | **Modelled** (D9) — donations now, court-booking rows later. No live source                                         |
+| `tournament_result_audit/{id}`                  | **New** — append-only actor/reason/before/after for completed-result corrections                                    |
+| `rr_group_bonus_audit/{id}`                     | **New** — append-only actor/before/after/time for `setGroupBonus`; stamp on matches remains the receipt             |
 
 **Retired collections**
 

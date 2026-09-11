@@ -5,7 +5,7 @@
 | **Task id**    | TASK-661                                                                     |
 | **Title**      | Approve a public-field sensitivity contract                                  |
 | **TLDR**       | Field classification, projection ownership, Rules tests for public surfaces. |
-| **Status**     | new                                                                          |
+| **Status**     | completed                                                                    |
 | **Tags**       | Auth, Rules, Data                                                            |
 | **Sprint**     | DC06 Spiderman                                                               |
 | **Legacy ids** | BLG0059                                                                      |
@@ -45,6 +45,8 @@ When **execute sprint spiderman** reaches this item:
 
 ## Comments
 
-| Date       | Who                    | Note                                                                                 |
-| ---------- | ---------------------- | ------------------------------------------------------------------------------------ |
-| 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live. |
+| Date       | Who                    | Note                                                                                                                                                                                                 |
+| ---------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live.                                                                                                                 |
+| 2026-09-11 | Grok Build             | Started. Approve field classification, projection ownership, compatibility, and Rules tests for every public surface.                                                                                |
+| 2026-09-11 | Grok Build             | Recorded the contract in `docs/architecture/PUBLIC_FIELD_SENSITIVITY.md`. `SECURITY_BASELINE.md` and the backup runbook still call `preferences` private; Rules and PD1 make them public — followed code. Event/tournament match writes now reject `sensitiveContactFields()`. `npm run test:rules` 65/65. No deploy. Coordinator owns tracker close. |

@@ -494,7 +494,7 @@ export const Profile: React.FC = () => {
                       key={day}
                       disabled={past || !participantId}
                       onClick={() => handleToggleDate(day)}
-                      whileTap={past || !participantId ? undefined : tapScale.whileTap}
+                      {...(past || !participantId ? {} : { whileTap: tapScale.whileTap })}
                       transition={tapScale.transition}
                       className={`p-2 text-xs rounded-xl transition-colors ${
                         // text-white, not text-fg: the fill is always clay, so in light theme

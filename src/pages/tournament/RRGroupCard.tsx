@@ -30,34 +30,34 @@ type Props = {
   isCreator: boolean;
   isParticipant: boolean;
   // The viewer's own uid — a non-creator only sees their own match(es) in the list below.
-  currentUserId?: string;
+  currentUserId?: string | undefined;
   isPastEvent: boolean;
   editMode: boolean;
   editPlayers: TournamentPlayer[];
   allGroupPlayers: TournamentPlayer[];
   onEditPlayer: (matchId: string, slot: 'player_1' | 'player_2', player: TournamentPlayer | null) => void;
-  onSubmitScore?: (match: TournamentMatch) => void;
-  submittableMatchIds?: Set<string>;
-  pendingMatchIds?: Set<string>;
+  onSubmitScore?: ((match: TournamentMatch) => void) | undefined;
+  submittableMatchIds?: Set<string> | undefined;
+  pendingMatchIds?: Set<string> | undefined;
   onSaveGroupEdit: (groupIndex: number, newPlayers: TournamentPlayer[]) => void;
-  onRenameGroup?: (label: string) => void;
+  onRenameGroup?: ((label: string) => void) | undefined;
   /**
    * uid → career standings row. Overall P/G won % is the lifetime figure; Wins is this group's
    * matchWins. Supplied by RoundRobinView; a missing P/G entry renders as an em-dash.
    */
-  statsByUid?: Map<string, { pointswon?: number; totalPointsPlayed?: number }>;
+  statsByUid?: Map<string, { pointswon?: number | undefined; totalPointsPlayed?: number | undefined }> | undefined;
   /** uid -> contact details, resolved once by RoundRobinView. Absent = no Contact button. */
-  contactsByUid?: Record<string, ContactData>;
+  contactsByUid?: Record<string, ContactData> | undefined;
   /** Organizer removes a player from the draw (soft delete — see handleRemovePlayer). */
-  onRemovePlayer?: (uid: string) => void;
+  onRemovePlayer?: ((uid: string) => void) | undefined;
   /** Organizer moves a player to another zone's draw. Addressed by uid, not participant id. */
-  onMovePlayerZone?: (uid: string, bucketId: string) => void;
+  onMovePlayerZone?: ((uid: string, bucketId: string) => void) | undefined;
   /** Zone buckets offered in that picker. Empty hides the control entirely. */
-  zoneBuckets?: { id: string; label: string }[];
+  zoneBuckets?: { id: string; label: string }[] | undefined;
   /** Participant asks the organizer to schedule an unplayed match. */
-  onAskSchedule?: (match: TournamentMatch) => void;
+  onAskSchedule?: ((match: TournamentMatch) => void) | undefined;
   /** Organizer pays/takes back this group's bonus. Players see the switch but can't move it. */
-  onSetGroupBonus?: (award: boolean) => Promise<void>;
+  onSetGroupBonus?: ((award: boolean) => Promise<void>) | undefined;
 };
 
 const PlayerPicker: React.FC<{
@@ -65,7 +65,7 @@ const PlayerPicker: React.FC<{
   value: TournamentPlayer | null;
   options: TournamentPlayer[];
   onChange: (player: TournamentPlayer) => void;
-  includeLoading?: boolean;
+  includeLoading?: boolean | undefined;
 }> = ({ label, value, options, onChange, includeLoading = false }) => {
   const [open, setOpen] = useState(false);
   const isLoading = value?.uid === PLAYER_LOADING_SENTINEL;

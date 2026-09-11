@@ -186,6 +186,63 @@ test('live Stripe keys and live-mode refunds are refused before the record chang
   assert.equal(store.payments.get(payment.id).cancellation_status, 'requested');
 });
 
+test('anonymous callers cannot list or review payment cancellations', async () => {
+  const store = memoryStore([]);
+  await assert.rejects(
+    () => listPendingPaymentCancellations({ auth: null, data: {} }, { store }),
+    (error) => error instanceof HttpsError && error.code === 'unauthenticated',
+  );
+  await assert.rejects(
+    () =>
+      reviewPaymentCancellation(
+        { auth: null, data: { paymentId: 'donation-cancel-requested', approve: true } },
+        { store, getSecret: () => 'sk_test_123', fetch: okRefundFetch() },
+      ),
+    (error) => error instanceof HttpsError && error.code === 'unauthenticated',
+  );
+});
+
+test('malformed review input is rejected and a second approval is idempotent', async () => {
+  const payment = requested();
+  const store = memoryStore([payment]);
+  await assert.rejects(
+    () => reviewPaymentCancellation(organizerRequest({ approve: true }), { store, getSecret: () => 'sk_test_123' }),
+    (error) => error instanceof HttpsError && error.code === 'invalid-argument',
+  );
+  await assert.rejects(
+    () =>
+      reviewPaymentCancellation(organizerRequest({ paymentId: payment.id, approve: true, card_number: '4242' }), {
+        store,
+        getSecret: () => 'sk_test_123',
+        fetch: okRefundFetch(),
+      }),
+    (error) => error instanceof HttpsError && error.code === 'invalid-argument',
+  );
+  assert.equal(store.payments.get(payment.id).state, 'succeeded');
+
+  const first = await reviewPaymentCancellation(organizerRequest({ paymentId: payment.id, approve: true }), {
+    store,
+    getSecret: () => 'sk_test_123',
+    now,
+    fetch: okRefundFetch('re_test_dup'),
+  });
+  assert.equal(first.stripe_refund_id, 're_test_dup');
+  let fetched = 0;
+  const second = await reviewPaymentCancellation(organizerRequest({ paymentId: payment.id, approve: true }), {
+    store,
+    getSecret: () => 'sk_test_123',
+    now,
+    fetch: async () => {
+      fetched += 1;
+      throw new Error('Stripe should not be called again');
+    },
+  });
+  assert.equal(second.ok, true);
+  assert.equal(second.stripe_refund_id, 're_test_dup');
+  assert.equal(fetched, 0);
+  assert.equal(store.payments.get(payment.id).state, 'refunded');
+});
+
 test('payments callables export organizer review and do not write from the client', () => {
   const callable = readFileSync(join(__dirname, '../payments.js'), 'utf8');
   const index = readFileSync(join(__dirname, '../index.js'), 'utf8');

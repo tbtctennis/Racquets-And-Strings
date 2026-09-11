@@ -47,46 +47,46 @@ export type PlayerCardProps = {
   id: string;
   name: string;
   /** Optional profile photo; the 24px initial avatar is used when absent. */
-  avatar?: string;
+  avatar?: string | undefined;
   /** Secondary line under the name, e.g. "Skill 3.5". */
-  subtitle?: React.ReactNode;
+  subtitle?: React.ReactNode | undefined;
   /** Makes the name a link. Surfaces gate this on an accepted challenge or rally existing. */
-  nameHref?: string;
+  nameHref?: string | undefined;
   /** Leading position number. Omit on non-ranked surfaces. */
-  rank?: number;
+  rank?: number | undefined;
   /** Marks the signed-in user's own row. */
-  isYou?: boolean;
+  isYou?: boolean | undefined;
   /** Right-aligned headline figure, e.g. league points. */
-  primary?: React.ReactNode;
+  primary?: React.ReactNode | undefined;
   /** Slot after `primary`, e.g. a rank-trend arrow. */
-  trailing?: React.ReactNode;
+  trailing?: React.ReactNode | undefined;
   /**
    * Small marker on the name line, before the name — the single-letter source tag (T/C/R).
    * Kept out of `pills`: a full-width pill row made every row two lines tall just to say which
    * kind of match it was.
    */
-  nameBadge?: React.ReactNode;
+  nameBadge?: React.ReactNode | undefined;
   /** Pills shown on the collapsed row (availability, nearby, …). */
-  pills?: React.ReactNode;
+  pills?: React.ReactNode | undefined;
   /** Extra pills revealed only when expanded. */
-  expandedPills?: React.ReactNode;
+  expandedPills?: React.ReactNode | undefined;
   /** Stat tiles in the drawer. */
-  stats?: PlayerCardStat[];
+  stats?: PlayerCardStat[] | undefined;
   /**
    * Fixed-width action slot on the collapsed row. Space is reserved even when empty, so names stay
    * in one vertical line down the list.
    */
-  action?: React.ReactNode;
+  action?: React.ReactNode | undefined;
   /**
    * Width of that slot. Defaults to the leaderboards' single-button column; a multi-control stack
    * (randomize / reset / score) passes its own so the row doesn't squash.
    */
-  actionClassName?: string;
+  actionClassName?: string | undefined;
   /** Extra drawer content below the stats grid. */
-  children?: React.ReactNode;
+  children?: React.ReactNode | undefined;
   open: boolean;
   onToggle: () => void;
-  className?: string;
+  className?: string | undefined;
 };
 
 export const PlayerCard: React.FC<PlayerCardProps> = ({

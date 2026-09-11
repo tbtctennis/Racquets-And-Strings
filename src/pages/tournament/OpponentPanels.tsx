@@ -20,7 +20,7 @@ export type OpponentRow = {
   email: string;
   phone: string;
   whatsappContact: string;
-  preferredContactMethods?: ContactMethod[];
+  preferredContactMethods?: ContactMethod[] | undefined;
   skill: number | null;
   wins: number;
   losses: number;
@@ -35,20 +35,20 @@ const scheduleBadge = (m: TournamentMatch): { text: string; cls: string } =>
 
 export const OpponentCard: React.FC<{
   opponent: OpponentRow;
-  defaultOpen?: boolean;
-  currentMatch?: TournamentMatch | null;
-  schedule?: ScheduleApi;
+  defaultOpen?: boolean | undefined;
+  currentMatch?: TournamentMatch | null | undefined;
+  schedule?: ScheduleApi | undefined;
   // A creator who's also playing uses the same Enter/Edit Score flow they have in the Match List
   // (RRGroupCard) — unlike a participant's one-time Submit Score, it stays available after the
   // match is scored (to edit) and isn't limited to an allow-list.
-  isCreator?: boolean;
+  isCreator?: boolean | undefined;
   // Kept so existing call sites can pass the signed-in user; status is Pending or Done only.
-  viewerUid?: string;
+  viewerUid?: string | undefined;
   // For the "Nearby" pill: the viewer's own preferred courts, and uid → preferred courts for
   // everyone in the event (both already loaded by useTournament for RR zone grouping).
-  myCourts?: Set<string>;
-  courtsMap?: Record<string, string[]>;
-  availabilityMap?: Record<string, string[]>;
+  myCourts?: Set<string> | undefined;
+  courtsMap?: Record<string, string[]> | undefined;
+  availabilityMap?: Record<string, string[]> | undefined;
 }> = ({ opponent, defaultOpen = false, currentMatch, schedule, isCreator, myCourts, courtsMap, availabilityMap }) => {
   const [open, setOpen] = useState(defaultOpen);
   const canSchedule = !!currentMatch && !!schedule && !currentMatch.id.startsWith('preview_');
@@ -71,9 +71,7 @@ export const OpponentCard: React.FC<{
       titleClassName="text-xs uppercase tracking-widest font-bold"
       bodyClassName="space-y-3"
     >
-      {opponent.round && (
-        <p className="text-xs uppercase tracking-widest text-clay-fg font-bold">{opponent.round}</p>
-      )}
+      {opponent.round && <p className="text-xs uppercase tracking-widest text-clay-fg font-bold">{opponent.round}</p>}
 
       {/* Two-column row: left is name/skill, tier, availability (3 lines); right is
               schedule/score actions, then Contact (2 lines) — matches the Round Robin "Your
@@ -119,9 +117,7 @@ export const OpponentCard: React.FC<{
             />
             <div className="flex items-center gap-1.5 flex-wrap justify-end">
               {badge && (
-                <span
-                  className={`max-w-[9rem] truncate px-2 py-0.5 rounded-xl text-xs font-bold border ${badge.cls}`}
-                >
+                <span className={`max-w-[9rem] truncate px-2 py-0.5 rounded-xl text-xs font-bold border ${badge.cls}`}>
                   {badge.text}
                 </span>
               )}
@@ -162,26 +158,28 @@ export const RROpponentPanel: React.FC<{
   group: TournamentPlayer[];
   userId: string;
   isDoubles: boolean;
-  defaultOpen?: boolean;
-  pairingMatches?: TournamentMatch[];
-  schedule?: ScheduleApi;
+  defaultOpen?: boolean | undefined;
+  pairingMatches?: TournamentMatch[] | undefined;
+  schedule?: ScheduleApi | undefined;
   // A creator who's also playing uses the same Enter/Edit Score flow as the Match List (RRGroupCard).
-  isCreator?: boolean;
+  isCreator?: boolean | undefined;
   // uid → contact details, so we can show the phone number (email only when no phone).
-  contactMap?: Record<
-    string,
-    {
-      phone?: string;
-      email?: string;
-      whatsapp_contact?: string;
-      whatsapp_same_as_phone?: boolean;
-      preferred_mode_of_contact?: ContactMethod[];
-    }
-  >;
+  contactMap?:
+    | Record<
+        string,
+        {
+          phone?: string | undefined;
+          email?: string | undefined;
+          whatsapp_contact?: string | undefined;
+          whatsapp_same_as_phone?: boolean | undefined;
+          preferred_mode_of_contact?: ContactMethod[] | undefined;
+        }
+      >
+    | undefined;
   // For the "Nearby" pill: the viewer's own preferred courts, and uid → preferred courts.
-  myCourts?: Set<string>;
-  courtsMap?: Record<string, string[]>;
-  availabilityMap?: Record<string, string[]>;
+  myCourts?: Set<string> | undefined;
+  courtsMap?: Record<string, string[]> | undefined;
+  availabilityMap?: Record<string, string[]> | undefined;
 }> = ({
   group,
   userId,

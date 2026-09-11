@@ -27,28 +27,12 @@ Do not start until the team names an isolated Firebase project. Not production `
 
 ---
 
-## Open on main (16)
+## Open leftover (0)
 
-Can be planned or implemented without staging. Pick from here for the next sprint slice.
+Can be planned or implemented without staging.
 
-| ID | Title |
-| --- | --- |
-| [TASK-647](task/TASK-647-DETAILS.md) | Recompute-and-diff as a first-class migration step |
-| [TASK-649](task/TASK-649-DETAILS.md) | Collect required signup fields before access gates |
-| [TASK-650](task/TASK-650-DETAILS.md) | Close remaining design-sync debt |
-| [TASK-651](task/TASK-651-DETAILS.md) | Record non-production migration and reconciliation evidence |
-| [TASK-652](task/TASK-652-DETAILS.md) | Reconcile unique residual commits from stale local planning worktrees |
-| [TASK-654](task/TASK-654-DETAILS.md) | Consent-based event-scoped preference projection |
-| [TASK-655](task/TASK-655-DETAILS.md) | Bounded server operation for completed-result corrections |
-| [TASK-656](task/TASK-656-DETAILS.md) | Bounded server operation for manual Round Robin bonus awards |
-| [TASK-657](task/TASK-657-DETAILS.md) | Triage dependencies, secrets, and repository history |
-| [TASK-658](task/TASK-658-DETAILS.md) | Canonical provider-role authority and migrate inference |
-| [TASK-659](task/TASK-659-DETAILS.md) | Expand callable authorization and input-validation coverage |
-| [TASK-661](task/TASK-661-DETAILS.md) | Approve a public-field sensitivity contract |
-| [TASK-662](task/TASK-662-DETAILS.md) | Complete remaining Rules-level type and length validation |
-| [TASK-664](task/TASK-664-DETAILS.md) | Enable stricter TypeScript indexed and optional-property checks |
-| [TASK-665](task/TASK-665-DETAILS.md) | Extract mixed route hooks into focused boundaries |
-| [TASK-666](task/TASK-666-DETAILS.md) | Migrate Functions JavaScript to TypeScript in bounded slices |
+_None. All non-staging leftover tasks are completed._
+
 
 ---
 

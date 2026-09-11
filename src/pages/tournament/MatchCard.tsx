@@ -61,7 +61,7 @@ type PlayerSelectProps = {
   players: TournamentPlayer[];
   onSelect: (matchId: string, slot: 'player_1' | 'player_2', player: TournamentPlayer | null) => void;
   /** Organizer withdraws this player; the server resolves pending matches as walkovers. */
-  onRemovePlayer?: (uid: string) => void;
+  onRemovePlayer?: ((uid: string) => void) | undefined;
 };
 
 export const PlayerSelect: React.FC<PlayerSelectProps> = ({
@@ -153,16 +153,17 @@ type Props = {
   match: TournamentMatch;
   variant: Variant;
   isFinal: boolean;
-  editMode?: boolean;
-  editPlayers?: TournamentPlayer[];
+  editMode?: boolean | undefined;
+  editPlayers?: TournamentPlayer[] | undefined;
   /** Draw players used to resolve seed numbers. Falls back to `editPlayers`. */
-  players?: TournamentPlayer[];
-  onEditPlayer?: (matchId: string, slot: 'player_1' | 'player_2', player: TournamentPlayer | null) => void;
-  onRemovePlayer?: (uid: string) => void;
-  isCreator?: boolean;
-  onSubmitScore?: (match: TournamentMatch) => void;
-  submittableMatchIds?: Set<string>;
-  pendingMatchIds?: Set<string>;
+  players?: TournamentPlayer[] | undefined;
+  onEditPlayer?:
+    ((matchId: string, slot: 'player_1' | 'player_2', player: TournamentPlayer | null) => void) | undefined;
+  onRemovePlayer?: ((uid: string) => void) | undefined;
+  isCreator?: boolean | undefined;
+  onSubmitScore?: ((match: TournamentMatch) => void) | undefined;
+  submittableMatchIds?: Set<string> | undefined;
+  pendingMatchIds?: Set<string> | undefined;
 };
 
 export const MatchCard: React.FC<Props> = ({

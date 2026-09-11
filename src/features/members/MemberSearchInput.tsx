@@ -15,15 +15,15 @@ type Props = {
   value: MemberPick | null;
   onChange: (pick: MemberPick | null) => void;
   /** Drop one member from the results — usually the signed-in user. */
-  excludeId?: string;
+  excludeId?: string | undefined;
   /**
    * Allow a name that isn't an app member. Off means the field only accepts a real account.
    * When on, whatever is typed can be submitted as a `guest` pick.
    */
-  allowGuest?: boolean;
-  placeholder?: string;
+  allowGuest?: boolean | undefined;
+  placeholder?: string | undefined;
   /** Shown under the field when nothing is selected. */
-  hint?: string;
+  hint?: string | undefined;
 };
 
 const MAX_RESULTS = 8;

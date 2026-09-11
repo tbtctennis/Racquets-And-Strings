@@ -1,6 +1,16 @@
 import assert from 'node:assert/strict';
+import { readdir, readFile } from 'node:fs/promises';
+import path from 'node:path';
 import { test } from 'node:test';
-import { parseMigrationArgs, PRODUCTION_PROJECT } from '../../scripts/migrations/lib/cli.mjs';
+import { fileURLToPath } from 'node:url';
+import {
+  completeMigration,
+  emptyReport,
+  finalizeMigration,
+  parseMigrationArgs,
+  PRODUCTION_PROJECT,
+} from '../../scripts/migrations/lib/cli.mjs';
+import { planRecomputeDiff } from '../../scripts/lib/recompute-diff.mjs';
 import { planLosesStrips, stripLoses } from '../../scripts/lib/strip-loses.mjs';
 import { planTournamentPlayedUpdates, tournamentParticipationCounts } from '../../scripts/lib/tournaments-played.mjs';
 import { planEventDrawHidingStrips, stripEventDrawHiding } from '../../scripts/lib/event-draw-hiding.mjs';
@@ -10,6 +20,7 @@ import {
   normalizeEventType,
   planEventTypeUpdates,
 } from '../../scripts/lib/event-type-casing.mjs';
+import { migrateProviderRoles, planProviderRoleMigration } from '../../scripts/lib/provider-role.mjs';
 
 test('migration arguments require an explicit project and default to dry-run', () => {
   assert.throws(() => parseMigrationArgs([]), /Missing explicit --project/);
@@ -189,6 +200,78 @@ test('event type migration dry-run is idempotent after applying its plan', async
   assert.equal((await migrateEventTypes(db, { dryRun: true, logger: { log() {} } })).planned, 0);
 });
 
+test('provider-role migration lifts inferred preference flags onto providers rows', () => {
+  assert.deepEqual(
+    planProviderRoleMigration({
+      preferences: [
+        { id: 'member-a', data: { uid: 'member-a', stringer: true, stringer_id: 'karan' } },
+        { id: 'member-b', data: { uid: 'member-b', coach: true, coach_id: 'archie' } },
+        { id: 'member-c', data: { uid: 'member-c', preferred_zone: 'north' } },
+      ],
+      providers: [{ id: 'archie', data: { id: 'archie', name: 'Archie', roles: ['coach'] } }],
+    }),
+    {
+      updates: [
+        {
+          id: 'karan',
+          name: 'karan',
+          roles: ['stringer'],
+          member_uid: 'member-a',
+          action: 'create',
+        },
+        {
+          id: 'archie',
+          name: 'Archie',
+          roles: ['coach'],
+          member_uid: 'member-b',
+          action: 'merge',
+        },
+      ],
+      invalid: [],
+      inferredClaims: 2,
+      skippedClaims: 0,
+      skipped: 1,
+    },
+  );
+});
+
+test('provider-role migration is idempotent and refuses a conflicting member link', async () => {
+  const store = {
+    preferences: new Map([
+      ['member-a', { uid: 'member-a', stringer: true, stringer_id: 'karan' }],
+      ['member-b', { uid: 'member-b', preferred_zone: 'north' }],
+    ]),
+    providers: new Map(),
+  };
+  const db = {
+    collection: (name) => ({
+      get: async () => ({ docs: [...store[name]].map(([id, data]) => ({ id, data: () => data })) }),
+    }),
+    doc: (path) => ({ path }),
+    batch: () => ({
+      set: (ref, patch) => {
+        const [, id] = ref.path.split('/');
+        store.providers.set(id, { ...(store.providers.get(id) || {}), ...patch });
+      },
+      commit: async () => {},
+    }),
+  };
+
+  const dryRun = await migrateProviderRoles(db, { dryRun: true, logger: { log() {} } });
+  assert.equal(dryRun.planned, 1);
+  assert.equal(store.providers.size, 0);
+
+  const applied = await migrateProviderRoles(db, { dryRun: false, logger: { log() {} } });
+  assert.equal(applied.changed, 1);
+  assert.equal(store.providers.get('karan').member_uid, 'member-a');
+  assert.deepEqual(store.providers.get('karan').roles, ['stringer']);
+  assert.equal(store.preferences.get('member-a').stringer_id, 'karan');
+  assert.equal((await migrateProviderRoles(db, { dryRun: true, logger: { log() {} } })).planned, 0);
+
+  store.preferences.set('member-c', { uid: 'member-c', stringer: true, stringer_id: 'karan' });
+  await assert.rejects(() => migrateProviderRoles(db, { dryRun: true, logger: { log() {} } }), /already linked/);
+});
+
 test('event draw-hiding migration plans only retired fields and is idempotent', async () => {
   const docs = new Map([
     ['legacy', { hide_seniors: true, hide_beginners: false, title: 'Legacy' }],
@@ -214,4 +297,113 @@ test('event draw-hiding migration plans only retired fields and is idempotent', 
   assert.equal((await stripEventDrawHiding(db, { dryRun: false, logger: { log() {} } })).changed, 1);
   assert.deepEqual(docs.get('legacy'), { title: 'Legacy' });
   assert.equal((await stripEventDrawHiding(db, { dryRun: true, logger: { log() {} } })).planned, 0);
+});
+
+const scoredMatch = {
+  id: 'm1',
+  category: 'singles',
+  status: 'complete',
+  winner_uid: 'player-a',
+  player_1_uid: 'player-a',
+  player_2_uid: 'player-b',
+  format: 'rr',
+  round: 'RR',
+  tournament_choice: 'Singles',
+  division: "Men's",
+  points_winner: 3,
+  points_loser: 1,
+  walkover: false,
+  set_1_player_1: 6,
+  set_1_player_2: 4,
+  set_2_player_1: 0,
+  set_2_player_2: 0,
+  set_3_player_1: 0,
+  set_3_player_2: 0,
+};
+
+const memoryDb = ({ stats = [], matches = [] } = {}) => ({
+  collection: (name) => ({
+    get: async () => ({
+      docs: (name === 'stats' ? stats : name === 'matches' ? matches : []).map(({ id, data }) => ({
+        id,
+        data: () => data,
+      })),
+    }),
+  }),
+});
+
+test('completeMigration refuses to finish without recompute-and-diff', () => {
+  assert.throws(() => completeMigration(emptyReport()), /Recompute-and-diff is required/);
+  assert.throws(() => completeMigration(emptyReport(), { ok: true }), /Recompute-and-diff is required/);
+});
+
+test('completeMigration blocks unexplained drift and attaches a clean plan', () => {
+  const drifted = planRecomputeDiff([{ id: 'player-a', data: { loses: 2, matchesPlayed: 1, wins: 1 } }], []);
+  assert.equal(drifted.ok, false);
+  assert.throws(() => completeMigration(emptyReport(), drifted), /Unexplained stats drift/);
+  const completed = completeMigration(emptyReport(), planRecomputeDiff([], []));
+  assert.equal(completed.reconciliation.ok, true);
+  assert.equal(completed.reconciliation.unexplained.length, 0);
+});
+
+test('recompute-and-diff treats pre-2026 counters as authoritative unless a baseline is supplied', () => {
+  const stored = [
+    {
+      id: 'player-a',
+      data: { leaguePoints26: 99, matchesPlayed: 1, wins: 1, pointswon: 6, totalPointsPlayed: 10 },
+    },
+    {
+      id: 'player-b',
+      data: { leaguePoints26: 1, matchesPlayed: 1, wins: 0, pointswon: 4, totalPointsPlayed: 10 },
+    },
+  ];
+  assert.equal(planRecomputeDiff(stored, [scoredMatch]).ok, true);
+  const againstBaseline = planRecomputeDiff(stored, [scoredMatch], { baseline: [] });
+  assert.equal(againstBaseline.ok, false);
+  assert.deepEqual(
+    againstBaseline.unexplained.map((row) => `${row.id}.${row.field}`),
+    ['player-a.leaguePoints26'],
+  );
+  assert.equal(
+    planRecomputeDiff(stored, [scoredMatch], {
+      baseline: [],
+      explained: [{ id: 'player-a', field: 'leaguePoints26' }],
+    }).ok,
+    true,
+  );
+});
+
+test('recompute-and-diff flags paid-award and R6 mismatches as unexplained', () => {
+  const award = planRecomputeDiff([], [{ ...scoredMatch, points_winner: 99 }]);
+  assert.equal(award.ok, false);
+  assert.deepEqual(
+    award.unexplained.map((row) => `${row.collection}/${row.id}.${row.field}`),
+    ['matches/m1.points_winner'],
+  );
+  const r6 = planRecomputeDiff([{ id: 'player-a', data: { loses: 4, matchesPlayed: 1, wins: 1 } }], []);
+  assert.equal(r6.unexplained[0].reason, 'R6');
+  assert.equal(r6.unexplained[0].expected, 0);
+});
+
+test('finalizeMigration loads stats and matches and refuses unexplained drift', async () => {
+  const clean = await finalizeMigration(memoryDb(), emptyReport());
+  assert.equal(clean.reconciliation.ok, true);
+  await assert.rejects(
+    () =>
+      finalizeMigration(
+        memoryDb({ stats: [{ id: 'player-a', data: { loses: 3, matchesPlayed: 1, wins: 1 } }] }),
+        emptyReport(),
+      ),
+    /Unexplained stats drift/,
+  );
+});
+
+test('every numbered migration completes through recompute-and-diff', async () => {
+  const dir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../scripts/migrations');
+  const files = (await readdir(dir)).filter((name) => /^\d{3}-.+\.mjs$/.test(name)).sort();
+  assert.ok(files.length >= 5);
+  for (const name of files) {
+    const source = await readFile(path.join(dir, name), 'utf8');
+    assert.match(source, /completeMigration|finalizeMigration/, name);
+  }
 });

@@ -120,7 +120,8 @@ Use the smallest command while iterating, then run the aggregate gate before han
 
 ```bash
 npm test                       # root unit tests
-npm --prefix functions test    # Functions helper unit tests
+npm --prefix functions test    # Functions helper unit tests (typechecks the TS slice first)
+npm --prefix functions run build:ts  # compile functions/lib/*.ts to CommonJS .js
 npm run test:rules             # Firestore Rules, temporary emulator
 npm run test:storage           # Storage Rules, temporary emulator
 npm run test:fixtures          # real Auth/Firestore seed boundary, temporary emulators
@@ -154,7 +155,12 @@ reward, friendly, and tournament mutations also remain covered at the callable/t
 - Review [security baseline](SECURITY_BASELINE.md), `firestore.rules`, and `storage.rules` before
   changing a read or write boundary.
 - Follow the [migration framework](../../scripts/migrations/README.md). It is dry-run by default,
-  requires an explicit project, and never makes production implicit.
+  requires an explicit project, never makes production implicit, and refuses completion when
+  recompute-and-diff finds unexplained drift.
+- Non-production rehearsal evidence is [MIGRATION_REHEARSAL.md](MIGRATION_REHEARSAL.md). The
+  `rands-local` fixture records before/after counts, recompute-and-diff, and rollback; never a
+  production action. Pin: `node scripts/lib/migration-rehearsal.mjs --project rands-local` and
+  `node --test tests/unit/migrationRehearsal.test.mjs`.
 
 ## Know what has and has not been verified
 
@@ -185,6 +191,16 @@ node scripts/bootstrap-providers.mjs --input /path/to/providers.json --apply --p
 ```
 
 The script rejects the production project id and does not run from the normal client workflow.
+
+Existing accounts that still carry `preferences.stringer_id` / `coach_id` are lifted onto
+`providers/{id}.member_uid` by the additive, dry-run-first migration:
+
+```text
+node scripts/migrations/004-provider-role.mjs --project rands-local --key serviceAccount.json --dry-run
+```
+
+Apply is opt-in. Rollback unlinks `member_uid` on migration-written rows; leftover preference
+flags are not deleted. Preference flags do not grant provider checks.
 
 ## Troubleshooting
 

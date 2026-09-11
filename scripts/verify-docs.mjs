@@ -16,6 +16,7 @@ const requiredDocs = [
   'docs/architecture/diagrams/coaching-pool.md',
   'docs/architecture/DATA_MODEL.md',
   'docs/architecture/AUTHORIZATION_MODEL.md',
+  'docs/architecture/PUBLIC_FIELD_SENSITIVITY.md',
   'docs/architecture/FIRESTORE_SCHEMA_ASSESSMENT.md',
   'docs/architecture/ENVIRONMENTS_AND_DEPLOYMENT.md',
   'docs/architecture/ADR-001-role-authorization-model.md',
@@ -40,6 +41,7 @@ const requiredDocs = [
   'docs/engineering/README.md',
   'docs/engineering/MAINTAINABILITY.md',
   'docs/engineering/SECURITY_BASELINE.md',
+  'docs/engineering/TRIAGE-DEPS-SECRETS-HISTORY.md',
   'docs/engineering/LOCAL_DEVELOPMENT.md',
   'docs/engineering/TAKEOVER_STABILIZATION_LOG.md',
   'docs/runbooks/README.md',
@@ -50,6 +52,7 @@ const requiredDocs = [
   'docs/domain/SCORING_AND_POINTS.md',
   'docs/domain/REWARDS_RULES.md',
   'docs/domain/CONTACT_PRIVACY.md',
+  'docs/domain/PREFERENCE_PROJECTION.md',
 ];
 
 const documentationRequirements = [
@@ -69,7 +72,9 @@ const documentationRequirements = [
     docs: [
       'docs/architecture/AUTHORIZATION_MODEL.md',
       'docs/architecture/DATA_MODEL.md',
+      'docs/architecture/PUBLIC_FIELD_SENSITIVITY.md',
       'docs/engineering/SECURITY_BASELINE.md',
+      'docs/domain/PREFERENCE_PROJECTION.md',
     ],
   },
   {
@@ -230,6 +235,7 @@ const main = async () => {
     'DATA_FLOW.md',
     'ACCOUNT_CREATION.md',
     'COACHING_POOL.md',
+    'PUBLIC_FIELD_SENSITIVITY.md',
     'ENVIRONMENTS_AND_DEPLOYMENT.md',
   ]) {
     if (!readme.includes(requiredLink)) throw new Error(`Architecture README does not link ${requiredLink}.`);

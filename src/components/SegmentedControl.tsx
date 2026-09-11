@@ -35,7 +35,9 @@ export function SegmentedControl<T extends string>({
                 event.key === 'ArrowRight'
                   ? (index + 1) % options.length
                   : (index - 1 + options.length) % options.length;
-              onChange(options[next].value);
+              const nextOption = options[next];
+              if (!nextOption) return;
+              onChange(nextOption.value);
               (event.currentTarget.parentElement?.children[next] as HTMLButtonElement | undefined)?.focus();
             }}
             onClick={() => onChange(o.value)}

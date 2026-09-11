@@ -1,25 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
-import { collection, doc, getDoc, getDocs, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../context/AuthContext';
 import { useTasks } from '../tasks/useTasks';
 import { normalizeProvider } from '../../lib/firestoreNormalization';
-import { Booking, MIN_REWARD_COST, ProviderRecord, Redemption, Reward, ServiceCategory } from './types';
+import { groupRewardsByCategory, sortRedemptionsNewestFirst } from './catalog';
+import { resolveProviderRole } from './providerRole';
+import { loadServicesCatalog } from './servicesRepository';
+import { Booking, MIN_REWARD_COST, ProviderRecord, Redemption, Reward } from './types';
 
 export * from './types';
-
-export interface Provider {
-  id: string;
-  name: string;
-  area: string;
-  phone?: string;
-  email?: string;
-  certified?: boolean;
-  /** Their member account, when they have one — used for the profile photo beside their name. */
-  uid?: string;
-  offers: Reward[];
-  roles?: ProviderRecord['roles'];
-}
+export type { Provider } from './catalog';
 
 /** The services catalog, active entries only, grouped by category then provider. */
 export function useServicesCatalog() {
@@ -28,68 +19,15 @@ export function useServicesCatalog() {
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    Promise.all([
-      getDocs(query(collection(db, 'services'), where('active', '==', true))).catch(() => null),
-      getDocs(query(collection(db, 'tasks'), where('type', '==', 'offer'))).catch(() => null),
-      getDocs(collection(db, 'providers')).catch(() => null),
-    ])
-      .then(([serviceSnap, legacySnap, providerSnap]) => {
-        const providerMap = new Map<string, ProviderRecord>();
-        providerSnap?.docs.forEach((d) => {
-          const provider = normalizeProvider(d.id, d.data());
-          if (provider) providerMap.set(d.id, provider);
-        });
-        const docs = serviceSnap?.docs.length ? serviceSnap.docs : legacySnap?.docs || [];
-        setRewards(
-          docs
-            .map((d) => ({ id: d.id, ...(d.data() as Omit<Reward, 'id'>) }))
-            .filter((r) => r.active !== false)
-            .map((r) => {
-              const provider = providerMap.get(r.provider_id);
-              return provider
-                ? {
-                    ...r,
-                    provider_name: provider.name || r.provider_name,
-                    area: provider.area || r.area,
-                    uid: provider.member_uid || r.uid,
-                  }
-                : r;
-            })
-            .sort((a, b) => a.provider_name.localeCompare(b.provider_name) || (a.sort ?? 0) - (b.sort ?? 0)),
-        );
-      })
+    loadServicesCatalog()
+      .then(setRewards)
       .catch(() => {
         /* catalog unreadable — the page shows its empty state */
       })
       .finally(() => setLoading(false));
   }, [reloadKey]);
 
-  // category → providers → offers. One Contact button per provider, so the phone number isn't
-  // repeated on every offer row.
-  const byCategory = useMemo(() => {
-    const cats = new Map<ServiceCategory, Provider[]>();
-    rewards.forEach((r) => {
-      const category = r.category ?? 'stringing';
-      const list = cats.get(category) ?? [];
-      const existing = list.find((p) => p.id === r.provider_id);
-      if (existing) {
-        existing.offers.push(r);
-        return;
-      }
-      list.push({
-        id: r.provider_id,
-        name: r.provider_name,
-        area: r.area,
-        phone: r.contact_phone,
-        email: r.contact_email,
-        certified: r.certified,
-        uid: r.uid,
-        offers: [r],
-      });
-      cats.set(category, list);
-    });
-    return cats;
-  }, [rewards]);
+  const byCategory = useMemo(() => groupRewardsByCategory(rewards), [rewards]);
 
   return { rewards, byCategory, loading, reload: () => setReloadKey((k) => k + 1) };
 }
@@ -196,11 +134,7 @@ export function useMyRedemptions() {
     return onSnapshot(
       query(collection(db, 'redemptions'), where('uid', '==', user.uid)),
       (snap) => {
-        setRedemptions(
-          snap.docs
-            .map((d) => d.data() as Redemption)
-            .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || '')),
-        );
+        setRedemptions(sortRedemptionsNewestFirst(snap.docs.map((d) => d.data() as Redemption)));
         setLoading(false);
       },
       () => setLoading(false),
@@ -235,12 +169,9 @@ export function useMyBookings() {
   return { bookings, loading };
 }
 
-/**
- * The provider id this account owns, if any. Provider rows are authoritative; the preferences
- * lookup is a read-only compatibility fallback for accounts not yet bootstrapped.
- */
+/** The provider id this account owns, if any. Only a server-issued providers row grants it. */
 export function useProviderRole() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [provider, setProvider] = useState<ProviderRecord | null>(null);
 
   useEffect(() => {
@@ -258,20 +189,7 @@ export function useProviderRole() {
     );
   }, [user?.uid]);
 
-  // Keep the legacy projection as a read-only compatibility fallback while providers is rolled
-  // out. It cannot grant write access because Rules and Functions consult providers first.
-  if (!provider) {
-    const prefs = profile?.preferences as
-      { stringer?: boolean; stringer_id?: string; coach?: boolean; coach_id?: string } | undefined;
-    if (prefs?.stringer === true && prefs.stringer_id)
-      return { providerId: prefs.stringer_id, role: 'stringer' as const };
-    if (prefs?.coach === true && prefs.coach_id) return { providerId: prefs.coach_id, role: 'coach' as const };
-  }
-  const role =
-    provider?.roles.find(
-      (candidate): candidate is 'stringer' | 'coach' => candidate === 'stringer' || candidate === 'coach',
-    ) || null;
-  return { providerId: provider?.id || null, role };
+  return resolveProviderRole(provider);
 }
 
 /** Coupons issued against the signed-in provider's own offers. */
@@ -291,11 +209,7 @@ export function useProviderRedemptions() {
     return onSnapshot(
       query(collection(db, 'redemptions'), where('stringer_id', '==', providerId)),
       (snap) => {
-        setRedemptions(
-          snap.docs
-            .map((d) => d.data() as Redemption)
-            .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || '')),
-        );
+        setRedemptions(sortRedemptionsNewestFirst(snap.docs.map((d) => d.data() as Redemption)));
         setLoading(false);
       },
       () => setLoading(false),

@@ -17,7 +17,13 @@ primitives now live in `src/features/tournament/domain/`; page compatibility exp
 callers stable while further persistence extraction can happen without a rewrite. Signup field
 validation is similarly isolated in `src/features/signup/signupForm.ts`. Event registration and
 tournament-slot lookup now use `src/features/events/services/eventRepository.ts`, with the document
-shape tested independently in `eventParticipant.ts`.
+shape tested independently in `eventParticipant.ts`. Participant counts and joined-registration
+mapping live in `eventRegistrationState.ts`; the Events hook subscribes only.
+Organizer schedule-request and unplaced-registrant queues are selected in
+`src/features/tournament/domain/organizerQueues.ts` from subscription/load helpers in
+`tournamentSubscriptions.ts`. The Marketplace catalog is assembled in
+`src/features/services/catalog.ts` from `servicesRepository.ts`; `useServicesCatalog` groups the
+already-built rows for presentation.
 Shared tournament-match and leaderboard row types now live under feature-owned type modules rather
 than making data-access code import from a page or hook. Tournament placement, zone normalization,
 and skill-band rules are likewise owned by `src/features/tournament/domain/placement.ts`; page
@@ -34,9 +40,11 @@ group bonuses use the same callable boundary.
 ## Quality commands
 
 - `npm run typecheck` runs the TypeScript compiler without emitting files.
-- The root `tsconfig.json` enables full TypeScript `strict` mode plus no-implicit-return and
-  no-fallthrough checks. `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` remain
-  intentionally deferred because they require a broad legacy data-model migration.
+- The root `tsconfig.json` enables full TypeScript `strict` mode plus no-implicit-return,
+  no-fallthrough, `noUncheckedIndexedAccess`, and `exactOptionalPropertyTypes`. Optional
+  properties that callers pass as explicit `undefined` are typed `prop?: T | undefined`.
+  Indexed access is narrowed at the use site (guards, defaults) rather than by rewriting
+  the data model.
 - `npm run lint` runs ESLint over first-party React/TypeScript source, scripts, tests, and Functions.
   Existing warnings for legacy hook dependency choices, explicit `any`, and unused legacy values
   remain visible; new errors fail the command.
@@ -68,7 +76,14 @@ group bonuses use the same callable boundary.
 documents and fails when a mapped architecture-sensitive change set has no directly relevant
 documentation review. The mapping covers Firebase configuration/rules, callable and reward
 boundaries, tournament/data-access modules, and migration tooling. Expand it when a new durable
-boundary is introduced.
+boundary is introduced. Numbered migrations complete through `finalizeMigration` /
+`completeMigration`, which replay paid awards, check R6, and refuse unexplained drift.
+Provider-role authority is `providers/{id}.member_uid`;
+`scripts/migrations/004-provider-role.mjs` is the bounded planner that lifts leftover preference
+inference onto those rows. Non-production rehearsal evidence is
+[MIGRATION_REHEARSAL.md](MIGRATION_REHEARSAL.md) (`scripts/lib/migration-rehearsal.mjs`): a
+`rands-local` fixture records before/after counts, recompute-and-diff, and rollback, and it is
+never a production action.
 
 The comparison baseline is always the `dev-anuj` branch, resolved through
 `scripts/lib/comparison-base.mjs`: an explicit `ARCHITECTURE_BASE_SHA` first (CI supplies the real
@@ -148,13 +163,19 @@ The pinned source and update procedure remain in `docs/engineering/AGENT_SKILLS.
 
 ## Known debt
 
-- Some route hooks still mix Firestore subscriptions and presentation state; extract only when a
-  repository boundary centralizes paths, normalization, or transaction behavior.
+- Some route hooks still mix Firestore subscriptions and presentation state. TASK-665 extracted
+  the tournament organizer queues, event registration counts, and Marketplace catalog grouping;
+  extract further only when a repository boundary centralizes paths, normalization, or transaction
+  behavior.
 - Tournament result application, ladder challenge points, and Round Robin group bonuses are
   Function-authoritative. Production deployment and migration remain out of scope; staging waits
   for an authorized project and verified recovery path.
-- Functions remain JavaScript. Shared callable validation is centralized first; TypeScript
-  migration should follow where integration coverage is strong.
+- Functions migrate to TypeScript in bounded slices. The first slice is the shared callable
+  validation and log-id helpers (`functions/lib/callable.ts`, `functions/lib/logging.ts`), compiled
+  to CommonJS next to the source so existing `require()` call sites and callable names stay stable.
+  Remaining Functions files stay JavaScript until a later slice. Rebuild with
+  `npm --prefix functions run build:ts`; `npm --prefix functions test` typechecks the slice and
+  runs the existing helper unit tests.
 - Signup intentionally has a pre-auth email-existence check so secondary-email migration remains
   usable. The callable requires App Check outside the Functions emulator; staging provider setup and
   abuse-rate verification remain external environment gates.

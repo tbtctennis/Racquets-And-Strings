@@ -14,12 +14,15 @@ connection the participant trigger writes for that event's managers (`reason: ev
 A marketplace listing exposes only an allowlisted projection through `public_contacts/{uid}` to
 authenticated members; it does not unlock the private `contacts/{uid}` document. The monthly
 `group_lessons` roster and `isCurrentGroupLessonCoachFor` are gone (TASK-511). Coach↔player
-access uses the same connection marker: a **Book** on a service whose provider has `member_uid`
-writes `reason: service-lead`. There is no live writer of `reason: coaching session`.
+access uses the same connection marker: a **Book** on a service whose provider row has
+`member_uid` writes `reason: service-lead`. Preference stringer/coach flags do not identify
+the provider. There is no live writer of `reason: coaching session`.
 **Partner-pool contacts** are a third projection: `partner_pool/{eventId}/contacts/{uid}`,
 written by Functions, readable only by members of that event's pool. Empty channels are omitted.
 See [partner-pool diagram](../architecture/diagrams/partner-pool.md) and
-[coaching pool](../architecture/COACHING_POOL.md).
+[coaching pool](../architecture/COACHING_POOL.md). Consented play-discovery fields (courts, zone,
+availability) are a separate event-scoped projection, not a contact channel — see
+[preference projection](PREFERENCE_PROJECTION.md).
 
 **Ruled change (2026-08-31, organizer download not yet implemented):** Ruling 8 gives an event
 organizer the contacts of everyone who joined their _own_ event, and the September beta ships a
@@ -47,3 +50,13 @@ path.
 **Code:** `firestore.rules` (`ownerContactFields`, `/contacts/{userId}`).
 
 **Regression test:** `tests/rules/firestore.rules.test.mjs`.
+
+## Public documents
+
+World-readable collections must not accumulate contact or account-recovery fields. Listing and
+partner-pool contact rows are server-owned projections; they never copy `secondary_email`.
+`services.contact_phone` / `contact_email` remain a recorded catalog exception until booking
+connections land. The full classification is
+[public-field sensitivity](../architecture/PUBLIC_FIELD_SENSITIVITY.md).
+
+**Regression test:** `tests/rules/firestore.publicFields.test.mjs`.

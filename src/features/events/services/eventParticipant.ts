@@ -9,17 +9,17 @@ export type EventParticipantWrite = {
   skill: number;
   dateselected: string[];
   created_at: string;
-  division?: string;
-  skill_group?: string;
-  partner_uid?: string;
-  partner_name?: string;
-  zone?: string;
-  status?: 'active' | 'withdrawn';
-  withdrawn_reason?: 'injury' | 'unavailable' | 'cannot_contact' | 'other';
-  withdrawn_note?: string;
-  withdrawn_at?: string;
-  withdrawn_by?: 'self' | string;
-  seed?: number;
+  division?: string | undefined;
+  skill_group?: string | undefined;
+  partner_uid?: string | undefined;
+  partner_name?: string | undefined;
+  zone?: string | undefined;
+  status?: 'active' | 'withdrawn' | undefined;
+  withdrawn_reason?: 'injury' | 'unavailable' | 'cannot_contact' | 'other' | undefined;
+  withdrawn_note?: string | undefined;
+  withdrawn_at?: string | undefined;
+  withdrawn_by?: 'self' | string | undefined;
+  seed?: number | undefined;
 };
 
 /**

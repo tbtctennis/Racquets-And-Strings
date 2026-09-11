@@ -75,6 +75,20 @@ A human-in-the-loop handoff was provided to the development team so the next val
 resume from the documented branch, commit, safety boundaries, completed checks, and open external
 gates without relying on conversational context.
 
+## Functions TypeScript slice — 2026-09-11
+
+- First bounded Functions TypeScript slice (TASK-666 / BLG0064): `functions/lib/callable.ts` and
+  `functions/lib/logging.ts` compile to CommonJS `.js` for the Node 22 runtime. Export names
+  `requireAuth`, `requireTrimmedString`, `optionalTrimmedString`, `normalizeCouponCode`, and
+  `safeId` are unchanged. Remaining Functions files stay JavaScript.
+
+## Stricter TypeScript checks — 2026-09-11
+
+- Root `tsconfig.json` now enables `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes`
+  on top of existing `strict`, no-implicit-return, and no-fallthrough checks (TASK-664).
+- Optional properties that callers pass as explicit `undefined` are typed `prop?: T | undefined`.
+  Indexed access is narrowed at the use site. `npm run typecheck` (`tsc --noEmit`) is green.
+
 ## Maintainability upgrade update — 2026-08-19
 
 - The root package now exposes separate `typecheck`, real `lint`, `format:check`, `docs:verify`,

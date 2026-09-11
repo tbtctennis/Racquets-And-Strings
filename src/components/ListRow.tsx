@@ -3,26 +3,26 @@ import { cn } from '../lib/cn';
 
 type ListRowProps = {
   /** Content shown before the main copy, such as an icon, avatar, or status marker. */
-  leading?: React.ReactNode;
+  leading?: React.ReactNode | undefined;
   /** The primary row content. When omitted, `children` is used as the primary content. */
-  title?: React.ReactNode;
+  title?: React.ReactNode | undefined;
   /** Secondary copy beneath the title. It is truncated so the row stays one line tall. */
-  description?: React.ReactNode;
+  description?: React.ReactNode | undefined;
   /** Additional compact metadata beside the title, before the trailing slot. */
-  meta?: React.ReactNode;
+  meta?: React.ReactNode | undefined;
   /** Content aligned to the far edge of the row. */
-  trailing?: React.ReactNode;
+  trailing?: React.ReactNode | undefined;
   /** An action slot for controls that should not trigger the row action. */
-  action?: React.ReactNode;
-  children?: React.ReactNode;
-  className?: string;
+  action?: React.ReactNode | undefined;
+  children?: React.ReactNode | undefined;
+  className?: string | undefined;
   /** Makes the whole row a keyboard-accessible action. */
-  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
   /** Makes the row a native link while retaining the shared layout. */
-  href?: string;
-  target?: React.HTMLAttributeAnchorTarget;
-  rel?: string;
-  disabled?: boolean;
+  href?: string | undefined;
+  target?: React.HTMLAttributeAnchorTarget | undefined;
+  rel?: string | undefined;
+  disabled?: boolean | undefined;
   'aria-label'?: string;
   'aria-current'?: React.AriaAttributes['aria-current'];
 };

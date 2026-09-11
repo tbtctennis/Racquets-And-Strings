@@ -24,12 +24,16 @@ export function generateGroupPairings(n: number): [number, number][] {
     for (let i = 0; i < padded / 2; i++) {
       const p1 = arr[i];
       const p2 = arr[padded - 1 - i];
-      if (p1 !== -1 && p2 !== -1) {
+      if (p1 != null && p2 != null && p1 !== -1 && p2 !== -1) {
         pairs.push([Math.min(p1, p2), Math.max(p1, p2)]);
       }
     }
     const last = arr[padded - 1];
-    for (let i = padded - 1; i > 1; i--) arr[i] = arr[i - 1];
+    if (last === undefined) continue;
+    for (let i = padded - 1; i > 1; i--) {
+      const prev = arr[i - 1];
+      if (prev !== undefined) arr[i] = prev;
+    }
     arr[1] = last;
   }
 

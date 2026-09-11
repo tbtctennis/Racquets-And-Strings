@@ -30,8 +30,8 @@ This is a code-derived baseline for the current `dev-anuj` checkout. It is a rev
     {
       "check": "Firestore data exposure",
       "severity": "moderate",
-      "issue": "preferences are owner/super-admin readable and public_preferences is reserved deny-all. Cross-member preference decorations fail closed until a product-approved disclosure contract exists.",
-      "recommendation": "Design an event-scoped or explicitly consented projection before restoring preference discovery. Never publish availability, notifications, scheduling, or role/provider fields."
+      "issue": "preferences remain world-readable (R7). public_preferences is deny-all. Cross-member discovery now has an approved event-scoped consented projection for courts/zone/availability only.",
+      "recommendation": "Keep notifications, scheduling, and role/provider fields off the projection. Do not backfill from existing preferences; revocation and missing consent must keep failing closed."
     },
     {
       "check": "Rules and environment validation",
@@ -61,20 +61,24 @@ This is a code-derived baseline for the current `dev-anuj` checkout. It is a rev
 - `event_creator` is event-workflow-only. It no longer grants direct stats/points, offer economics,
   admin metrics, unrelated contacts, listing moderation, mailing-list administration, or task-claim review.
 - Reward callables require a validated active `type: offer` catalog document. Coupon use/flagging is
-  provider-owned or super-admin-only; review and global reward notifications are super-admin-only.
-- `public_preferences` is deny-all. Existing cross-member preference decoration falls back to
-  missing data until an event-scoped or explicitly consented projection is approved.
+  provider-owned or super-admin-only; provider ownership is `providers/{id}.member_uid`, not leftover
+  preference flags. Review and global reward notifications are super-admin-only.
+- `public_preferences` is deny-all. The approved discovery path is
+  `events/{eventId}/preference_projections/{uid}` ([PREFERENCE_PROJECTION.md](../domain/PREFERENCE_PROJECTION.md)).
+  Missing, revoked, or extra-field rows fail closed.
 - Listing contact discovery reads the server-maintained `public_contacts` projection; private
   account metadata such as `secondary_email` remains in owner/connection/admin-only `contacts`.
 - Storage writes are authenticated and type/size constrained for named prefixes. The current source permits public reads only for LandingPage, Gallery, avatars, and listings; report/suggestion reads are owner/authentication constrained.
 - Tournament result intent is applied by the idempotent `applyTournamentResult` callable. Clients
   cannot write protected points/statistics; missing or occupied advancement targets fail closed.
+- Manual Round Robin group bonuses go through `setGroupBonus`. Clients cannot write `rr_groupbonus`;
+  each award or reverse is stamp-idempotent, audited on `rr_group_bonus_audit`, and stats-reconciled.
 - Pure domain coverage exercises Round Robin grouping/pairings, standings, scoring awards, safe
   rewrites, and reward calculations. Isolated Functions emulator tests cover authentication,
   redemption/refund/idempotency, friendly payout, and tournament result/advancement boundaries.
 - Reward callable state transitions are explicit: only pending cancellation review can refund,
   disputed coupons cannot bypass review, operator notes are bounded, and touched log identifiers are hashed.
-- A tracked-file scan was performed for common credential patterns. It found no private key, service-account credential, or Resend secret in application files; the vendored gstack renderer includes an upstream Firebase client key, which is not a service credential. The scan did not prove that secrets are absent from Git history, deployment configuration, or third-party systems.
+- A tracked-file scan was performed for common credential patterns. It found no private key, service-account credential, or Resend secret in application files; the vendored gstack renderer includes an upstream Firebase client key, which is not a service credential. Repository history, lockfile audits, and ignore-rule gaps are recorded in [TRIAGE-DEPS-SECRETS-HISTORY.md](TRIAGE-DEPS-SECRETS-HISTORY.md) (TASK-657). Do not rewrite git history.
 - `npm run verify` passes locally with strict typecheck, ESLint, tracked-file formatting, docs
   freshness, Functions syntax, 33 root unit tests, 26 Functions unit tests, 29 Firestore Rules
   tests, 5 Storage Rules tests, 11 Functions emulator integration tests, a synthetic fixture smoke
@@ -84,6 +88,6 @@ This is a code-derived baseline for the current `dev-anuj` checkout. It is a rev
 ## Required gates before production changes
 
 1. Re-run the same gates in an authorized staging project and validate App Check/provider configuration.
-2. Approve a deliberate consent/event-scoped preference projection before enabling cross-member preference discovery.
+2. Keep cross-member preference discovery on the consented event-scoped projection; do not reopen `public_preferences` or backfill from existing `preferences/{uid}` records.
 3. Re-run dependency and secret scans with network access, then review findings before deployment approval.
 4. Obtain explicit production approval, backup/recovery evidence, and a rollback plan; repository-local PASS is not deployment approval.

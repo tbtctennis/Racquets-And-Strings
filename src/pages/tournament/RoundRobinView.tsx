@@ -15,7 +15,7 @@ import { controlChrome } from '../../lib/controlChrome';
 type Props = {
   groups: TournamentPlayer[][];
   groupLabels: string[];
-  groupIndices?: number[];
+  groupIndices?: number[] | undefined;
   standingsByGroup: RRStandingRow[][];
   groupMatches: TournamentMatch[];
   knockoutMatches: TournamentMatch[];
@@ -23,40 +23,40 @@ type Props = {
   isCreator: boolean;
   isParticipant: boolean;
   // The viewer's own uid — lets a non-creator's group card show only their own match(es).
-  currentUserId?: string;
+  currentUserId?: string | undefined;
   isPastEvent: boolean;
   editMode: boolean;
   editPlayers: TournamentPlayer[];
   /** Full draw list; used to resolve seed numbers in the knockout. */
-  drawPlayers?: TournamentPlayer[];
+  drawPlayers?: TournamentPlayer[] | undefined;
   onEditPlayer: (matchId: string, slot: 'player_1' | 'player_2', player: TournamentPlayer | null) => void;
-  onSubmitScore?: (match: TournamentMatch) => void;
-  submittableMatchIds?: Set<string>;
-  pendingMatchIds?: Set<string>;
+  onSubmitScore?: ((match: TournamentMatch) => void) | undefined;
+  submittableMatchIds?: Set<string> | undefined;
+  pendingMatchIds?: Set<string> | undefined;
   onSaveGroupEdit: (rrGroup: number, newPlayers: TournamentPlayer[]) => void;
-  onRenameGroup?: (rrGroup: number, label: string) => void;
+  onRenameGroup?: ((rrGroup: number, label: string) => void) | undefined;
   /** Organizer pays/takes back one group's bonus. Passed even to players — the card shows it disabled. */
-  onSetGroupBonus?: (rrGroup: number, award: boolean) => Promise<void>;
-  onRemovePlayer?: (uid: string) => void;
+  onSetGroupBonus?: ((rrGroup: number, award: boolean) => Promise<void>) | undefined;
+  onRemovePlayer?: ((uid: string) => void) | undefined;
   /** Organizer moves a player into another zone’s draw (see handleMoveZoneByUid). */
-  onMovePlayerZone?: (uid: string, bucketId: string) => void;
+  onMovePlayerZone?: ((uid: string, bucketId: string) => void) | undefined;
   /** Participant asks the organizer to schedule one of their unplayed matches. */
-  onAskSchedule?: (match: TournamentMatch) => void;
-  zoneBuckets?: { id: string; label: string }[];
-  onCreateGroup?: (players: TournamentPlayer[], label?: string) => void;
-  unplacedPlayers?: TournamentPlayer[];
+  onAskSchedule?: ((match: TournamentMatch) => void) | undefined;
+  zoneBuckets?: { id: string; label: string }[] | undefined;
+  onCreateGroup?: ((players: TournamentPlayer[], label?: string) => void) | undefined;
+  unplacedPlayers?: TournamentPlayer[] | undefined;
   rrKnockoutReady: boolean;
   rrGroupUnplayed: number;
   generatingKnockout: boolean;
   onGenerateKnockout: (size?: number) => void;
   rrView: 'groups' | 'knockout';
-  roundDeadlines?: Record<string, string>;
-  onUpdateDeadline?: (round: string, date: string) => void;
+  roundDeadlines?: Record<string, string> | undefined;
+  onUpdateDeadline?: ((round: string, date: string) => void) | undefined;
 };
 
 // Creator control in the Knockout tab: pick a round size (R4/R8/R16) to build/rebuild the bracket.
 const KnockoutSizeBar: React.FC<{
-  currentSize?: number;
+  currentSize?: number | undefined;
   generating: boolean;
   onSelect: (size: number) => void;
 }> = ({ currentSize, generating, onSelect }) => (

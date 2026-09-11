@@ -6,7 +6,10 @@ import { availabilityTagLabel, collapseAvailabilityTags } from '../utils/availab
 // style so the row stays visually consistent. Renders nothing if the player hasn't set any
 // (per spec: leave it empty, no placeholder). Always a single horizontally-scrolling row — even
 // with several tags selected, the row never grows taller, it just scrolls sideways.
-export const AvailabilityPills: React.FC<{ tags?: string[]; className?: string }> = ({ tags, className }) => {
+export const AvailabilityPills: React.FC<{ tags?: string[] | undefined; className?: string | undefined }> = ({
+  tags,
+  className,
+}) => {
   if (!tags || tags.length === 0) return null;
   // "Weekday Mornings + Weekday Evenings" reads as just "Weekdays" — see collapseAvailabilityTags.
   const shown = collapseAvailabilityTags(tags);

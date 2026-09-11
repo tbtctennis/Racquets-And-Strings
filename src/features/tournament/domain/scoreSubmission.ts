@@ -15,7 +15,8 @@ export const validateScorePairs = (
   const allZero = pairs.every(([p1, p2]) => p1 === 0 && p2 === 0);
   if (walkover) return allZero ? undefined : 'A walkover must have zero scores.';
   if (allZero) return 'Enter at least one scored set or choose Walkover.';
-  const wins = [0, 0];
+  let p1Wins = 0;
+  let p2Wins = 0;
   for (const [p1, p2] of pairs) {
     if (![p1, p2].every((score) => Number.isInteger(score) && score >= 0 && score <= 99)) {
       return 'Scores must be whole numbers from 0 to 99.';
@@ -26,9 +27,12 @@ export const validateScorePairs = (
     if (high > 21 && Math.abs(p1 - p2) !== 2) {
       return 'Scores above 21 must have a margin of exactly 2.';
     }
-    wins[p1 > p2 ? 0 : 1] += 1;
+    if (p1 > p2) p1Wins += 1;
+    else p2Wins += 1;
   }
-  return wins[winnerIndex] > wins[1 - winnerIndex] ? undefined : 'The winner must take the set majority.';
+  const winnerSets = winnerIndex === 0 ? p1Wins : p2Wins;
+  const loserSets = winnerIndex === 0 ? p2Wins : p1Wins;
+  return winnerSets > loserSets ? undefined : 'The winner must take the set majority.';
 };
 
 export const buildScoreSubmissionIntent = (
@@ -68,12 +72,12 @@ export const buildScoreSubmissionIntent = (
   const submission: ScoreSubmission = {
     claimed_winner_name: scoreForm.winnerUserId === match.player_1_uid ? match.player_1_name : match.player_2_name,
     claimed_winner_uid: scoreForm.winnerUserId,
-    set_1_player_1: p1[0],
-    set_1_player_2: p2[0],
-    set_2_player_1: p1[1],
-    set_2_player_2: p2[1],
-    set_3_player_1: p1[2],
-    set_3_player_2: p2[2],
+    set_1_player_1: p1[0] ?? 0,
+    set_1_player_2: p2[0] ?? 0,
+    set_2_player_1: p1[1] ?? 0,
+    set_2_player_2: p2[1] ?? 0,
+    set_3_player_1: p1[2] ?? 0,
+    set_3_player_2: p2[2] ?? 0,
     ...(court ? { court } : {}),
   };
   return {

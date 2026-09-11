@@ -29,6 +29,8 @@ test('architecture account-creation record covers the live signup journey', asyn
   assert.match(doc, /\| Email-gate result/);
   assert.match(doc, /\| Merge marker/);
   assert.match(doc, /\| Profile completeness/);
+  assert.match(doc, /explicit skill/);
+  assert.match(doc, /not stored as `2\.0`/);
 
   assert.match(flow, /ACCOUNT_CREATION\.md/);
   assert.match(flow, /contacts\.secondary_email/);

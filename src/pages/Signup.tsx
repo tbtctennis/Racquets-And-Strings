@@ -18,7 +18,7 @@ import { Accordion } from '../components/Accordion';
 import { AlertMessage } from '../components/AlertMessage';
 import { Button } from '../components/Button';
 import { FieldError } from '../components/FieldError';
-import { Input } from '../components/Input';
+import { Input, fieldRequiredCls } from '../components/Input';
 import { Spinner } from '../components/Spinner';
 import {
   MapPin,
@@ -47,7 +47,13 @@ import { lookupRuntimeZone } from '../features/courts/resolution';
 import { useCourtResolutions } from '../features/courts/courtResolutionService';
 import { formatPhone } from '../utils/formatPhone';
 import { getSignupErrorMessage, signupEmailRegex, emailExistsForSignup } from '../features/signup/signupValidation';
-import { isNameValid, NAME_RULE, validateCompletion, validatePassword } from '../features/signup/signupForm';
+import {
+  isNameValid,
+  NAME_RULE,
+  validateCompletion,
+  validatePassword,
+  type SignupLeague,
+} from '../features/signup/signupForm';
 import { getAuthErrorMessage } from '../features/auth/authMessages';
 import { useAppleSignIn, useGoogleSignIn } from '../features/auth/useOAuthSignIn';
 import { persistSignupProfile } from '../features/signup/profilePersistence';
@@ -154,8 +160,8 @@ export const Signup: React.FC = () => {
     password: '',
     confirmPassword: '',
     phone: '',
-    skillLevel: 2,
-    league: '' as "Men's" | "Women's" | '',
+    skillLevel: null as number | null,
+    league: '' as SignupLeague,
     retiredPro: false,
     juniors: false,
     preferredCourts: [] as string[],
@@ -357,9 +363,26 @@ export const Signup: React.FC = () => {
   };
 
   const handleCompleteProfile = async () => {
-    const completionErrors = validateCompletion(formData.name, formData.phone);
+    const completionErrors = validateCompletion({
+      name: formData.name,
+      phone: formData.phone,
+      skillLevel: formData.skillLevel,
+      league: formData.league,
+      preferredCourts: formData.preferredCourts,
+    });
     setErrors(completionErrors);
-    if (Object.keys(completionErrors).length > 0) return;
+    if (Object.keys(completionErrors).length > 0) {
+      setOpenCards((cur) => {
+        const next = new Set(cur);
+        if (completionErrors.name || completionErrors.phone) next.add('about');
+        if (completionErrors.skillLevel) next.add('skill');
+        if (completionErrors.preferredCourts) next.add('courts');
+        if (completionErrors.league) next.add('league');
+        return next;
+      });
+      return;
+    }
+    if (formData.skillLevel == null || (formData.league !== "Men's" && formData.league !== "Women's")) return;
     setLoading(true);
     try {
       const u = auth.currentUser!;
@@ -428,7 +451,7 @@ export const Signup: React.FC = () => {
         : [...formData.preferredCourts, court],
       customCourtEntry: '',
     });
-    setErrors({ ...errors, customCourtEntry: '' });
+    setErrors({ ...errors, customCourtEntry: '', preferredCourts: '' });
   };
 
   // Recompute zone whenever preferred courts change. With more than one court, majority vote
@@ -481,7 +504,7 @@ export const Signup: React.FC = () => {
         : [...formData.preferredCourts, court],
       customCourtEntry: '',
     });
-    setErrors({ ...errors, customCourtEntry: '' });
+    setErrors({ ...errors, customCourtEntry: '', preferredCourts: '' });
   };
 
   const isSignupPhase = phase === 'account' || phase === 'preferences';
@@ -956,12 +979,18 @@ export const Signup: React.FC = () => {
 
                 {/* Tappable boxes rather than a range slider — the slider was hard to land on an
                   exact half-step on a phone, and the chosen value only became clear on release.
-                  The band name below says what the number actually means. */}
+                  The band name below says what the number actually means. Nothing is pre-selected:
+                  unanswered skill must not be stored as 2.0. */}
                 <Accordion
                   id="skill"
-                  title="Skill"
+                  title={
+                    <>
+                      Skill
+                      <span className={fieldRequiredCls}>*</span>
+                    </>
+                  }
                   right={
-                    openCards.has('skill') ? (
+                    formData.skillLevel == null ? null : openCards.has('skill') ? (
                       <span className="text-sm font-black text-clay-fg">{formData.skillLevel.toFixed(1)}</span>
                     ) : (
                       <CardSummary text={`${formData.skillLevel.toFixed(1)} · ${skillBand(formData.skillLevel)}`} />
@@ -981,7 +1010,10 @@ export const Signup: React.FC = () => {
                           <button
                             key={level}
                             type="button"
-                            onClick={() => setFormData({ ...formData, skillLevel: level })}
+                            onClick={() => {
+                              setFormData({ ...formData, skillLevel: level });
+                              if (errors.skillLevel) setErrors({ ...errors, skillLevel: '' });
+                            }}
                             className={`py-2.5 rounded-xl text-sm font-bold border-2 transition-all duration-motion ${
                               active
                                 ? 'bg-clay/10 text-clay-fg border-clay'
@@ -995,13 +1027,23 @@ export const Signup: React.FC = () => {
                     </div>
                     {/* skillBand is the same function the draw engine groups on, so this label and
                       the group a player actually lands in can never disagree. */}
-                    <p className="text-sm font-bold text-clay-fg text-center">{skillBand(formData.skillLevel)}</p>
+                    {formData.skillLevel != null ? (
+                      <p className="text-sm font-bold text-clay-fg text-center">{skillBand(formData.skillLevel)}</p>
+                    ) : (
+                      <p className="text-sm text-fg/70 text-center">Choose a skill level.</p>
+                    )}
+                    <FieldError>{errors.skillLevel}</FieldError>
                   </div>
                 </Accordion>
 
                 <Accordion
                   id="courts"
-                  title="Courts"
+                  title={
+                    <>
+                      Courts
+                      <span className={fieldRequiredCls}>*</span>
+                    </>
+                  }
                   right={!openCards.has('courts') && <CardSummary text={formData.preferredCourts.join(' · ')} />}
                   open={openCards.has('courts')}
                   onToggle={toggleCard}
@@ -1011,6 +1053,7 @@ export const Signup: React.FC = () => {
                       Tip: select <span className="text-clay-fg font-semibold">Stanley Park South - Toronto</span> for
                       the downtown area.
                     </p>
+                    <FieldError>{errors.preferredCourts}</FieldError>
 
                     {formData.preferredCourts.length > 0 && (
                       <div className="flex flex-wrap gap-2">
@@ -1109,7 +1152,12 @@ export const Signup: React.FC = () => {
 
                 <Accordion
                   id="league"
-                  title="League"
+                  title={
+                    <>
+                      League
+                      <span className={fieldRequiredCls}>*</span>
+                    </>
+                  }
                   right={
                     !openCards.has('league') && (
                       <CardSummary
@@ -1128,7 +1176,10 @@ export const Signup: React.FC = () => {
                         <button
                           key={league}
                           type="button"
-                          onClick={() => setFormData({ ...formData, league })}
+                          onClick={() => {
+                            setFormData({ ...formData, league });
+                            if (errors.league) setErrors({ ...errors, league: '' });
+                          }}
                           className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-motion ${controlChrome(formData.league === league)}`}
                         >
                           {league}
@@ -1166,6 +1217,7 @@ export const Signup: React.FC = () => {
                         Choose Men&apos;s or Women&apos;s above first. Then you can pick Retired Pro or Juniors.
                       </p>
                     )}
+                    <FieldError>{errors.league}</FieldError>
                   </div>
                 </Accordion>
 

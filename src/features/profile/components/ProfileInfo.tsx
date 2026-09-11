@@ -67,12 +67,12 @@ type Actions = {
 interface Props {
   actions: Actions;
   updateLoading: boolean;
-  message?: { text: string; type: 'success' | 'error' } | null;
-  emailVerificationSentTo?: string | null;
+  message?: { text: string; type: 'success' | 'error' } | null | undefined;
+  emailVerificationSentTo?: string | null | undefined;
   progress: TaskProgress | null;
   counters: Counters;
-  matches?: ProfileCardMatch[];
-  pgWonPct?: string;
+  matches?: ProfileCardMatch[] | undefined;
+  pgWonPct?: string | undefined;
 }
 
 type Row =
@@ -96,7 +96,7 @@ const SectionHeader: React.FC<{
   editing: boolean;
   onEdit: () => void;
   onCancel: () => void;
-  action?: React.ReactNode;
+  action?: React.ReactNode | undefined;
 }> = ({ icon, label, editing, onEdit, onCancel, action }) => (
   <div className="flex items-center justify-between gap-3">
     <span className="text-xs font-bold text-fg/70 uppercase tracking-widest flex items-center gap-1.5 min-w-0">
@@ -160,7 +160,7 @@ const ZonePickerSheet: React.FC<{
 const ContactMethodToggle: React.FC<{
   label: string;
   on: boolean;
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   onChange: (on: boolean) => void;
 }> = ({ label, on, disabled, onChange }) => (
   <div className="flex items-center gap-2 select-none">

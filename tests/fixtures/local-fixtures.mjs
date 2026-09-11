@@ -481,6 +481,19 @@ export const NEW_SHAPE_FIXTURES = [
     data: { draw_key: 'draw-a', event_id: 'e2e-round-robin', status: 'draft', groups: [] },
   },
 
+  // events/{eventId}/preference_projections/{uid} — TASK-654 consented discovery slice.
+  {
+    path: 'events/states-tournament/preference_projections/member-a',
+    data: {
+      uid: 'member-a',
+      event_id: 'states-tournament',
+      consented: true,
+      preferred_courts: ['Synthetic Court'],
+      preferred_zone: 'Downtown - Midtown',
+      availability_tags: ['weekday-evenings'],
+    },
+  },
+
   // event_participants — L12 status, L15 zone request, L18 doubles partner.
   {
     path: 'event_participants/e2e-organizer',
@@ -1215,6 +1228,60 @@ export const NEW_SHAPE_FIXTURES = [
       before: [],
       after: ['organizer-a'],
       created_at: AT,
+    },
+  },
+  {
+    path: 'rr_group_bonus_audit/audit-e2e-rr-group',
+    data: {
+      event_id: 'e2e-tournament',
+      rr_group: 1,
+      tournament_choice: 'Singles',
+      division: "Men's",
+      skill_group: null,
+      zone: 'downtown_midtown',
+      actor_uid: 'organizer-a',
+      action: 'award',
+      before: { awarded: false, mixed: false },
+      after: { awarded: true, mixed: false },
+      player_uids: ['opponent-a', 'member-a'],
+      match_ids: ['rr_g1_m1'],
+      points_delta: 5,
+      created_at: AT,
+    },
+  },
+  {
+    path: 'tournament_result_audit/audit-e2e-correction',
+    data: {
+      event_id: 'e2e-tournament',
+      match_id: 'states-rr-complete',
+      actor_uid: 'organizer-a',
+      action: 'correct',
+      reason: 'Scorecard showed a different second set.',
+      before: {
+        winnerUid: 'member-a',
+        scores: {
+          set_1: { player_1: 6, player_2: 4 },
+          set_2: { player_1: 6, player_2: 2 },
+          set_3: { player_1: 0, player_2: 0 },
+        },
+        walkover: false,
+        noShow: false,
+        court: '',
+        margin: 6,
+      },
+      after: {
+        winnerUid: 'member-a',
+        scores: {
+          set_1: { player_1: 6, player_2: 4 },
+          set_2: { player_1: 7, player_2: 5 },
+          set_3: { player_1: 0, player_2: 0 },
+        },
+        walkover: false,
+        noShow: false,
+        court: '',
+        margin: 4,
+      },
+      recorded_at: AT,
     },
   },
 ];

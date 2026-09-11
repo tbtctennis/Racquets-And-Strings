@@ -134,10 +134,10 @@ interface EventCardProps {
   isJoined: boolean;
   authLoading: boolean;
   isLoggedIn: boolean;
-  joinedCount?: number;
+  joinedCount?: number | undefined;
   onJoin: (event: DisplayEvent) => void; // opens the join sheet (wireframe 1g)
   // Only the event's own creator sees this — omit or pass undefined to hide it entirely.
-  onEdit?: (event: DisplayEvent) => void;
+  onEdit?: ((event: DisplayEvent) => void) | undefined;
 }
 
 // Event card — display only. The join form lives in JoinEventSheet now, so tapping Join never
@@ -310,7 +310,7 @@ type CreatorEventModalProps = {
   setEventForm: (eventForm: EventFormState) => void;
   eventFormMessage: FormMessage;
   creatingEvent: boolean;
-  isEditing?: boolean;
+  isEditing?: boolean | undefined;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onClose: () => void;
 };
@@ -529,9 +529,9 @@ type JoinEventSheetProps = {
   joining: boolean;
   onSubmitJoin: () => void;
   onClose: () => void;
-  preferredCourts?: string[];
-  preferredZone?: string;
-  joinedCount?: number;
+  preferredCourts?: string[] | undefined;
+  preferredZone?: string | undefined;
+  joinedCount?: number | undefined;
 };
 
 const chip = (active: boolean) =>

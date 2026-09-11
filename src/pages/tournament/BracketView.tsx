@@ -37,19 +37,20 @@ type Props = {
   matches: TournamentMatch[];
   drawTitle: string;
   /** Desktop knockout layout. `slot` is compact cells (MatchCard `grid`: h-8 px-2 text-sm) with no 44px hit expansion. */
-  variant?: BracketViewVariant;
-  editMode?: boolean;
-  editPlayers?: TournamentPlayer[];
+  variant?: BracketViewVariant | undefined;
+  editMode?: boolean | undefined;
+  editPlayers?: TournamentPlayer[] | undefined;
   /** Draw players used to resolve seed numbers next to names. */
-  players?: TournamentPlayer[];
-  onEditPlayer?: (matchId: string, slot: 'player_1' | 'player_2', player: TournamentPlayer | null) => void;
-  onRemovePlayer?: (uid: string) => void;
-  isCreator?: boolean;
-  onSubmitScore?: (match: TournamentMatch) => void;
-  submittableMatchIds?: Set<string>;
-  pendingMatchIds?: Set<string>;
-  roundDeadlines?: Record<string, string>;
-  onUpdateDeadline?: (round: string, date: string) => void;
+  players?: TournamentPlayer[] | undefined;
+  onEditPlayer?:
+    ((matchId: string, slot: 'player_1' | 'player_2', player: TournamentPlayer | null) => void) | undefined;
+  onRemovePlayer?: ((uid: string) => void) | undefined;
+  isCreator?: boolean | undefined;
+  onSubmitScore?: ((match: TournamentMatch) => void) | undefined;
+  submittableMatchIds?: Set<string> | undefined;
+  pendingMatchIds?: Set<string> | undefined;
+  roundDeadlines?: Record<string, string> | undefined;
+  onUpdateDeadline?: ((round: string, date: string) => void) | undefined;
 };
 
 // Desktop-only exemption (Q-3 / CS-43): vertically stacked tappable neighbours cannot grow to 44px,

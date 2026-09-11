@@ -43,7 +43,7 @@ import { SelectSheet } from '../../components/SelectSheet';
 // ─── Error boundary ───────────────────────────────────────────────────────────────────────────
 
 type BoundaryProps = { children: React.ReactNode; onDownload?: () => void; resetKey?: string | number };
-type BoundaryState = { hasError: boolean; lastResetKey?: string | number };
+type BoundaryState = { hasError: boolean; lastResetKey?: string | number | undefined };
 
 export class BracketErrorBoundary extends React.Component<BoundaryProps, BoundaryState> {
   state: BoundaryState = { hasError: false, lastResetKey: this.props.resetKey };
@@ -323,8 +323,8 @@ export const OrganizerOverviewPanel: React.FC<{
 
 export type ScheduleApi = {
   onAskOrganizer: (match: TournamentMatch) => void;
-  onSubmitScore?: (match: TournamentMatch) => void;
-  submittableMatchIds?: Set<string>;
+  onSubmitScore?: ((match: TournamentMatch) => void) | undefined;
+  submittableMatchIds?: Set<string> | undefined;
 };
 
 // One match's scheduling block: status badge, ask-organizer fallback, submit-score.
@@ -333,17 +333,17 @@ export type ScheduleApi = {
 export const ScheduleControls: React.FC<{
   match: TournamentMatch;
   api: ScheduleApi;
-  hideRule?: boolean;
-  hideBadge?: boolean;
+  hideRule?: boolean | undefined;
+  hideBadge?: boolean | undefined;
   /** The ask-organizer button is shown inline in the row above instead (OpponentPanels.tsx). */
-  hideAskButton?: boolean;
+  hideAskButton?: boolean | undefined;
   /** The submit-score button is shown inline in the row above instead (OpponentPanels.tsx). */
-  hideSubmitButton?: boolean;
-  className?: string;
+  hideSubmitButton?: boolean | undefined;
+  className?: string | undefined;
   /** 'grid-2' lays the action buttons in a 2-column grid instead of flex-wrap */
-  buttonLayout?: 'flex' | 'grid-2';
+  buttonLayout?: 'flex' | 'grid-2' | undefined;
   /** Unused: match cards show Pending or Done, not a viewer-specific Win/Loss. */
-  viewerUid?: string;
+  viewerUid?: string | undefined;
 }> = ({ match, api, hideRule, hideBadge, hideAskButton, hideSubmitButton, className, buttonLayout = 'flex' }) => {
   const s = getScheduleState(match);
   const isComplete = match.status === 'complete';
@@ -392,8 +392,8 @@ export const ScheduleControls: React.FC<{
 
 export const RRConfigModal: React.FC<{
   playerCount: number;
-  isConversion?: boolean;
-  isLoading?: boolean;
+  isConversion?: boolean | undefined;
+  isLoading?: boolean | undefined;
   onConfirm: (config: RRConfig) => void;
   onClose: () => void;
 }> = ({ playerCount, isConversion = false, isLoading = false, onConfirm, onClose }) => {
@@ -473,7 +473,7 @@ export const ZoneDrawConfigPanel: React.FC<{
   participants: EventParticipant[];
   zoneMap: Record<string, string>;
   /** Zone ids that already have generated matches — these can't be merged away. */
-  zonesWithMatches?: Set<string>;
+  zonesWithMatches?: Set<string> | undefined;
   onMerge: (sourceId: string, targetId: string) => void;
   onUnmerge: (sourceId: string) => void;
   onSetEnabled: (enabled: boolean) => void;
@@ -639,17 +639,17 @@ export const DrawTabs: React.FC<{
   currentDraw: DrawConfig | undefined;
   visibleDraws: DrawConfig[];
   /** Per-draw signed-up count and capacity, keyed by draw label. */
-  drawCounts?: Record<string, { count: number; size: number }>;
+  drawCounts?: Record<string, { count: number; size: number }> | undefined;
   onTabChange: (tab: DrawTab) => void;
   onSkillChange: (skill: SkillGroup) => void;
   onDoublesChange: (division: string) => void;
   // Zone bucket id — only relevant once an event has zone draws enabled (see ZoneDrawConfigPanel).
   onZoneChange: (zone: string | undefined) => void;
   // Round Robin sub-view (Groups / Knockout). Omitted for non-RR draws.
-  rrView?: 'groups' | 'knockout';
-  onRRViewChange?: (v: 'groups' | 'knockout') => void;
+  rrView?: 'groups' | 'knockout' | undefined;
+  onRRViewChange?: ((v: 'groups' | 'knockout') => void) | undefined;
   /** Draw-size picker, rendered inside the selected draw's row (creator, pre-generation only). */
-  drawSizeControl?: React.ReactNode;
+  drawSizeControl?: React.ReactNode | undefined;
 }> = ({
   currentDraw,
   visibleDraws,
@@ -804,8 +804,8 @@ export const TournamentHeader: React.FC<{
   onToggleConsolidateDoubles: () => void;
   zoneDrawsEnabled: boolean;
   onOpenZoneConfig: () => void;
-  eligiblePopulatedCount?: number;
-  onGenerateAllPopulated?: () => void;
+  eligiblePopulatedCount?: number | undefined;
+  onGenerateAllPopulated?: (() => void) | undefined;
 }> = ({
   isCreator,
   hasMatches,
@@ -849,11 +849,11 @@ export const TournamentHeader: React.FC<{
   const Row: React.FC<{
     icon: React.ReactNode;
     label: string;
-    hint?: string;
-    danger?: boolean;
-    active?: boolean;
+    hint?: string | undefined;
+    danger?: boolean | undefined;
+    active?: boolean | undefined;
     onClick: () => void;
-    busy?: boolean;
+    busy?: boolean | undefined;
   }> = ({ icon, label, hint, danger, active, onClick, busy }) => (
     <button
       type="button"

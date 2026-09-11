@@ -15,9 +15,9 @@ export type DoublesPoolCardValues = {
 export type DoublesPoolCardProps = {
   id: string;
   name: string;
-  subtitle?: React.ReactNode;
-  isYou?: boolean;
-  action?: React.ReactNode;
+  subtitle?: React.ReactNode | undefined;
+  isYou?: boolean | undefined;
+  action?: React.ReactNode | undefined;
   open: boolean;
   onToggle: () => void;
   values: DoublesPoolCardValues;

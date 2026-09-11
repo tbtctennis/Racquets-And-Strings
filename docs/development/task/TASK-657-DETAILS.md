@@ -5,7 +5,7 @@
 | **Task id**    | TASK-657                                                 |
 | **Title**      | Triage dependencies, secrets, and repository history     |
 | **TLDR**       | Evidence-backed findings and narrow remediation tickets. |
-| **Status**     | new                                                      |
+| **Status**     | completed                                                |
 | **Tags**       | QA, Planning                                             |
 | **Sprint**     | DC06 Spiderman                                           |
 | **Legacy ids** | BLG0054                                                  |
@@ -43,6 +43,8 @@ When **execute sprint spiderman** reaches this item:
 
 ## Comments
 
-| Date       | Who                    | Note                                                                                 |
-| ---------- | ---------------------- | ------------------------------------------------------------------------------------ |
-| 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live. |
+| Date       | Who                    | Note                                                                                                                                                                                                                                                                         |
+| ---------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live.                                                                                                                                                                                         |
+| 2026-09-11 | Grok Build · worker    | Started on `agent/spiderman-TASK-657` from `origin/spiderman` @ `d5387434`.                                                                                                                                                                                                  |
+| 2026-09-11 | Grok Build · worker    | Evidence in `docs/engineering/TRIAGE-DEPS-SECRETS-HISTORY.md`. Tiny ignore/env-example hardening only; no lockfile or history rewrite. Follow-ups listed in that doc, no new TASK ids. Tests: `tests/unit/paymentsNoLeak.test.mjs`, `docs:verify`. Coordinator owns tracker. |

@@ -4,7 +4,7 @@ Diagram: [authorization boundaries](diagrams/authorization-boundaries.md).
 
 ## Current state
 
-Firebase Auth supplies identity. Firestore Rules are the effective client authorization boundary; React private routes only control navigation. Event creation remains a compatibility path for `preferences/{uid}.event_creator`; later event mutations require `creator_id`, explicit membership in `organizer_ids`, or the super-admin bootstrap. Provider access is now scoped to server-issued `providers` rows; legacy preference IDs are read-only compatibility fallbacks during cutover.
+Firebase Auth supplies identity. Firestore Rules are the effective client authorization boundary; React private routes only control navigation. Event creation remains a compatibility path for `preferences/{uid}.event_creator`; later event mutations require `creator_id`, explicit membership in `organizer_ids`, or the super-admin bootstrap. Provider checks read only server-issued `providers/{id}.member_uid`. Leftover `preferences` stringer/coach flags are not an authorization path; `scripts/migrations/004-provider-role.mjs` lifts them onto `providers` rows.
 
 ## Current permission layers
 
@@ -20,14 +20,28 @@ Firebase Auth supplies identity. Firestore Rules are the effective client author
 ## Important current controls
 
 - Contacts are not globally readable; event creators do not gain unrelated contact access.
+- Public documents follow the [public-field sensitivity contract](PUBLIC_FIELD_SENSITIVITY.md).
+  World-readable collections must not accumulate contact or account-recovery fields.
+  `public_contacts` and partner-pool contacts are server-owned projections; `public_preferences`
+  remains reserved deny-all. `services.contact_phone` / `contact_email` stay a recorded catalog
+  exception until booking connections land.
 - `connections` and `public_contacts` are write-denied to clients.
 - `providers`, `services`, `bookings`, `offers`, protected stats/reward fields, `redemptions`, aggregate stats, ranking history, and notifications creation are server-controlled.
 - Reward redemption review is limited to the super-admin bootstrap; event creators cannot review,
   use, flag, or receive global coupon notifications unless they separately own the provider record.
 - Preferences are publicly readable projections; writes remain owner-scoped and role fields cannot be self-assigned.
-  `public_preferences` remains reserved deny-all.
+  `public_preferences` remains reserved deny-all. The approved cross-member discovery path is the
+  consented event-scoped slice `events/{eventId}/preference_projections/{uid}`
+  ([PREFERENCE_PROJECTION.md](../domain/PREFERENCE_PROJECTION.md)): owner writes consent and
+  allowlisted courts/zone/availability fields; managers or same-event consented members may read;
+  revocation and every other cross-member projection read fail closed.
 - Tournament result, ladder challenge, and group-bonus mutations use callable Functions; client match
   writes remain limited to scheduling, rally/challenge lifecycle, and other allowlisted fields.
+  Correcting a completed tournament result is `correctCompletedResult` (event organizer or
+  super-admin only) and writes `tournament_result_audit`.
+  `setGroupBonus` is the only writer of `matches.rr_groupbonus` and of `rr_group_bonus_audit`
+  (actor, before/after stamp state, points delta, time). A replayed identical award or reverse is a
+  no-op. Mixed stamps are unified without a second payout.
   Declined rallies/challenges stay stored as `declined` so they remain off the rejector's tab after
   refresh. Cancelling an **accepted** rally or challenge is `cancelMatch`; the other player is notified.
   Retracting an **open** challenge is still a sender delete (`ladder_cancelled`).
@@ -38,6 +52,7 @@ Firebase Auth supplies identity. Firestore Rules are the effective client author
 - Partner-pool membership is own-uid create/delete. Contact projections under
   `partner_pool/{eventId}/contacts` are server-only writes and pool-member reads.
 - Storage writes require an owner UID for member paths and image/type/size constraints; anonymous court reports use a fixed anonymous prefix.
+- Sensitive client writes (profiles, contacts, stats, preferences, event preference projections, listings, events, tasks, participants, partner-pool membership, court reports, claims, rally/challenge creates) enforce types, length bounds, and immutable identity fields. Missing optional fields and string-or-list contact methods remain compatible. Event and tournament match writes also reject `sensitiveContactFields()`.
 
 ## Target role model
 
@@ -48,7 +63,9 @@ Everyone remains a Member. Organizer, Provider, and Admin stack on top of member
 - Event assignment uses `events.organizer_ids`. Writes go through `assignEventOrganizers`, which
   records actor, event target, before/after `organizer_ids`, and time on `organizer_assignment_audit`.
   Clients cannot write `organizer_ids`. A durable assignment UI remains future work.
-- Cross-member preference decoration fails closed until an approved event-scoped or consented projection exists.
+- `preferences/{uid}` remains world-readable (R7 compatibility residue). Consented discovery must
+  use `events/{eventId}/preference_projections/{uid}`; missing, revoked, or `public_preferences`
+  rows fail closed.
 - The hardcoded super-admin UID is operationally brittle and requires a documented bootstrap/recovery process. **Owner ruling 2026-08-31: it stays hardcoded** ([VISION.md](../planning/VISION.md) §10.6) — the brittleness is accepted and the recovery process is still owed. One consequence is load-bearing: the deployed rules must carry a UID that exists in the project they are deployed to, and a second Firebase project has its own Auth tenant, so staging otherwise has no super-admin at all.
-- Provider access is inferred from preference fields and is not consistently represented as a role boundary.
+- Provider access is the `providers/{id}` row linked by `member_uid`. Preference flags do not grant it.
 - Admin SDK functions bypass Firestore Rules, so trigger/callable authorization and input validation need separate tests.

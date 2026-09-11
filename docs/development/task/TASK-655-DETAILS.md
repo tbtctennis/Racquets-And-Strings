@@ -5,7 +5,7 @@
 | **Task id**    | TASK-655                                                                                         |
 | **Title**      | Bounded server operation for completed-result corrections                                        |
 | **TLDR**       | Authorized correction validates state, records actor/reason/before/after, recomputes atomically. |
-| **Status**     | new                                                                                              |
+| **Status**     | completed                                                                                        |
 | **Tags**       | API, Firebase                                                                                    |
 | **Sprint**     | DC06 Spiderman                                                                                   |
 | **Legacy ids** | BLG0052                                                                                          |
@@ -45,6 +45,8 @@ When **execute sprint spiderman** reaches this item:
 
 ## Comments
 
-| Date       | Who                    | Note                                                                                 |
-| ---------- | ---------------------- | ------------------------------------------------------------------------------------ |
-| 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live. |
+| Date       | Who                    | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ---------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live.                                                                                                                                                                                                                                                                                                                                                                                                    |
+| 2026-09-11 | Grok Build · worker    | Started. VISION stores a settled match as `confirmed` and says there is no separate correction workflow; current code uses `complete` and `applyTournamentResult` for first apply, player dispute/margin, and organizer rescore without a reason. Followed current code: dedicated `correctCompletedResult` is the bounded authorized correction (reason required).                                                                                                                     |
+| 2026-09-11 | Grok Build · worker    | Callable `correctCompletedResult` validates completed tournament state, records actor/reason/before/after on `tournament_result_audit`, and recomputes stats/points atomically. Client match score writes stay closed. Tests: unauthenticated, unauthorized, malformed, valid in `functions/test/completedResultCorrection.test.js`; also `tests/unit/completedResultCorrection.test.mjs`, `tests/rules/firestore.completedResultCorrection.test.mjs`. Tracker left to the coordinator. |

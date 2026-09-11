@@ -33,6 +33,9 @@ const collectionOf = (docPath) => {
   if (segments.length === 4 && segments[0] === 'partner_pool' && segments[2] === 'contacts') {
     return 'partner_pool_contacts';
   }
+  if (segments.length === 4 && segments[0] === 'events' && segments[2] === 'preference_projections') {
+    return 'event_preference_projections';
+  }
   return segments[0];
 };
 

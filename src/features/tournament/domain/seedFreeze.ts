@@ -42,11 +42,11 @@ export function canReseedDraw(generated: boolean): boolean {
 
 export function canMoveInDraw(input: {
   generated: boolean;
-  playerUid?: string;
-  playerSeed?: number;
+  playerUid?: string | undefined;
+  playerSeed?: number | undefined;
   playerAlreadySeated: boolean;
-  occupantUid?: string;
-  occupantSeed?: number;
+  occupantUid?: string | undefined;
+  occupantSeed?: number | undefined;
   targetOpen: boolean;
 }): SeedMoveDecision {
   if (!input.generated) return { ok: true };

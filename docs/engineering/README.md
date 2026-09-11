@@ -6,7 +6,9 @@ This directory contains the active engineering operating model for branch `spide
 
 - [Local development and verification](LOCAL_DEVELOPMENT.md)
 - [Maintainability map and quality commands](MAINTAINABILITY.md)
+- [Non-production migration rehearsal](MIGRATION_REHEARSAL.md)
 - [Security baseline](SECURITY_BASELINE.md)
+- [Dependencies, secrets, and history triage](TRIAGE-DEPS-SECRETS-HISTORY.md)
 - [Agent skills inventory](AGENT_SKILLS.md)
 - [Takeover stabilization log](TAKEOVER_STABILIZATION_LOG.md)
 

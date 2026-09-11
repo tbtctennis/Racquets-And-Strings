@@ -28,9 +28,27 @@ const tournamentAvailable = existsSync(path.join(root, 'functions', 'tournamentR
 const session = async (label, uid) => {
   const email = `${label}-${crypto.randomUUID()}@example.test`;
   const password = 'local-test-password';
-  if (uid) await getAuth(app).createUser({ uid, email, password });
-  const operation = uid ? 'signInWithPassword' : 'signUp';
-  const response = await fetch(`http://${authHost}/identitytoolkit.googleapis.com/v1/accounts:${operation}?key=local`, {
+  if (uid) {
+    try {
+      await getAuth(app).createUser({ uid, email, password });
+    } catch (error) {
+      const code = error.code || error.errorInfo?.code;
+      if (code !== 'auth/uid-already-exists') throw error;
+    }
+    const customToken = await getAuth(app).createCustomToken(uid);
+    const response = await fetch(
+      `http://${authHost}/identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=local`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ token: customToken, returnSecureToken: true }),
+      },
+    );
+    const body = await response.json();
+    assert.equal(response.ok, true, JSON.stringify(body));
+    return { uid, token: body.idToken };
+  }
+  const response = await fetch(`http://${authHost}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=local`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
@@ -79,6 +97,7 @@ test('protected callables reject anonymous requests at the emulator wrapper', as
     ['requestCancellation', { code: 'RS-TEST-AA' }],
     ['reviewRedemption', { code: 'RS-TEST-AA', approve: true }],
     ['applyTournamentResult', { matchId: 'missing', scores: [] }],
+    ['correctCompletedResult', { matchId: 'missing', scores: [], reason: 'typo' }],
   ]) {
     const response = await call(name, null, data);
     assert.equal(response.status, 401, `${name}: ${JSON.stringify(response.body)}`);

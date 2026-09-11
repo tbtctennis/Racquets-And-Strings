@@ -20,9 +20,9 @@ Full journey: [account creation](ACCOUNT_CREATION.md). Diagram: [account creatio
 5. `AuthContext` observes Auth and calls `ensureUserProfileDocuments`, which creates any missing
    `users/{uid}`, `stats/{uid}`, `preferences/{uid}`, and `contacts/{uid}` (contacts seeded with
    the Auth email).
-6. Profile completion (`persistSignupProfile`) writes name, optional phone, skill, optional league,
-   courts, and derived zone in one batch. An empty `users.name` keeps the member on the completion
-   screen. Skill defaults to `2.0` if unanswered.
+6. Profile completion (`persistSignupProfile`) writes name, optional phone, explicit skill,
+   required league, preferred courts, and derived zone in one batch. An empty `users.name` keeps
+   the member on the completion screen. Unanswered skill is not stored as `2.0`.
 7. `users.welcomeEmailSent` flips true once the name is set; `sendWelcomeEmail` fires on that
    transition. `users.isVerified` is set true on first signed-in profile load.
 
@@ -34,6 +34,9 @@ Evidence: `src/pages/Signup.tsx`, `src/features/signup/signupValidation.ts`,
 
 1. The member reads public `events` and creates an `event_participants` document.
 2. An organizer reads participants and writes event/draw configuration or a nested RR draft.
+   Cross-event schedule requests and unplaced-registrant rows are selected from match and
+   participant documents in `organizerQueues.ts`; the Tournament hook does not re-implement the
+   draw-vs-event or zone-change filters.
 3. Draw generation creates or updates `matches`; the connection trigger can link real player pairs.
 4. Players create untrusted score submissions; an event owner or explicitly assigned organizer
    confirms a result through the `applyTournamentResult` callable.
@@ -43,6 +46,8 @@ Evidence: `src/pages/Signup.tsx`, `src/features/signup/signupValidation.ts`,
 6. History and rankings read the resulting `matches`, `stats`, and `ranking_history` projections.
 
 Evidence: `src/features/events/hooks/useJoin.ts`, `src/pages/tournament/useTournament.ts`,
+`src/features/tournament/domain/organizerQueues.ts`,
+`src/features/tournament/services/tournamentSubscriptions.ts`,
 `src/features/tournament/services/tournamentResultService.ts`, `functions/tournamentResults.js`,
 `functions/lib/tournamentResult.js`, `src/pages/tournament/rrGeneration.ts`.
 
@@ -74,7 +79,9 @@ Evidence: `src/features/tournament/domain/scoreSubmission.ts`, `src/pages/tourna
 4. The client calls callable Functions for redeem, coupon use/flagging, cancellation, review, and booking transitions (`book`, `racquetDropped`, completion, `cancelLead`). The retired monthly roster has no join or leave callable.
 5. The client reads projections such as `offers/{uid}`, notifications, and task progress.
 
-Evidence: `src/features/tasks/**`, `src/features/services/servicesApi.ts`, `functions/taskPoints.js`, `functions/groupAwards.js`, `functions/rewards.js`, `functions/bookings.js`.
+Evidence: `src/features/tasks/**`, `src/features/services/servicesApi.ts`,
+`src/features/services/catalog.ts`, `src/features/services/servicesRepository.ts`,
+`functions/taskPoints.js`, `functions/groupAwards.js`, `functions/rewards.js`, `functions/bookings.js`.
 
 ## 4. Marketplace listing and contact reveal
 
@@ -137,7 +144,8 @@ Full record: [coaching pool](COACHING_POOL.md). Diagram: [coaching pool](diagram
    discount** calls `redeemReward`. Coaching has no third action.
 3. `recordServiceLead` writes `providers/{id}/leads/{uid}` and, when the provider has
    `member_uid`, a `connections` pair with reason `service-lead`. That pair is the live
-   coach↔player contacts path.
+   coach↔player contacts path. Booking and redemption provider reads use the same
+   `providers.member_uid` link; leftover preference flags are not consulted.
 4. There is no `lesson_pool` collection and no **Book group lesson** action. `group_lessons`
    is retired (TASK-511). `events.lesson` is an unratified placeholder read by nothing.
 5. Target (not built): pooling on **any event** that offers coaching, stored at
@@ -151,9 +159,13 @@ Evidence: `src/pages/services/ServicesElements.tsx`, `src/features/services/serv
 ## Target state, risks, and open questions
 
 - Tournament result application now has one server-authoritative transaction. Challenge results
-  use `challengeResults`. Rally points use `onRallyConfirmedAwardPoints`. The browser refuses
-  completed-result reset/cancellation and Round Robin bonus mutations rather than retaining a
-  second points authority; those controls can be re-enabled only through bounded server operations.
+  use `challengeResults`. Rally points use `onRallyConfirmedAwardPoints`. Manual Round Robin group
+  bonuses use `setGroupBonus`: event-manager authorized, stamp-idempotent, audited, and
+  stats-reconciled in one transaction. Completed-result corrections go through
+  `correctCompletedResult`: an event organizer or super-admin supplies the new bounded score and a
+  reason; the callable validates the match is complete, records actor/reason/before/after on
+  `tournament_result_audit`, and reverses then repays points in one transaction. The winner cannot
+  change once the next match already has a result.
 - BUG-507: a valid rally-report update currently hits a Rules evaluator error. Do not treat the
   rally-report Rules path as green.
 - BUG-508: Functions emulator integration still has timeout/request failures on the final gate.

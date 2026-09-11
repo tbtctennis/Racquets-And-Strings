@@ -1,7 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
-import { normalizeEventParticipant } from '../../../lib/firestoreNormalization';
 import { useAuth } from '../../../context/AuthContext';
 import { TennisEvent } from '../../../types';
 import {
@@ -17,6 +14,7 @@ import {
   type FirestoreDateLike,
 } from '../../../utils/eventDates';
 import { DisplayEvent, fetchEvents, resolveStorageUrl } from '../services/eventService';
+import { subscribeEventParticipantCounts, subscribeJoinedRegistrations } from '../services/eventRepository';
 import type { JoinedRegistration } from '../types';
 
 export function useEvents() {
@@ -58,7 +56,13 @@ export function useEvents() {
       resolveStorageUrl(path)
         .then((url) => {
           if (cancelled || !url) return;
-          setEvents((prev) => prev.map((e) => (e.imagePath === path ? { ...e, image: url, imagePath: undefined } : e)));
+          setEvents((prev) =>
+            prev.map((e) => {
+              if (e.imagePath !== path) return e;
+              const { imagePath: _imagePath, ...rest } = e;
+              return { ...rest, image: url };
+            }),
+          );
         })
         .catch(() => {
           /* image stays unset; the card renders its placeholder */
@@ -74,34 +78,12 @@ export function useEvents() {
       setJoinedCounts({});
       return;
     }
-    return onSnapshot(
-      collection(db, 'event_participants'),
-      (snap) => {
-        const counts: Record<string, number> = {};
-        snap.docs.forEach((d) => {
-          const participant = normalizeEventParticipant(d.id, d.data());
-          if (!participant || participant.status === 'withdrawn') return;
-          counts[participant.event_id] = (counts[participant.event_id] ?? 0) + 1;
-        });
-        setJoinedCounts(counts);
-      },
-      () => setJoinedCounts({}),
-    );
+    return subscribeEventParticipantCounts(setJoinedCounts);
   }, [user?.uid]);
 
   useEffect(() => {
     if (!user) return;
-    const q = query(collection(db, 'event_participants'), where('uid', '==', user.uid));
-    return onSnapshot(q, (snap) => {
-      setJoinedRegistrations(
-        snap.docs.flatMap((d) => {
-          const participant = normalizeEventParticipant(d.id, d.data());
-          return participant
-            ? [{ eventId: participant.event_id, tournamentChoice: participant.tournament_choice ?? '' }]
-            : [];
-        }),
-      );
-    });
+    return subscribeJoinedRegistrations(user.uid, setJoinedRegistrations);
     // `user?.uid`: a new User object arrives on every token refresh, needlessly re-subscribing.
   }, [user?.uid]);
 

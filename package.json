@@ -33,6 +33,7 @@
     "migrations:example": "node scripts/migrations/001-example.mjs",
     "migrations:event-type-casing": "node scripts/migrations/002-event-type-casing.mjs",
     "migrations:event-draw-hiding": "node scripts/migrations/003-event-draw-hiding.mjs",
+    "migrations:provider-role": "node scripts/migrations/004-provider-role.mjs",
     "verify": "node scripts/run-with-pinned-node.mjs -- scripts/verify.mjs",
     "dataset:build": "node scripts/build-sample-dataset.mjs",
     "seed:dataset": "node tests/fixtures/seed-dataset.mjs",

@@ -1,16 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  arrayUnion,
-  collection,
-  doc,
-  documentId,
-  getDocs,
-  onSnapshot,
-  query,
-  setDoc,
-  updateDoc,
-  where,
-} from 'firebase/firestore';
+import { arrayUnion, collection, doc, documentId, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../context/AuthContext';
 import { ContactData, EventParticipant, MemberInfo, TennisEvent, UserData, UserStats } from '../../types';
@@ -68,8 +57,6 @@ import { PLAYER_LOADING_SENTINEL } from './AddPlayerPanel';
 import {
   normalizeContactData,
   normalizeEvent,
-  normalizeEventParticipant,
-  normalizeTournamentMatch,
   normalizeUserData,
   normalizeUserPreferences,
   normalizeUserStats,
@@ -99,9 +86,18 @@ import {
 } from '../../features/tournament/services/tournamentPersistence';
 import { buildKnockoutDrawPlan } from './knockoutGeneration';
 import {
+  activeRegistrants,
+  selectScheduleRequests,
+  selectUnplacedParticipants,
+} from '../../features/tournament/domain/organizerQueues';
+import {
+  loadEventParticipantsByEventIds,
+  loadMatchesByEventIds,
+  loadPreferencesByUids,
   loadTournamentEvents,
   subscribeEventParticipants,
   subscribeRoundRobinDraft,
+  subscribeScheduleRequestedMatches,
   subscribeTournamentMatches,
 } from '../../features/tournament/services/tournamentSubscriptions';
 import { createEventParticipant } from '../../features/events/services/eventRepository';
@@ -982,6 +978,7 @@ export const useTournament = (eventIdOverride?: string) => {
     const groupsToFix: Array<{ gi: number; players: TournamentPlayer[] }> = [];
     for (let i = 0; i < rrGroupIndices.length; i++) {
       const gi = rrGroupIndices[i];
+      if (gi === undefined) continue;
       const groupPlayers = rrGroups[i] ?? [];
       const cleaned = groupPlayers.filter((p) => !siblingIds.has(p.uid));
       if (cleaned.length < groupPlayers.length) groupsToFix.push({ gi, players: cleaned });
@@ -1065,19 +1062,9 @@ export const useTournament = (eventIdOverride?: string) => {
       setScheduleRequests([]);
       return;
     }
-    return onSnapshot(
-      query(collection(db, 'matches'), where('schedule_requested', '==', true)),
-      (snap) =>
-        setScheduleRequests(
-          snap.docs
-            .map((d) => normalizeTournamentMatch(d.id, d.data()))
-            .filter((m): m is TournamentMatch => m !== null)
-            .filter((m) => m.status !== 'complete' && mine.has(m.event_id))
-            .map((m) => ({ ...m, event_title: mine.get(m.event_id) ?? '' })),
-        ),
-      // A denied or failed read leaves the queue empty rather than stranding a stale list.
-      () => setScheduleRequests([]),
-    );
+    return subscribeScheduleRequestedMatches((items) => {
+      setScheduleRequests(selectScheduleRequests(items, mine));
+    });
   }, [isCreator, user, allTournamentEvents]);
 
   /**
@@ -1099,134 +1086,26 @@ export const useTournament = (eventIdOverride?: string) => {
     }
 
     let alive = true;
-    const chunk = <T>(xs: T[], n: number) =>
-      Array.from({ length: Math.ceil(xs.length / n) }, (_, i) => xs.slice(i * n, i * n + n));
     const ids = myEvents.map((e) => e.id);
     const titleById = new Map(myEvents.map((e) => [e.id, e.title ?? '']));
+    const configById = new Map(myEvents.map((e) => [e.id, resolveZoneConfig(e.zone_draw_config)]));
 
     (async () => {
       try {
-        const [pSnaps, mSnaps] = await Promise.all([
-          Promise.all(
-            chunk(ids, 30).map((c) => getDocs(query(collection(db, 'event_participants'), where('event_id', 'in', c)))),
-          ),
-          Promise.all(chunk(ids, 30).map((c) => getDocs(query(collection(db, 'matches'), where('event_id', 'in', c))))),
+        const [eventParticipants, eventMatches] = await Promise.all([
+          loadEventParticipantsByEventIds(ids),
+          loadMatchesByEventIds(ids),
         ]);
-
-        // Draws, never events. One event runs Men's/Women's × band × zone side by side, so an
-        // event-level test both keeps registrants whose own draw was never generated and hides
-        // registrants of a live draw the moment a sibling draw's final is played.
-        // `effectiveZone` normalizes the key, so a zone-less legacy draw and its Downtown twin
-        // count as one draw rather than two.
-        type Draw = { tc: string; division: string; band: string; zone: string; done: boolean; seats: Set<string> };
-        const drawsByEvent = new Map<string, Map<string, Draw>>();
-        mSnaps.forEach((s) =>
-          s.forEach((d) => {
-            const m = normalizeTournamentMatch(d.id, d.data());
-            if (!m) return;
-            if (m.category !== 'singles' && m.category !== 'doubles') return;
-            const draws = drawsByEvent.get(m.event_id) ?? new Map<string, Draw>();
-            const zone = effectiveZone(m.zone);
-            const key = `${m.tournament_choice}|${m.division}|${m.skill_group}|${zone}`;
-            const draw = draws.get(key) ?? {
-              tc: m.tournament_choice,
-              division: m.division,
-              band: m.skill_group as string,
-              zone,
-              done: false,
-              seats: new Set<string>(),
-            };
-            [m.player_1_uid, m.player_2_uid].forEach((id) => id && draw.seats.add(id));
-            if (m.round === 'F' && m.status === 'complete' && m.winner_uid) draw.done = true;
-            draws.set(key, draw);
-            drawsByEvent.set(m.event_id, draws);
-          }),
-        );
-
-        const candidates: EventParticipant[] = [];
-        const seen = new Set<string>();
-        pSnaps.forEach((s) =>
-          s.forEach((d) => {
-            const p = normalizeEventParticipant(d.id, d.data());
-            if (!p) return;
-            const key = `${p.event_id}|${p.uid}`;
-            if (!p.uid || p.removal || p.status === 'withdrawn' || seen.has(key)) return;
-            seen.add(key);
-            candidates.push(p);
-          }),
-        );
-
-        // Zone is needed BEFORE the filter, not just for display: a player who changes zone keeps
-        // playing the matches they're already in and appears here for the draw in their NEW zone.
-        // For the display value, no courts and no hand-picked zone = genuinely no zone —
-        // effectiveZone's Downtown default exists for PLACEMENT only, and showing it would report
-        // a choice the player never made.
-        const uids = [...new Set(candidates.map((r) => r.uid))];
-        const prefs = new Map<string, { courts: string[]; zone: string; manual: boolean }>();
-        const prefSnaps =
-          uids.length === 0
-            ? []
-            : await Promise.all(
-                chunk(uids, 30).map((c) => getDocs(query(collection(db, 'preferences'), where(documentId(), 'in', c)))),
-              );
-        prefSnaps.forEach((s) =>
-          s.forEach((d) => {
-            const preference = normalizeUserPreferences(d.data());
-            prefs.set(d.id, {
-              courts: preference.preferred_courts,
-              zone: preference.preferred_zone,
-              manual: preference.preferred_zone_manual === true,
-            });
-          }),
-        );
-        const configById = new Map(myEvents.map((e) => [e.id, resolveZoneConfig(e.zone_draw_config)]));
-
-        // Choice/division/band only. Zone is tested separately because it means different things
-        // in the two cases below, and folding it in here listed players the creator had moved
-        // across skill groups (a 3.5 seated in the Masters draw looked "missing" from Challengers).
-        const covering = (dr: Draw, p: EventParticipant) => {
-          const band = p.skill_group === 'Retired Pro' ? 'Retired Pro' : skillBand(Number(p.skill || 0));
-          return (
-            dr.tc === p.tournament_choice &&
-            (dr.division === p.division || dr.division === 'All') &&
-            (dr.band === band || dr.band === 'All')
-          );
-        };
-        const inZone = (dr: Draw, p: EventParticipant) =>
-          dr.zone === zoneBucketFor(prefs.get(p.uid)?.zone, configById.get(p.event_id));
-
-        const rows = candidates.filter((p) => {
-          const live = [...(drawsByEvent.get(p.event_id)?.values() ?? [])].filter((dr) => !dr.done);
-          const cov = live.filter((dr) => covering(dr, p));
-          if (cov.length === 0) return false;
-          const seats = live.filter((dr) => dr.seats.has(p.uid));
-          // Registered and never placed — any live draw they belong to is somewhere the organizer
-          // could put them, whatever its zone.
-          if (seats.length === 0) return true;
-          // Zone isn't a doubles draw dimension, so a placed doubles player never resurfaces.
-          if (p.tournament_choice === 'Doubles') return false;
-          // Already placed. The ONE thing that brings them back is a zone change: every seat they
-          // hold is in another zone AND the zone they moved to already has a draw they belong to.
-          // They keep every match they're in — nothing here or in functions/zoneMoves.js unseats
-          // them; this row is purely so the organizer can place them in the new zone by hand.
-          return !seats.some((dr) => inZone(dr, p)) && cov.some((dr) => inZone(dr, p) && !dr.seats.has(p.uid));
-        });
-
+        const candidates = activeRegistrants(eventParticipants);
+        const preferencesByUid = await loadPreferencesByUids(candidates.map((participant) => participant.uid));
         if (!alive) return;
         setUnplacedParticipants(
-          rows.map((p) => {
-            const pref = prefs.get(p.uid);
-            return {
-              participantId: p.id,
-              uid: p.uid,
-              name: p.user_name || 'Player',
-              eventId: p.event_id,
-              eventTitle: titleById.get(p.event_id) ?? '',
-              division: p.division,
-              tournamentChoice: p.tournament_choice,
-              skill: p.skill,
-              zone: p.zone || (pref && (pref.manual || pref.courts.length > 0) ? pref.zone : ''),
-            };
+          selectUnplacedParticipants({
+            candidates,
+            matches: eventMatches,
+            preferencesByUid,
+            eventTitleById: titleById,
+            zoneConfigByEventId: configById,
           }),
         );
       } catch (err) {
@@ -2230,7 +2109,7 @@ export const useTournament = (eventIdOverride?: string) => {
     }
   };
 
-  // Bonus point mutation stays disabled until its own bounded server operation is available.
+  // Group bonus is Functions-authoritative: setGroupBonus stamps, pays/reverses, and audits.
   const handleSetGroupBonus = async (rrGroup: number, award: boolean) => {
     if (!isCreator || !event) return;
     try {
@@ -2257,10 +2136,10 @@ export const useTournament = (eventIdOverride?: string) => {
   // Players may write only the scheduling fields (Firestore rules carve-out); scores stay
   // organizer-only. Preview (ungenerated) matches have no doc, so they're guarded out.
   type SchedulePatch = {
-    schedule_requested?: boolean;
-    proposed_date?: string;
-    proposed_slot?: 'AM' | 'PM';
-    schedule_status?: string;
+    schedule_requested?: boolean | undefined;
+    proposed_date?: string | undefined;
+    proposed_slot?: 'AM' | 'PM' | undefined;
+    schedule_status?: string | undefined;
   };
   const writeSchedule = async (matchId: string, patch: SchedulePatch, successText: string) => {
     if (!matchId || matchId.startsWith('preview_')) return;

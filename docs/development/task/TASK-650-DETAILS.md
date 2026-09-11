@@ -5,7 +5,7 @@
 | **Task id**    | TASK-650                                               |
 | **Title**      | Close remaining design-sync debt                       |
 | **TLDR**       | Resolve or supersede every carried D1 design-sync row. |
-| **Status**     | new                                                    |
+| **Status**     | completed                                             |
 | **Tags**       | UI, QA                                                 |
 | **Sprint**     | DC06 Spiderman                                         |
 | **Legacy ids** | BLG0041                                                |
@@ -46,3 +46,5 @@ When **execute sprint spiderman** reaches this item:
 | Date       | Who                    | Note                                                                                 |
 | ---------- | ---------------------- | ------------------------------------------------------------------------------------ |
 | 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live. |
+| 2026-09-11 | Grok Build · worker    | Started. Carried D1 rows: DC-16 Button preview, DC-18 13 previews + light cell + Target44, DC-19 grade Button/Input/PlayerCard. Follow current entry.tsx harness, not the uncommitted previews/ + .cache/review layout. |
+| 2026-09-11 | Grok Build · worker    | Registered remaining D1 primitives (Button, Input, PlayerCard, Accordion, AlertMessage, AvailabilityPills, ContactOpponentButton, Fab, LoadingBar, NearbyPill, RacquetIcon, SegmentedControl, Sheet, Toast, Tree) with light/dark cells and Target44. Superseded: Stepper (deleted D2 R-5); DC-19 pendingGrade cache (never committed; current registrations are the living baseline); `.design-sync/previews/*.tsx` layout (superseded by entry.tsx). Button preview has no danger/primary/size=lg (DC-16). Tests: `tests/unit/designSyncD1.test.mjs`. Tracker not edited. |

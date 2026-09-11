@@ -74,6 +74,10 @@ test('new member signs up and persists the profile bootstrap', async ({ page }) 
   await passwords.nth(1).fill('Local-Test!9xQ');
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByPlaceholder('Roger Federer').fill('Synthetic Signup');
+  await page.getByRole('button', { name: '3.0' }).click();
+  await page.getByPlaceholder('Search courts by name...').fill('Stanley Park South - Toronto');
+  await page.getByRole('button', { name: 'Add' }).click();
+  await page.getByRole('button', { name: "Men's", exact: true }).click();
   await page.getByRole('button', { name: 'Complete Profile' }).click();
   await expect(page.getByText('Thanks for joining')).toBeVisible();
   await capture(page, '02-signup-complete');

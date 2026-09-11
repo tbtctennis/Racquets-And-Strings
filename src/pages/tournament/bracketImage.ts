@@ -167,6 +167,7 @@ const buildRRGroupSvg = (
         if (parts.length <= 1) return parts[0] ?? n.trim();
         const first = parts[0];
         const last = parts[parts.length - 1];
+        if (!first || !last) return n.trim();
         return first.length <= last.length ? first : last;
       })
       .join(' / ');
@@ -186,7 +187,7 @@ const buildRRGroupSvg = (
     let maxH = 0;
     for (let c = 0; c < cols; c++) {
       const gi = r * cols + c;
-      if (gi < cardHeights.length) maxH = Math.max(maxH, cardHeights[gi]);
+      if (gi < cardHeights.length) maxH = Math.max(maxH, cardHeights[gi] ?? 0);
     }
     rowHeights.push(maxH);
   }
@@ -199,10 +200,12 @@ const buildRRGroupSvg = (
     for (let c = 0; c < cols; c++) {
       const gi = r * cols + c;
       if (gi >= shown.length) break;
-      const { players, label } = shown[gi];
+      const group = shown[gi];
+      if (!group) break;
+      const { players, label } = group;
       const x = outerPad + c * (cardW + cardGap);
       const y = curY;
-      const cardH = cardHeights[gi];
+      const cardH = cardHeights[gi] ?? 0;
 
       cards += `<rect x="${x}" y="${y}" width="${cardW}" height="${cardH}" rx="12" fill="${C.colNormal}" stroke="${C.colStroke}" />`;
       cards += `<text x="${x + cardPad}" y="${y + cardPad + 14}" font-size="13" font-weight="800" fill="${C.text}" font-family="Montserrat,Arial,sans-serif">${escapeSvg(label)}</text>`;
@@ -222,7 +225,7 @@ const buildRRGroupSvg = (
         playerY += rowH;
       });
     }
-    curY += rowHeights[r] + cardGap;
+    curY += (rowHeights[r] ?? 0) + cardGap;
   }
 
   const footerLabel = escapeSvg(eventTitle || drawTitle);

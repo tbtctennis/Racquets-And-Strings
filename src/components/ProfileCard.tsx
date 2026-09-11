@@ -40,43 +40,43 @@ export type ProfileCardMatch = { won: boolean };
 
 export type ProfileCardProps = {
   mode: ProfileCardMode;
-  name?: string;
-  avatar?: string;
-  avatarAlt?: string;
-  onAvatarError?: () => void;
-  avatarAction?: React.ReactNode;
-  avatarError?: string;
-  bio?: string;
-  skillLevel?: number;
-  league?: string;
-  displayBadges?: string[];
-  courts?: string[];
-  zone?: string;
-  favourites?: string[];
-  availableToPlay?: boolean;
-  onToggleAvailableToPlay?: () => void;
-  availabilityTags?: string[];
-  phone?: string;
-  email?: string;
-  whatsappContact?: string;
-  whatsappSameAsPhone?: boolean;
-  preferred?: ContactMethod[];
+  name?: string | undefined;
+  avatar?: string | undefined;
+  avatarAlt?: string | undefined;
+  onAvatarError?: (() => void) | undefined;
+  avatarAction?: React.ReactNode | undefined;
+  avatarError?: string | undefined;
+  bio?: string | undefined;
+  skillLevel?: number | undefined;
+  league?: string | undefined;
+  displayBadges?: string[] | undefined;
+  courts?: string[] | undefined;
+  zone?: string | undefined;
+  favourites?: string[] | undefined;
+  availableToPlay?: boolean | undefined;
+  onToggleAvailableToPlay?: (() => void) | undefined;
+  availabilityTags?: string[] | undefined;
+  phone?: string | undefined;
+  email?: string | undefined;
+  whatsappContact?: string | undefined;
+  whatsappSameAsPhone?: boolean | undefined;
+  preferred?: ContactMethod[] | undefined;
   /** Completed matches, newest first. Streak is derived here so the pages do not recompute it. */
-  matches?: ProfileCardMatch[];
+  matches?: ProfileCardMatch[] | undefined;
   /**
    * Payment records the viewer was allowed to read. The Contributor badge is derived here from
    * succeeded donations — never a stored flag. Refunded rows drop out; a pending request does not.
    */
-  payments?: ContributorBadgePayment[];
+  payments?: ContributorBadgePayment[] | undefined;
   /** Preformatted P/G won % from the shared `pgWinPct` helper. */
-  pgWonPct?: string;
-  fieldHeaders?: Partial<Record<ProfileCardField, React.ReactNode>>;
-  editors?: Partial<Record<ProfileCardField, React.ReactNode>>;
-  badgesExtra?: React.ReactNode;
-  extra?: React.ReactNode;
+  pgWonPct?: string | undefined;
+  fieldHeaders?: Partial<Record<ProfileCardField, React.ReactNode>> | undefined;
+  editors?: Partial<Record<ProfileCardField, React.ReactNode>> | undefined;
+  badgesExtra?: React.ReactNode | undefined;
+  extra?: React.ReactNode | undefined;
   /** Own-card donate CTA. Public mode never shows it. */
-  onSupportLeague?: () => void;
-  className?: string;
+  onSupportLeague?: (() => void) | undefined;
+  className?: string | undefined;
 };
 
 const OWN_FIELDS: ProfileCardField[] = [
@@ -130,8 +130,9 @@ const PillList: React.FC<{ values: string[]; empty: string }> = ({ values, empty
 
 /** Consecutive W/L from newest completed matches. Lives on the card so other surfaces reuse it. */
 export const streakFromMatches = (matches: ProfileCardMatch[]): string => {
-  if (matches.length === 0) return '—';
-  const firstWon = matches[0].won;
+  const first = matches[0];
+  if (!first) return '—';
+  const firstWon = first.won;
   let n = 0;
   for (const match of matches) {
     if (match.won !== firstWon) break;

@@ -7,17 +7,17 @@ Working ids start at **TASK-501**. One details file per id. **Status in this tab
 | | Count |
 | --- | ---: |
 | **Total tasks** | 174 |
-| **Completed** | 139 |
-| **Open (`new`)** | 20 |
+| **Completed** | 155 |
+| **Open (`new`)** | 4 |
 | **In progress** | 0 |
 | **Blocked** | 0 |
 | **Backlog (later)** | 15 |
 
-DC06 Spiderman (excluding backlog): **159** tasks. Tracker with bugs: **146 / 167** closed (**87%**).
+DC06 Spiderman (excluding backlog): **159** tasks. Tracker with bugs: **162 / 167** closed (**97%**).
 
 Pending-only list: [NOW.md](../NOW.md). Full board: [SPIDERMAN-TRACKER.md](../sprint/tracking/SPIDERMAN-TRACKER.md).
 
-## Open now (20)
+## Open now (4)
 
 Not completed, not backlog.
 
@@ -27,22 +27,6 @@ Not completed, not backlog.
 | [TASK-623](TASK-623-DETAILS.md) | Staging super-admin uid | new | Auth, Rules, Staging, Firebase | DC06 Spiderman | VISION §10.6, BLG0055 |
 | [TASK-624](TASK-624-DETAILS.md) | Seed staging from the live snapshot, contacts included | new | Staging, Data, Firebase | DC06 Spiderman | VISION §4, VISION §10.2 |
 | [TASK-625](TASK-625-DETAILS.md) | Staging installs as a PWA on a phone | new | Staging, UI, QA | DC06 Spiderman | VISION §5 M5, BLG0020 |
-| [TASK-647](TASK-647-DETAILS.md) | Recompute-and-diff as a first-class migration step | new | Data, Firebase | DC06 Spiderman | BLG0024 |
-| [TASK-649](TASK-649-DETAILS.md) | Collect required signup fields before access gates | new | UI, Auth | DC06 Spiderman | BLG0040 |
-| [TASK-650](TASK-650-DETAILS.md) | Close remaining design-sync debt | new | UI, QA | DC06 Spiderman | BLG0041 |
-| [TASK-651](TASK-651-DETAILS.md) | Record non-production migration and reconciliation evidence | new | Data, QA | DC06 Spiderman | BLG0043 |
-| [TASK-652](TASK-652-DETAILS.md) | Reconcile unique residual commits from stale local planning worktrees | new | Docs, Planning | DC06 Spiderman | BLG0045 |
-| [TASK-654](TASK-654-DETAILS.md) | Consent-based event-scoped preference projection | new | Auth, Rules, Firebase | DC06 Spiderman | BLG0051 |
-| [TASK-655](TASK-655-DETAILS.md) | Bounded server operation for completed-result corrections | new | API, Firebase | DC06 Spiderman | BLG0052 |
-| [TASK-656](TASK-656-DETAILS.md) | Bounded server operation for manual Round Robin bonus awards | new | API, Firebase | DC06 Spiderman | BLG0053 |
-| [TASK-657](TASK-657-DETAILS.md) | Triage dependencies, secrets, and repository history | new | QA, Planning | DC06 Spiderman | BLG0054 |
-| [TASK-658](TASK-658-DETAILS.md) | Canonical provider-role authority and migrate inference | new | Auth, Firebase | DC06 Spiderman | BLG0056 |
-| [TASK-659](TASK-659-DETAILS.md) | Expand callable authorization and input-validation coverage | new | API, QA, Firebase | DC06 Spiderman | BLG0057 |
-| [TASK-661](TASK-661-DETAILS.md) | Approve a public-field sensitivity contract | new | Auth, Rules, Data | DC06 Spiderman | BLG0059 |
-| [TASK-662](TASK-662-DETAILS.md) | Complete remaining Rules-level type and length validation | new | Rules, Firebase, QA | DC06 Spiderman | BLG0060 |
-| [TASK-664](TASK-664-DETAILS.md) | Enable stricter TypeScript indexed and optional-property checks | new | QA | DC06 Spiderman | BLG0062 |
-| [TASK-665](TASK-665-DETAILS.md) | Extract mixed route hooks into focused boundaries | new | UI, API | DC06 Spiderman | BLG0063 |
-| [TASK-666](TASK-666-DETAILS.md) | Migrate Functions JavaScript to TypeScript in bounded slices | new | API, Firebase | DC06 Spiderman | BLG0064 |
 
 ## Backlog (15)
 
@@ -216,26 +200,26 @@ After staging / M6–M9. Also [BACKLOG.md](../BACKLOG.md).
 | [TASK-644](TASK-644-DETAILS.md) | Decide mobile app versus PWA | backlog | Planning | backlog | BLG0020 |
 | [TASK-645](TASK-645-DETAILS.md) | Add push notifications | backlog | API, Firebase | backlog | BLG0021 |
 | [TASK-646](TASK-646-DETAILS.md) | Approve and test backup/restore policy | backlog | Firebase, Staging, QA | backlog | BLG0023 |
-| [TASK-647](TASK-647-DETAILS.md) | Recompute-and-diff as a first-class migration step | new | Data, Firebase | DC06 Spiderman | BLG0024 |
+| [TASK-647](TASK-647-DETAILS.md) | Recompute-and-diff as a first-class migration step | completed | Data, Firebase | DC06 Spiderman | BLG0024 |
 | [TASK-648](TASK-648-DETAILS.md) | Uniform null-filled schemas for a future database migration | backlog | Data, Planning | backlog | BLG0025 |
-| [TASK-649](TASK-649-DETAILS.md) | Collect required signup fields before access gates | new | UI, Auth | DC06 Spiderman | BLG0040 |
-| [TASK-650](TASK-650-DETAILS.md) | Close remaining design-sync debt | new | UI, QA | DC06 Spiderman | BLG0041 |
-| [TASK-651](TASK-651-DETAILS.md) | Record non-production migration and reconciliation evidence | new | Data, QA | DC06 Spiderman | BLG0043 |
-| [TASK-652](TASK-652-DETAILS.md) | Reconcile unique residual commits from stale local planning worktrees | new | Docs, Planning | DC06 Spiderman | BLG0045 |
+| [TASK-649](TASK-649-DETAILS.md) | Collect required signup fields before access gates | completed | UI, Auth | DC06 Spiderman | BLG0040 |
+| [TASK-650](TASK-650-DETAILS.md) | Close remaining design-sync debt | completed | UI, QA | DC06 Spiderman | BLG0041 |
+| [TASK-651](TASK-651-DETAILS.md) | Record non-production migration and reconciliation evidence | completed | Data, QA | DC06 Spiderman | BLG0043 |
+| [TASK-652](TASK-652-DETAILS.md) | Reconcile unique residual commits from stale local planning worktrees | completed | Docs, Planning | DC06 Spiderman | BLG0045 |
 | [TASK-653](TASK-653-DETAILS.md) | Obtain four independent same-SHA approvals | backlog | QA, Planning | backlog | BLG0050 |
-| [TASK-654](TASK-654-DETAILS.md) | Consent-based event-scoped preference projection | new | Auth, Rules, Firebase | DC06 Spiderman | BLG0051 |
-| [TASK-655](TASK-655-DETAILS.md) | Bounded server operation for completed-result corrections | new | API, Firebase | DC06 Spiderman | BLG0052 |
-| [TASK-656](TASK-656-DETAILS.md) | Bounded server operation for manual Round Robin bonus awards | new | API, Firebase | DC06 Spiderman | BLG0053 |
-| [TASK-657](TASK-657-DETAILS.md) | Triage dependencies, secrets, and repository history | new | QA, Planning | DC06 Spiderman | BLG0054 |
-| [TASK-658](TASK-658-DETAILS.md) | Canonical provider-role authority and migrate inference | new | Auth, Firebase | DC06 Spiderman | BLG0056 |
-| [TASK-659](TASK-659-DETAILS.md) | Expand callable authorization and input-validation coverage | new | API, QA, Firebase | DC06 Spiderman | BLG0057 |
+| [TASK-654](TASK-654-DETAILS.md) | Consent-based event-scoped preference projection | completed | Auth, Rules, Firebase | DC06 Spiderman | BLG0051 |
+| [TASK-655](TASK-655-DETAILS.md) | Bounded server operation for completed-result corrections | completed | API, Firebase | DC06 Spiderman | BLG0052 |
+| [TASK-656](TASK-656-DETAILS.md) | Bounded server operation for manual Round Robin bonus awards | completed | API, Firebase | DC06 Spiderman | BLG0053 |
+| [TASK-657](TASK-657-DETAILS.md) | Triage dependencies, secrets, and repository history | completed | QA, Planning | DC06 Spiderman | BLG0054 |
+| [TASK-658](TASK-658-DETAILS.md) | Canonical provider-role authority and migrate inference | completed | Auth, Firebase | DC06 Spiderman | BLG0056 |
+| [TASK-659](TASK-659-DETAILS.md) | Expand callable authorization and input-validation coverage | completed | API, QA, Firebase | DC06 Spiderman | BLG0057 |
 | [TASK-660](TASK-660-DETAILS.md) | Verify deployed trigger versions and legacy document shapes in staging | backlog | Staging, Firebase, QA | backlog | BLG0058 |
-| [TASK-661](TASK-661-DETAILS.md) | Approve a public-field sensitivity contract | new | Auth, Rules, Data | DC06 Spiderman | BLG0059 |
-| [TASK-662](TASK-662-DETAILS.md) | Complete remaining Rules-level type and length validation | new | Rules, Firebase, QA | DC06 Spiderman | BLG0060 |
+| [TASK-661](TASK-661-DETAILS.md) | Approve a public-field sensitivity contract | completed | Auth, Rules, Data | DC06 Spiderman | BLG0059 |
+| [TASK-662](TASK-662-DETAILS.md) | Complete remaining Rules-level type and length validation | completed | Rules, Firebase, QA | DC06 Spiderman | BLG0060 |
 | [TASK-663](TASK-663-DETAILS.md) | Approve event add-on schema before replacing retired group lessons | backlog | Firebase, Data, Planning | backlog | BLG0061 |
-| [TASK-664](TASK-664-DETAILS.md) | Enable stricter TypeScript indexed and optional-property checks | new | QA | DC06 Spiderman | BLG0062 |
-| [TASK-665](TASK-665-DETAILS.md) | Extract mixed route hooks into focused boundaries | new | UI, API | DC06 Spiderman | BLG0063 |
-| [TASK-666](TASK-666-DETAILS.md) | Migrate Functions JavaScript to TypeScript in bounded slices | new | API, Firebase | DC06 Spiderman | BLG0064 |
+| [TASK-664](TASK-664-DETAILS.md) | Enable stricter TypeScript indexed and optional-property checks | completed | QA | DC06 Spiderman | BLG0062 |
+| [TASK-665](TASK-665-DETAILS.md) | Extract mixed route hooks into focused boundaries | completed | UI, API | DC06 Spiderman | BLG0063 |
+| [TASK-666](TASK-666-DETAILS.md) | Migrate Functions JavaScript to TypeScript in bounded slices | completed | API, Firebase | DC06 Spiderman | BLG0064 |
 | [TASK-667](TASK-667-DETAILS.md) | Verify Resend, DNS, secrets, and allowlisted staging delivery | backlog | Firebase, Staging | backlog | BLG0065 |
 | [TASK-668](TASK-668-DETAILS.md) | Mobile offline, sync, deep-link, notification, and device QA contract | backlog | Planning, QA | backlog | BLG0066 |
 | [TASK-669](TASK-669-DETAILS.md) | Rewrite Privacy Policy and Terms of Service | backlog | Docs, Auth, Planning | backlog | BLG0067 |
