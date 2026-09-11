@@ -120,7 +120,8 @@ Use the smallest command while iterating, then run the aggregate gate before han
 
 ```bash
 npm test                       # root unit tests
-npm --prefix functions test    # Functions helper unit tests
+npm --prefix functions test    # Functions helper unit tests (typechecks the TS slice first)
+npm --prefix functions run build:ts  # compile functions/lib/*.ts to CommonJS .js
 npm run test:rules             # Firestore Rules, temporary emulator
 npm run test:storage           # Storage Rules, temporary emulator
 npm run test:fixtures          # real Auth/Firestore seed boundary, temporary emulators
