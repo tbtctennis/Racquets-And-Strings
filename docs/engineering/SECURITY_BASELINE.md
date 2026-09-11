@@ -69,6 +69,8 @@ This is a code-derived baseline for the current `dev-anuj` checkout. It is a rev
 - Storage writes are authenticated and type/size constrained for named prefixes. The current source permits public reads only for LandingPage, Gallery, avatars, and listings; report/suggestion reads are owner/authentication constrained.
 - Tournament result intent is applied by the idempotent `applyTournamentResult` callable. Clients
   cannot write protected points/statistics; missing or occupied advancement targets fail closed.
+- Manual Round Robin group bonuses go through `setGroupBonus`. Clients cannot write `rr_groupbonus`;
+  each award or reverse is stamp-idempotent, audited on `rr_group_bonus_audit`, and stats-reconciled.
 - Pure domain coverage exercises Round Robin grouping/pairings, standings, scoring awards, safe
   rewrites, and reward calculations. Isolated Functions emulator tests cover authentication,
   redemption/refund/idempotency, friendly payout, and tournament result/advancement boundaries.

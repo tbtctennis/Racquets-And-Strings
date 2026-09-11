@@ -28,3 +28,20 @@ or game totals.
 `src/features/tournament/domain/scoring.ts`, `src/pages/tournament/rrGeneration.ts`.
 
 **Regression test:** `tests/unit/domain.test.mjs`.
+
+## Group bonus
+
+**Rule:** An event manager may award or reverse a +5 group bonus through `setGroupBonus`. The
+`rr_groupbonus` stamp on every match in the group is the only payment receipt. Repeating the same
+state is a no-op. Mixed stamps are unified without a second payout. Each change writes
+`rr_group_bonus_audit` with actor, before/after, points delta, and time.
+
+**Why:** The bonus is manual, never automatic. A client stamp would mint league points without a
+server receipt; a second +5 on a corrected match was the recorded surplus.
+
+**Important exception:** Reversal does not require the group to be complete. Ghost `BYE` and
+`PLAYER_LOADING` slots are not paid.
+
+**Code:** `functions/lib/groupBonus.js`, `functions/competitionResults.js`.
+
+**Regression test:** `functions/test/groupBonus.test.js`.

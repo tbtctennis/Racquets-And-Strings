@@ -20,7 +20,7 @@ disk and produces local test data.
 
 | Tier          | Where                                 | Size            | For                                                                        |
 | ------------- | ------------------------------------- | --------------- | -------------------------------------------------------------------------- |
-| **Canonical** | `tests/fixtures/local-fixtures.mjs`   | 74 documents    | Rules tests, browser tests, one document per lifecycle state               |
+| **Canonical** | `tests/fixtures/local-fixtures.mjs`   | 75 documents    | Rules tests, browser tests, one document per lifecycle state               |
 | **Volume**    | `tests/fixtures/dataset/` (generated) | 3,233 documents | Driving the UI — real brackets, rosters, leaderboards, notification counts |
 
 The two tiers are not interchangeable. **The volume tier contains no disputed result** — production
@@ -124,6 +124,7 @@ outright.
 | `site_stats/{id}`                       | `updatedAt` normalises to `updated_at`                                                                              |
 | `admin_stats/{id}`                      | Unchanged                                                                                                           |
 | `payments/{paymentId}`                  | **Modelled** (D9) — donations now, court-booking rows later. No live source                                         |
+| `rr_group_bonus_audit/{id}`             | **New** — append-only actor/before/after/time for `setGroupBonus`; stamp on matches remains the receipt             |
 
 **Retired collections**
 
