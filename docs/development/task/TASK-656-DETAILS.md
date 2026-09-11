@@ -5,7 +5,7 @@
 | **Task id**    | TASK-656                                                     |
 | **Title**      | Bounded server operation for manual Round Robin bonus awards |
 | **TLDR**       | Authorized, idempotent, auditable, reconciled, tested.       |
-| **Status**     | inprogress                                                   |
+| **Status**     | completed                                                    |
 | **Tags**       | API, Firebase                                                |
 | **Sprint**     | DC06 Spiderman                                               |
 | **Legacy ids** | BLG0053                                                      |
@@ -49,3 +49,4 @@ When **execute sprint spiderman** reaches this item:
 | ---------- | ---------------------- | ------------------------------------------------------------------------------------ |
 | 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live. |
 | 2026-09-11 | Grok Build · worker    | Started. `setGroupBonus` already stamped/paid in one transaction but had no audit, no tests, mixed-stamp `.some()` could no-op a partial group, and clients could write `rr_groupbonus`. Followed current callable + D2 stamp-as-receipt; did not add `leagueEarnedTotal` (VISION seven writes, not this item). |
+| 2026-09-11 | Grok Build · worker    | `setGroupBonus` now authorizes event managers, no-ops identical stamps, unifies mixed stamps without a second payout, writes `rr_group_bonus_audit`, and clients cannot write `rr_groupbonus`. Tests: `functions/test/groupBonus.test.js`, `tests/unit/groupBonus.test.mjs`, `tests/rules/firestore.groupBonus.test.mjs`. Tracker left to the coordinator. No deploy. |

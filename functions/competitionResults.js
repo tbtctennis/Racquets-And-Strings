@@ -12,6 +12,7 @@ const {
   scoreFieldPatch,
   storedCompetitionResult,
 } = require('./lib/competitionResult');
+const { applyGroupBonus } = require('./lib/groupBonus');
 
 const db = () => admin.firestore();
 
@@ -189,54 +190,11 @@ exports.challengeResults = onCall({ region: REGION }, async (request) => {
 
 exports.setGroupBonus = onCall({ region: REGION }, async (request) => {
   const callerUid = requireAuth(request);
-  const eventId = requireTrimmedString(request.data?.eventId, 'Missing event.', { maxLength: 500 });
-  const rrGroup = Number(request.data?.rrGroup);
-  if (!Number.isInteger(rrGroup) || rrGroup < 0) throw new HttpsError('invalid-argument', 'Invalid group.');
-  const award = request.data?.award === true;
-  const tournamentChoice = typeof request.data?.tournamentChoice === 'string' ? request.data.tournamentChoice : null;
-  const division = typeof request.data?.division === 'string' ? request.data.division : null;
-  const skillGroup = typeof request.data?.skillGroup === 'string' ? request.data.skillGroup : null;
-  const zone = request.data?.zone == null ? null : String(request.data.zone);
-  return db().runTransaction(async (tx) => {
-    const eventSnap = await tx.get(db().collection('events').doc(eventId));
-    if (!eventSnap.exists || !isManager(eventSnap.data(), callerUid)) {
-      throw new HttpsError('permission-denied', 'Only the event manager may award a group bonus.');
-    }
-    const matchesSnap = await tx.get(
-      db().collection('matches').where('event_id', '==', eventId).where('rr_group', '==', rrGroup),
-    );
-    const matches = matchesSnap.docs.filter((doc) => {
-      const data = doc.data();
-      return (
-        data.format === 'rr' &&
-        data.round === 'RR' &&
-        (!tournamentChoice || data.tournament_choice === tournamentChoice) &&
-        (!division || data.division === division) &&
-        (!skillGroup || data.skill_group === skillGroup) &&
-        (zone === null ? !data.zone : (data.zone ?? null) === zone)
-      );
-    });
-    if (matches.length === 0) throw new HttpsError('not-found', 'Round Robin group not found.');
-    const alreadyAwarded = matches.some(
-      (doc) => doc.data().rr_groupbonus === true || doc.data().rr_group_bonus_v2 === true,
-    );
-    if (award === alreadyAwarded) return { applied: false, awarded: alreadyAwarded };
-
-    const players = new Set();
-    matches.forEach((doc) => {
-      const data = doc.data();
-      for (const uid of [data.player_1_uid, data.player_2_uid]) {
-        if (uid && !['BYE', 'PLAYER_LOADING'].includes(uid)) players.add(uid);
-      }
-      tx.update(doc.ref, { rr_groupbonus: award, rr_group_bonus_v2: FieldValue.delete() });
-    });
-    for (const uid of players) {
-      tx.set(
-        db().collection('stats').doc(uid),
-        { leaguePoints26: FieldValue.increment(award ? 5 : -5) },
-        { merge: true },
-      );
-    }
-    return { applied: true, awarded: award, players: players.size };
+  return applyGroupBonus({
+    db: db(),
+    uid: callerUid,
+    superAdminUid: SUPER_ADMIN_UID,
+    data: request.data || {},
+    nowIso: new Date().toISOString(),
   });
 });

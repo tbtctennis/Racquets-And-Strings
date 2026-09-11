@@ -2230,7 +2230,7 @@ export const useTournament = (eventIdOverride?: string) => {
     }
   };
 
-  // Bonus point mutation stays disabled until its own bounded server operation is available.
+  // Group bonus is Functions-authoritative: setGroupBonus stamps, pays/reverses, and audits.
   const handleSetGroupBonus = async (rrGroup: number, award: boolean) => {
     if (!isCreator || !event) return;
     try {

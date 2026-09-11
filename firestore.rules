@@ -665,7 +665,7 @@ service cloud.firestore {
       allow read: if isAuthenticated();
 
       allow create: if isAuthenticated() &&
-        !request.resource.data.keys().hasAny(['no_show']) && (
+        !request.resource.data.keys().hasAny(['no_show', 'rr_groupbonus', 'rr_group_bonus_v2']) && (
         // A player opens their own rally / challenge (incl. a proposed conversion).
         (
           request.resource.data.category in ['rally', 'challenge'] &&
@@ -752,7 +752,8 @@ service cloud.firestore {
             'player_1_uid', 'player_2_uid', 'player_1_partner_uid', 'player_2_partner_uid',
             'source_match_id', 'source_submission_id', 'status', 'winner_uid', 'winner_name',
             'set_1_player_1', 'set_1_player_2', 'set_2_player_1', 'set_2_player_2',
-            'set_3_player_1', 'set_3_player_2', 'walkover', 'completed_at', 'applied_at', 'result_hash'
+            'set_3_player_1', 'set_3_player_2', 'walkover', 'completed_at', 'applied_at', 'result_hash',
+            'rr_groupbonus', 'rr_group_bonus_v2'
           ])
         )
       );
@@ -824,6 +825,13 @@ service cloud.firestore {
     // Organizer assignment is callable-owned (`assignEventOrganizers`). Every organizer_ids
     // change writes an append-only actor/target/before/after/time row. Clients never write.
     match /organizer_assignment_audit/{id} {
+      allow read: if isSuperAdmin();
+      allow write: if false;
+    }
+
+    // Round Robin group bonus is callable-owned (`setGroupBonus`). The stamp on matches is the
+    // payment receipt; this append-only row is the actor/before/after/time trail. Clients never write.
+    match /rr_group_bonus_audit/{id} {
       allow read: if isSuperAdmin();
       allow write: if false;
     }

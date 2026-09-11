@@ -749,6 +749,25 @@ export const SHAPE_REFERENCE = {
     after: ['shape-assigned-organizer'],
     created_at: '2026-09-11T12:00:00.000Z',
   },
+
+  // rr_group_bonus_audit/{id} — append-only actor/before/after/time for every setGroupBonus write.
+  // The match `rr_groupbonus` stamp remains the payment receipt; this row is the trail.
+  rr_group_bonus_audit: {
+    event_id: 'shape-event',
+    rr_group: 0,
+    tournament_choice: 'Singles',
+    division: "Men's",
+    skill_group: null,
+    zone: null,
+    actor_uid: 'shape-organizer',
+    action: 'award',
+    before: { awarded: false, mixed: false },
+    after: { awarded: true, mixed: false },
+    player_uids: ['shape-user', 'shape-opponent'],
+    match_ids: ['shape-rr-1'],
+    points_delta: 5,
+    created_at: '2026-09-11T12:00:00.000Z',
+  },
 };
 
 /**

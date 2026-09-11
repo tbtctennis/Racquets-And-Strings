@@ -1217,6 +1217,25 @@ export const NEW_SHAPE_FIXTURES = [
       created_at: AT,
     },
   },
+  {
+    path: 'rr_group_bonus_audit/audit-e2e-rr-group',
+    data: {
+      event_id: 'e2e-tournament',
+      rr_group: 1,
+      tournament_choice: 'Singles',
+      division: "Men's",
+      skill_group: null,
+      zone: 'downtown_midtown',
+      actor_uid: 'organizer-a',
+      action: 'award',
+      before: { awarded: false, mixed: false },
+      after: { awarded: true, mixed: false },
+      player_uids: ['opponent-a', 'member-a'],
+      match_ids: ['rr_g1_m1'],
+      points_delta: 5,
+      created_at: AT,
+    },
+  },
 ];
 
 /**
