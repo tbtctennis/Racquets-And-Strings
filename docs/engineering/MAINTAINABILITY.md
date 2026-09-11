@@ -167,8 +167,12 @@ The pinned source and update procedure remain in `docs/engineering/AGENT_SKILLS.
 - Tournament result application, ladder challenge points, and Round Robin group bonuses are
   Function-authoritative. Production deployment and migration remain out of scope; staging waits
   for an authorized project and verified recovery path.
-- Functions remain JavaScript. Shared callable validation is centralized first; TypeScript
-  migration should follow where integration coverage is strong.
+- Functions migrate to TypeScript in bounded slices. The first slice is the shared callable
+  validation and log-id helpers (`functions/lib/callable.ts`, `functions/lib/logging.ts`), compiled
+  to CommonJS next to the source so existing `require()` call sites and callable names stay stable.
+  Remaining Functions files stay JavaScript until a later slice. Rebuild with
+  `npm --prefix functions run build:ts`; `npm --prefix functions test` typechecks the slice and
+  runs the existing helper unit tests.
 - Signup intentionally has a pre-auth email-existence check so secondary-email migration remains
   usable. The callable requires App Check outside the Functions emulator; staging provider setup and
   abuse-rate verification remain external environment gates.

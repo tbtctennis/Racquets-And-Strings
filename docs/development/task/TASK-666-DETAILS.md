@@ -5,7 +5,7 @@
 | **Task id**    | TASK-666                                                     |
 | **Title**      | Migrate Functions JavaScript to TypeScript in bounded slices |
 | **TLDR**       | Each slice preserves callable contracts and tests.           |
-| **Status**     | new                                                          |
+| **Status**     | completed                                                    |
 | **Tags**       | API, Firebase                                                |
 | **Sprint**     | DC06 Spiderman                                               |
 | **Legacy ids** | BLG0064                                                      |
@@ -48,3 +48,5 @@ When **execute sprint spiderman** reaches this item:
 | Date       | Who                    | Note                                                                                 |
 | ---------- | ---------------------- | ------------------------------------------------------------------------------------ |
 | 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live. |
+| 2026-09-11 | Anuj Raja · Grok Build | Started on `agent/spiderman-TASK-666`. Convert the shared callable validation and log-id helpers; keep remaining Functions JavaScript and `require()` export names. |
+| 2026-09-11 | Anuj Raja · Grok Build | First slice: `functions/lib/callable.ts` and `functions/lib/logging.ts` compile to CommonJS `.js`. Export names unchanged. `npm --prefix functions test` — 115 passed. Root `tsc --noEmit`, Functions syntax, and `docs:verify` green. Remaining Functions files stay JavaScript. Full `npm run verify` is still red on pre-existing format/D3/root-unit/fixture/e2e gates and on `correctCompletedResult` missing from the integration runner copy — none of those files are this slice. Coordinator: mark tracker after integration. |
