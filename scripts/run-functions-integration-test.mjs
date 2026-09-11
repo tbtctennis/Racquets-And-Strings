@@ -79,6 +79,23 @@ const main = async () => {
       ...(existsSync(path.join(root, 'functions', 'payments.js'))
         ? [`Object.assign(exports, require(${JSON.stringify(path.join(root, 'functions', 'payments.js'))}));`]
         : []),
+      ...(existsSync(path.join(root, 'functions', 'competitionResults.js'))
+        ? [`Object.assign(exports, require(${JSON.stringify(path.join(root, 'functions', 'competitionResults.js'))}));`]
+        : []),
+      ...(existsSync(path.join(root, 'functions', 'withdrawalWorkflow.js'))
+        ? [`Object.assign(exports, require(${JSON.stringify(path.join(root, 'functions', 'withdrawalWorkflow.js'))}));`]
+        : []),
+      ...(existsSync(path.join(root, 'functions', 'courtResolution.js'))
+        ? [`Object.assign(exports, require(${JSON.stringify(path.join(root, 'functions', 'courtResolution.js'))}));`]
+        : []),
+      ...(existsSync(path.join(root, 'functions', 'organizerAssignment.js'))
+        ? [
+            `Object.assign(exports, require(${JSON.stringify(path.join(root, 'functions', 'organizerAssignment.js'))}));`,
+          ]
+        : []),
+      ...(existsSync(path.join(root, 'functions', 'matchCancel.js'))
+        ? [`Object.assign(exports, require(${JSON.stringify(path.join(root, 'functions', 'matchCancel.js'))}));`]
+        : []),
       '',
     ].join('\n'),
   );
@@ -133,7 +150,7 @@ const main = async () => {
       'auth,firestore,functions',
       '--project',
       'rands-functions-test',
-      'node --test --test-concurrency=1 tests/integration/functions.emulator.test.mjs tests/integration/cancellationJourney.emulator.test.mjs',
+      'node --test --test-concurrency=1 tests/integration/functions.emulator.test.mjs tests/integration/cancellationJourney.emulator.test.mjs tests/integration/callableAuth.emulator.test.mjs',
     ],
     { cwd: root, env, stdio: 'inherit' },
   );

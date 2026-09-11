@@ -5,7 +5,7 @@
 | **Task id**    | TASK-659                                                                                                |
 | **Title**      | Expand callable authorization and input-validation coverage                                             |
 | **TLDR**       | Every sensitive callable has unauthenticated, unauthorized, malformed, duplicate, and valid-path tests. |
-| **Status**     | new                                                                                                     |
+| **Status**     | completed                                                                                               |
 | **Tags**       | API, QA, Firebase                                                                                       |
 | **Sprint**     | DC06 Spiderman                                                                                          |
 | **Legacy ids** | BLG0057                                                                                                 |
@@ -48,3 +48,5 @@ When **execute sprint spiderman** reaches this item:
 | Date       | Who                    | Note                                                                                 |
 | ---------- | ---------------------- | ------------------------------------------------------------------------------------ |
 | 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live. |
+| 2026-09-11 | Anuj Raja · Grok Build | Started: inventory callables and add missing auth/validation coverage.               |
+| 2026-09-11 | Anuj Raja · Grok Build | Added emulator/unit coverage for every sensitive callable. Withdrawal 500s on missing `FieldValue`/`winner_name` — fixed those holes only. `npm --prefix functions test` and `npm run test:functions:integration` green. |
