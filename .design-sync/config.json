@@ -1,5 +1,20 @@
 {
   "componentSrcMap": {
+    "Button": "src/components/Button.tsx",
+    "Input": "src/components/Input.tsx",
+    "PlayerCard": "src/components/PlayerCard.tsx",
+    "Accordion": "src/components/Accordion.tsx",
+    "AlertMessage": "src/components/AlertMessage.tsx",
+    "AvailabilityPills": "src/components/AvailabilityPills.tsx",
+    "ContactOpponentButton": "src/components/ContactOpponentButton.tsx",
+    "Fab": "src/components/Fab.tsx",
+    "LoadingBar": "src/components/LoadingBar.tsx",
+    "NearbyPill": "src/components/NearbyPill.tsx",
+    "RacquetIcon": "src/components/RacquetIcon.tsx",
+    "SegmentedControl": "src/components/SegmentedControl.tsx",
+    "Sheet": "src/components/Sheet.tsx",
+    "Toast": "src/components/Toast.tsx",
+    "Tree": "src/components/Tree.tsx",
     "EntityCard": "src/components/EntityCard.tsx",
     "PersonChip": "src/components/PersonChip.tsx",
     "PersonInline": "src/components/PersonInline.tsx",
@@ -15,6 +30,21 @@
     "Spinner": "src/components/Spinner.tsx"
   },
   "previews": {
+    "Button": ".design-sync/entry.tsx#Button",
+    "Input": ".design-sync/entry.tsx#Input",
+    "PlayerCard": ".design-sync/entry.tsx#PlayerCard",
+    "Accordion": ".design-sync/entry.tsx#Accordion",
+    "AlertMessage": ".design-sync/entry.tsx#AlertMessage",
+    "AvailabilityPills": ".design-sync/entry.tsx#AvailabilityPills",
+    "ContactOpponentButton": ".design-sync/entry.tsx#ContactOpponentButton",
+    "Fab": ".design-sync/entry.tsx#Fab",
+    "LoadingBar": ".design-sync/entry.tsx#LoadingBar",
+    "NearbyPill": ".design-sync/entry.tsx#NearbyPill",
+    "RacquetIcon": ".design-sync/entry.tsx#RacquetIcon",
+    "SegmentedControl": ".design-sync/entry.tsx#SegmentedControl",
+    "Sheet": ".design-sync/entry.tsx#Sheet",
+    "Toast": ".design-sync/entry.tsx#Toast",
+    "Tree": ".design-sync/entry.tsx#Tree",
     "EntityCard": ".design-sync/entry.tsx#EntityCard",
     "PersonChip": ".design-sync/entry.tsx#PersonChip",
     "PersonInline": ".design-sync/entry.tsx#PersonInline",
@@ -29,5 +59,19 @@
     "SelectSheet": ".design-sync/entry.tsx#SelectSheet",
     "Spinner": ".design-sync/entry.tsx#Spinner"
   },
-  "themes": ["light", "dark"]
+  "themes": ["light", "dark"],
+  "superseded": {
+    "Stepper": {
+      "row": "DC-18",
+      "reason": "Deleted in D2 R-5. ScoreModal uses number fields. Do not re-register."
+    },
+    "pendingGrade": {
+      "row": "DC-19",
+      "reason": "The .cache/review grades for Button, Input, and PlayerCard were never committed. The primitive retune already landed. Current registrations are the living baseline."
+    },
+    "previewsDir": {
+      "row": "DC-16",
+      "reason": "D1 .design-sync/previews/*.tsx Variants/Sizes/States files were superseded by entry.tsx + config.json. Button preview uses current variants only (no danger, no size=lg)."
+    }
+  }
 }
