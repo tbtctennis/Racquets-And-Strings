@@ -16,6 +16,7 @@ const requiredDocs = [
   'docs/architecture/diagrams/coaching-pool.md',
   'docs/architecture/DATA_MODEL.md',
   'docs/architecture/AUTHORIZATION_MODEL.md',
+  'docs/architecture/PUBLIC_FIELD_SENSITIVITY.md',
   'docs/architecture/FIRESTORE_SCHEMA_ASSESSMENT.md',
   'docs/architecture/ENVIRONMENTS_AND_DEPLOYMENT.md',
   'docs/architecture/ADR-001-role-authorization-model.md',
@@ -69,6 +70,7 @@ const documentationRequirements = [
     docs: [
       'docs/architecture/AUTHORIZATION_MODEL.md',
       'docs/architecture/DATA_MODEL.md',
+      'docs/architecture/PUBLIC_FIELD_SENSITIVITY.md',
       'docs/engineering/SECURITY_BASELINE.md',
     ],
   },
@@ -230,6 +232,7 @@ const main = async () => {
     'DATA_FLOW.md',
     'ACCOUNT_CREATION.md',
     'COACHING_POOL.md',
+    'PUBLIC_FIELD_SENSITIVITY.md',
     'ENVIRONMENTS_AND_DEPLOYMENT.md',
   ]) {
     if (!readme.includes(requiredLink)) throw new Error(`Architecture README does not link ${requiredLink}.`);
