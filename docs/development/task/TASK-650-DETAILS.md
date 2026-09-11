@@ -5,7 +5,7 @@
 | **Task id**    | TASK-650                                               |
 | **Title**      | Close remaining design-sync debt                       |
 | **TLDR**       | Resolve or supersede every carried D1 design-sync row. |
-| **Status**     | inprogress                                             |
+| **Status**     | completed                                             |
 | **Tags**       | UI, QA                                                 |
 | **Sprint**     | DC06 Spiderman                                         |
 | **Legacy ids** | BLG0041                                                |
