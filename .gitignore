@@ -10,10 +10,19 @@ anuj-development/
 serviceAccount.json
 functions/.runtimeconfig.json
 functions/.secret.local
+.secret.local
 serviceAccount*.json
+*-firebase-adminsdk-*.json
+google-services.json
+GoogleService-Info.plist
+firebase-applet-config.json
 *.pem
 *.p12
+*.p8
 *.key
+
+# Local CSO / gstack security reports (not the vendored skill tree)
+.gstack/
 
 .DS_Store
 *.log
