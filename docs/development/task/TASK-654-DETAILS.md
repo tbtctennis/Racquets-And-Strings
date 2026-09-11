@@ -5,7 +5,7 @@
 | **Task id**    | TASK-654                                                                            |
 | **Title**      | Consent-based event-scoped preference projection                                    |
 | **TLDR**       | Contract records consent, event scope, allowed fields, revocation, and Rules tests. |
-| **Status**     | new                                                                                 |
+| **Status**     | completed                                                                           |
 | **Tags**       | Auth, Rules, Firebase                                                               |
 | **Sprint**     | DC06 Spiderman                                                                      |
 | **Legacy ids** | BLG0051                                                                             |
@@ -48,3 +48,5 @@ When **execute sprint spiderman** reaches this item:
 | Date       | Who                    | Note                                                                                 |
 | ---------- | ---------------------- | ------------------------------------------------------------------------------------ |
 | 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live. |
+| 2026-09-11 | Anuj Raja · Grok Build | Started. Docs/code disagree on `preferences/{uid}`: R7 and current Rules are world-readable; SECURITY_BASELINE described owner-only until a consent contract existed. Followed current code for that document. |
+| 2026-09-11 | Anuj Raja · Grok Build | Contract is `docs/domain/PREFERENCE_PROJECTION.md`. Rules add `events/{eventId}/preference_projections/{uid}` (consent, event scope, allowlisted fields, owner revocation). `public_preferences` stays deny-all. Tests: `tests/rules/firestore.preferenceProjection.test.mjs`. No deploy. Tracker remains coordinator-owned. |

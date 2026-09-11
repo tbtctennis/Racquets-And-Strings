@@ -199,6 +199,38 @@ service cloud.firestore {
         optionalBool(data, 'available_to_play');
     }
 
+    // Consented event-scoped discovery slice. Notifications, scheduling, role flags, leftover
+    // provider ids, favourite_players, and contact channels stay off this document.
+    function eventPreferenceProjectionFields() {
+      return [
+        'uid', 'event_id', 'consented',
+        'preferred_courts', 'preferred_zone',
+        'availability_tags', 'available_to_play',
+        'updated_at',
+      ];
+    }
+
+    function validEventPreferenceProjectionShape(data, eventId, userId) {
+      return data.keys().hasOnly(eventPreferenceProjectionFields()) &&
+        data.keys().hasAll(['uid', 'event_id', 'consented']) &&
+        data.uid == userId &&
+        data.event_id == eventId &&
+        data.consented is bool &&
+        optionalBoundedString(data, 'uid', 128) &&
+        optionalBoundedString(data, 'event_id', 128) &&
+        optionalBoundedString(data, 'preferred_zone', 80) &&
+        optionalBoundedList(data, 'preferred_courts', 50) &&
+        optionalBoundedList(data, 'availability_tags', 20) &&
+        optionalBool(data, 'available_to_play') &&
+        optionalTime(data, 'updated_at');
+    }
+
+    function hasConsentedEventPreferenceProjection(eventId, userId) {
+      return exists(/databases/$(database)/documents/events/$(eventId)/preference_projections/$(userId)) &&
+        get(/databases/$(database)/documents/events/$(eventId)/preference_projections/$(userId))
+          .data.get('consented', false) == true;
+    }
+
     function validOwnerTaskShape(data) {
       return optionalBoundedString(data, 'uid', 128) &&
         optionalBoundedString(data, 'name', 320) &&
@@ -368,6 +400,19 @@ service cloud.firestore {
         );
     }
 
+    function canReadEventPreferenceProjection(eventId, userId) {
+      return isOwner(userId) ||
+        (
+          isAuthenticated() &&
+          resource.data.get('consented', false) == true &&
+          resource.data.get('event_id', '') == eventId &&
+          (
+            isManagerOfEvent(eventId) ||
+            hasConsentedEventPreferenceProjection(eventId, request.auth.uid)
+          )
+        );
+    }
+
     // Friendly/challenge result fields are client-submitted before a second party confirms them.
     // Restrict the winner and score shape here so a forged report cannot become a redeemable
     // payout. The Functions trigger repeats the check for Admin SDK/imported legacy writes.
@@ -524,8 +569,8 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // Reserved projection boundary. Keep closed until product owners approve an explicit
-    // field-level disclosure/consent contract and a server projection is deployed.
+    // Global preference projection stays closed. The approved path is the per-event consented
+    // slice under events/{eventId}/preference_projections/{uid} (TASK-654).
     match /public_preferences/{userId} {
       allow read, write: if false;
     }
@@ -1009,6 +1054,22 @@ service cloud.firestore {
       // organizer co-management remains a stakeholder decision, so the client and Rules both
       // stay creator-only until that authority is explicitly approved.
       allow read, write: if isOwnerOfEvent(eventId);
+    }
+
+    // Consented play-discovery slice for one event. Owner writes consent; cross-member reads
+    // require live consent plus same-event consent or event-manager scope. Rules do not cascade
+    // from /events/{eventId}, so this path needs its own match.
+    match /events/{eventId}/preference_projections/{userId} {
+      allow read: if canReadEventPreferenceProjection(eventId, userId);
+      allow create: if isOwner(userId) &&
+        exists(/databases/$(database)/documents/events/$(eventId)) &&
+        validEventPreferenceProjectionShape(request.resource.data, eventId, userId);
+      allow update: if isOwner(userId) &&
+        exists(/databases/$(database)/documents/events/$(eventId)) &&
+        validEventPreferenceProjectionShape(request.resource.data, eventId, userId) &&
+        request.resource.data.uid == resource.data.uid &&
+        request.resource.data.event_id == resource.data.event_id;
+      allow delete: if isOwner(userId);
     }
 
   }
