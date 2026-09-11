@@ -1,7 +1,10 @@
 # Execute DC06 Spiderman
 
 This is the runbook. Saying **execute sprint spiderman** means: follow this file.
-The sprint is executed in dependency-ordered waves with 6–10 parallel workers when capacity is available. A coordinator owns dispatch, integration, the shared tracker, and the final gate.
+
+**As of 2026-09-11 on `main`:** waves 0–5 are landed (146 / 167). Remaining work is listed in
+[NOW.md](../NOW.md) — do not restart Wave 0. Wave 6 (staging) waits for an isolated Firebase
+project. The coordinator still owns dispatch, integration, the tracker, and the gate.
 
 ## Files to read first (every session)
 

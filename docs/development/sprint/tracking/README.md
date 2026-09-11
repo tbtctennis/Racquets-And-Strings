@@ -1,6 +1,10 @@
 # Sprint tracking
 
-When a details file changes **Status**, update the matching row and counts in the active
-`<SPRINT>-TRACKER.md` in the same change. The tracker contains the complete task and bug inventory.
+When a details file changes **Status**, update in the same change:
 
-Do not track progress in `docs/planning/`. That tree is the legacy behaviour source.
+1. the details file
+2. the matching row and counts in `<SPRINT>-TRACKER.md`
+3. [NOW.md](../../NOW.md) if the item is entering or leaving the pending list
+
+The tracker is the complete inventory. NOW.md is pending only. Do not track progress in
+`docs/planning/`.

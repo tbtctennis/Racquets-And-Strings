@@ -1,33 +1,48 @@
 # Documentation
 
-Three doors. Architecture is how the system works **today**. Planning is what we intend and what
-we already closed. Development is what we are **doing**.
+**Start here.** This file is the map of `docs/` and the high-level status of current work.
 
-## Start here
+| Folder | Purpose | Open when |
+| --- | --- | --- |
+| **[development/](development/README.md)** | What we are **doing**: live TASK/BUG ids, sprint board, open work | You need status, next work, or a task file |
+| **[planning/](planning/README.md)** | What we **intend**: vision, rulings, D0–D9 behaviour | You need why something should work a certain way |
+| **[architecture/](architecture/README.md)** | How the system works **today** | You need data, authz, Functions, or diagrams |
+| **[domain/](domain/README.md)** | Product rules (scoring, RR, rewards, privacy) | You need a rule, not a ticket |
+| **[engineering/](engineering/README.md)** | How we develop (local, verify, security) | You are setting up or checking quality |
+| **[runbooks/](runbooks/README.md)** | Ops procedures (backup, Resend) | You are doing an approved ops action |
+| **[archive/](archive/README.md)** | Pointer only | Old paths; files now live under `planning/` |
 
-| Door           | Open when you need                                                                             | Link                                             |
-| -------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| Current system | Topology, data, authz, diagrams, how location / rallies / partner pool / account creation / coaching pool work | [architecture/README.md](architecture/README.md) |
-| Planning       | Vision, rulings, every sprint from DC00 through D9, deferred work                              | [planning/README.md](planning/README.md)         |
-| Doing          | Live TASK/BUG status on DC06 Spiderman                                                         | [development/README.md](development/README.md)   |
+Live status is **not** in planning. It lives in [development/NOW.md](development/NOW.md) (open work only) and [development/sprint/tracking/SPIDERMAN-TRACKER.md](development/sprint/tracking/SPIDERMAN-TRACKER.md) (full board).
 
-Also:
+---
 
-- [Domain rules](domain/README.md) — tournament, scoring, Round Robin, rewards, contact privacy
-- [Engineering](engineering/README.md) — local development, maintainability, security, skills
-- [Runbooks](runbooks/README.md) — approval-gated recovery and Resend
-- [Live backlog](development/BACKLOG.md) — post-staging / M6–M9 TASK ids
-- [Deferred work](planning/deferred/DEFERRED-AND-FUTURE.md) — ruled out of D6–D9
-- [Archive pointer](archive/README.md) — historical files now live under `docs/planning/`
+## DC06 Spiderman — high level
 
-## Maintenance contract
+Branch for this work: **`main`** (sprint branch `spiderman` still exists with sprint-specific `AGENTS.md`).
 
-- Update the relevant active document whenever architecture-sensitive source, Rules, Functions,
-  migrations, or environment tooling changes.
-- Keep diagrams as Mermaid Markdown under [`architecture/diagrams/`](architecture/diagrams/) so
-  they render directly and remain reviewable with the source.
-- Run `npm run docs:verify` before closing a documentation or architecture-sensitive change.
-- Live status exists only in `docs/development/sprint/tracking/`. Planning documents must not
-  duplicate task rows or progress counts.
-- Archive only dated, completed, or superseded evidence. Any unfinished outcome must first have a
-  permanent TASK/BUG id.
+| | |
+| --- | --- |
+| **Updated** | 2026-09-11 |
+| **Sprint board** | 146 / 167 closed (**87%**) |
+| **Tasks** | 139 completed · **20 open** · 15 backlog |
+| **Bugs** | 7 completed · **1 blocked** |
+
+| Still open | Count | Where |
+| --- | --- | --- |
+| Blocked | 1 | [BUG-502](development/bug/BUG-502-DETAILS.md) — no group-lesson coach UI |
+| Needs a staging Firebase project | 4 | [TASK-622](development/task/TASK-622-DETAILS.md)–[625](development/task/TASK-625-DETAILS.md) |
+| Open on `main` (can do without staging) | 16 | listed in [NOW.md](development/NOW.md) |
+| Later (M6–M9, legal, PWA, live email) | 15 | [BACKLOG.md](development/BACKLOG.md) |
+
+**Waves 0–5 landed** (D6–D9, vision gaps that block staging, emulator backlog). **Wave 6 (M5 staging live) is stopped** until the team names an isolated Firebase project.
+
+---
+
+## Navigate in this order
+
+1. **This file** — map and numbers.
+2. **[Open work](development/NOW.md)** — only pending / blocked / backlog.
+3. The **details file** for the item you pick (`docs/development/task/` or `bug/`).
+4. **Planning / architecture / domain** if you need behaviour or current system.
+
+Agents: follow root [`AGENTS.md`](../AGENTS.md). Do not add new TASK/BUG ids under `docs/planning/`.

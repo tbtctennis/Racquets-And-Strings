@@ -6,7 +6,8 @@ Live board for **DC06 Spiderman**. Update this file whenever a details-file **St
 | -------------- | --------------------------- |
 | **Updated**    | 2026-09-11                  |
 | **Completion** | 146 / 167 (87%)              |
-| **Branch**     | `spiderman`                 |
+| **Branch**     | `main`                      |
+| **Open work**  | [NOW.md](../../NOW.md)      |
 | **Execute**    | [EXECUTE.md](../EXECUTE.md) |
 
 ## Status counts — tasks
@@ -32,6 +33,14 @@ Live board for **DC06 Spiderman**. Update this file whenever a details-file **St
 ## Blocked now
 
 - [BUG-502](../../bug/BUG-502-DETAILS.md) — Group-lesson coach contact browser journey has no UI
+
+## Open now
+
+Pending-only list: [NOW.md](../../NOW.md).
+
+- **Staging (4):** TASK-622–625 — stopped until an isolated Firebase project is named.
+- **Open on main (16):** TASK-647, 649–652, 654–659, 661–662, 664–666.
+- **Backlog (15):** [BACKLOG.md](../../BACKLOG.md).
 
 ## Board
 

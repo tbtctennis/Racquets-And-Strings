@@ -1,12 +1,13 @@
 # Current system
 
 This directory is the code-derived record of **how Racquets & Strings works today** on branch
-`spiderman`. It distinguishes current behavior from target safety improvements. Product rules live
+`main`. It distinguishes current behavior from target safety improvements. Product rules live
 in [`docs/domain/`](../domain/README.md). How we develop lives in
-[`docs/engineering/`](../engineering/README.md).
+[`docs/engineering/`](../engineering/README.md). Open work is
+[`docs/development/NOW.md`](../development/NOW.md).
 
-Last verified against branch `spiderman` (local emulator evidence only; parent of this docs
-refresh is `dc111f22`). Staging and production are unverified.
+Last verified against branch `main` (local emulator evidence; Spiderman waves 0–5 landed
+2026-09-11). Staging and production are unverified.
 
 ## Start here
 

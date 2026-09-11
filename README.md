@@ -119,7 +119,8 @@ The remaining environment work is to establish:
 
 ## Architecture and engineering guidance
 
-- [Documentation home](docs/README.md)
+- [Documentation home](docs/README.md) — map, Spiderman counts, and links
+- [Open work](docs/development/NOW.md) — pending, blocked, staging, leftover, backlog
 - [Architecture index](docs/architecture/README.md)
 - [System architecture](docs/architecture/SYSTEM_ARCHITECTURE.md)
 - [Data model](docs/architecture/DATA_MODEL.md)

@@ -1,26 +1,29 @@
 # Development tracker
 
-This folder is the **working** tracker from DC06 Spiderman onward.
+**Doing** — live TASK/BUG work from DC06 Spiderman onward.
 
-| File                                                         | Role                                               |
-| ------------------------------------------------------------ | -------------------------------------------------- |
-| [STRUCTURE.md](STRUCTURE.md)                                 | Layout and rules                                   |
-| [LEGACY-TO-MODERN.md](LEGACY-TO-MODERN.md)                   | Claude/BLG/D-sprint id → TASK/BUG                  |
-| [sprint/EXECUTE.md](sprint/EXECUTE.md)                       | Runbook for **execute sprint spiderman**           |
-| [sprint/SPIDERMAN-PLANNING.md](sprint/SPIDERMAN-PLANNING.md) | Spiderman sprint planning and work design          |
-| [sprint/tracking/SPIDERMAN-TRACKER.md](sprint/tracking/SPIDERMAN-TRACKER.md) | Complete inventory and progress board |
-| [sprint/WAVE-1-CLOSEOUT-D7-READINESS.md](sprint/WAVE-1-CLOSEOUT-D7-READINESS.md) | Wave 1 closeout checklist |
-| [sprint/templates/SPRINT-PLANNING-TEMPLATE.md](sprint/templates/SPRINT-PLANNING-TEMPLATE.md) | Future sprint planning template |
-| [sprint/templates/SPRINT-TRACKING-TEMPLATE.md](sprint/templates/SPRINT-TRACKING-TEMPLATE.md) | Future sprint tracking template |
-| [task/](task/)                                               | One `TASK-n-DETAILS.md` per task from **TASK-501** |
-| [bug/](bug/)                                                 | One `BUG-n-DETAILS.md` per bug from **BUG-501**    |
-| [BACKLOG.md](BACKLOG.md)                                     | Post-Spiderman work as TASK ids                    |
-| [TAGS.md](TAGS.md)                                           | Allowed tags                                       |
+| First | Then |
+| --- | --- |
+| **[NOW.md](NOW.md)** | Open, blocked, staging, leftover, and backlog — pending only |
+| **[sprint/tracking/SPIDERMAN-TRACKER.md](sprint/tracking/SPIDERMAN-TRACKER.md)** | Full board and 146 / 167 counts |
+| **[BACKLOG.md](BACKLOG.md)** | Post-staging / M6–M9 ids |
 
-`docs/planning/` remains the vision, rulings, and D6–D9 behaviour source. Do not add new working ids there.
-`docs/architecture/` is how the system works today. Update it when architecture-sensitive code lands.
+`docs/planning/` is vision and D6–D9 behaviour. Do not add new working ids there.
+`docs/architecture/` is how the system works today.
 
-The repository root `AGENTS.md` is the only agent contract. The sprint tracker is the only live
-status source; this folder contains acceptance details, durable references, and execution support.
+## Folder
 
-Opened 2026-09-01 on branch `spiderman`.
+| Path | Role |
+| --- | --- |
+| [NOW.md](NOW.md) | Daily surface: what is still open |
+| [sprint/EXECUTE.md](sprint/EXECUTE.md) | How to run the Spiderman sprint |
+| [sprint/SPIDERMAN-PLANNING.md](sprint/SPIDERMAN-PLANNING.md) | Sprint planning |
+| [sprint/tracking/SPIDERMAN-TRACKER.md](sprint/tracking/SPIDERMAN-TRACKER.md) | Complete inventory |
+| [task/](task/) | One `TASK-n-DETAILS.md` from TASK-501 |
+| [bug/](bug/) | One `BUG-n-DETAILS.md` from BUG-501 |
+| [BACKLOG.md](BACKLOG.md) | Later work |
+| [TAGS.md](TAGS.md) | Allowed tags |
+| [LEGACY-TO-MODERN.md](LEGACY-TO-MODERN.md) | Old D-sprint / BLG ids → TASK/BUG |
+| [STRUCTURE.md](STRUCTURE.md) | Layout rules |
+
+Root [`AGENTS.md`](../../AGENTS.md) is the project agent contract. Sprint-specific execute waves also live on git branch `spiderman`.

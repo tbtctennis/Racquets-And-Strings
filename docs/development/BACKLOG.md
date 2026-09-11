@@ -2,6 +2,8 @@
 
 Work that **cannot** be done until after staging is live, or that is blocked on a later milestone (M6–M9, legal, platform decision, live email).
 
+Open work that *can* still be done on `main` is **not** here — see [NOW.md](NOW.md).
+
 Emulator-local backlog rows were promoted into DC06 Spiderman on 2026-09-01.
 
 | ID                                   | Title                                                                  | Status  | Tags                     | Sprint  | Legacy    |

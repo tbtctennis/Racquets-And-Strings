@@ -1,8 +1,9 @@
 # Wave 1 closeout and Wave 2 readiness plan
 
-Status: Wave 1 implementation complete; BUG-507 and BUG-508 resolved; final D6 closeout verification pending.
-Branch: `spiderman`
-Scope: D6/M1 (`TASK-502`–`TASK-541`) before D7 dispatch
+**Superseded.** Waves 0–5 landed on `main` (2026-09-11). Live open work:
+[NOW.md](../NOW.md). Full board: [tracking/SPIDERMAN-TRACKER.md](tracking/SPIDERMAN-TRACKER.md).
+
+Historical note: Wave 1 was D6/M1 (`TASK-502`–`TASK-541`) before D7. Branch at the time: `spiderman`.
 
 ## Close Wave 1
 
