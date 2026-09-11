@@ -1,13 +1,13 @@
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
+const { FieldValue } = require('firebase-admin/firestore');
 const { REGION, SUPER_ADMIN_UID } = require('./lib/constants');
 const { requireAuth } = require('./lib/callable');
 const { notify } = require('./lib/notify');
 const { paidAward } = require('./lib/tournamentResult');
 
 const db = () => admin.firestore();
-const FieldValue = admin.firestore.FieldValue;
 const manager = (event, uid) =>
   uid === SUPER_ADMIN_UID || event.creator_id === uid || (event.organizer_ids || []).includes(uid);
 
@@ -37,7 +37,7 @@ async function withdrawParticipant({ eventId, uid, actorUid, reason = 'other', n
     if (![match.player_1_uid, match.player_2_uid].includes(uid)) continue;
     const opponentUid = match.player_1_uid === uid ? match.player_2_uid : match.player_1_uid;
     if (!opponentUid) continue;
-    const opponentName = match.player_1_uid === uid ? match.player_2_name : match.player_1_name;
+    const opponentName = (match.player_1_uid === uid ? match.player_2_name : match.player_1_name) || '';
     await db().runTransaction(async (tx) => {
       const currentSnap = await tx.get(doc.ref);
       const current = currentSnap.data();

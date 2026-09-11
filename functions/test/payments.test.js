@@ -108,6 +108,13 @@ test('the server refuses a court-booking cancellation either way', () => {
   assert.equal(hasContributorBadge([applyCancellationRequest(donation, { uid: 'member-a', now })]), true);
   assert.equal(hasContributorBadge([booking]), false);
 
+  assert.throws(() => applyCancellationRequest(donation, { uid: 'member-b', now }), /another member/);
+  const pending = applyCancellationRequest(donation, { uid: 'member-a', now });
+  assert.throws(
+    () => applyCancellationRequest(pending, { uid: 'member-a', now }),
+    /Only a succeeded donation with no cancellation request can be cancelled/,
+  );
+
   const callable = readFileSync(join(__dirname, '../payments.js'), 'utf8');
   const index = readFileSync(join(__dirname, '../index.js'), 'utf8');
   assert.match(callable, /exports.requestPaymentCancellation/);

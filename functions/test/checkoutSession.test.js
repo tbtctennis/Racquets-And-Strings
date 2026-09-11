@@ -113,4 +113,21 @@ test('live Stripe keys, live session ids, card data, and anonymous callers are r
       ),
     (error) => error instanceof HttpsError && error.code === 'invalid-argument',
   );
+
+  await assert.rejects(
+    () =>
+      createCheckoutSession(
+        { ...memberRequest, data: { ...memberRequest.data, amount: 0 } },
+        { getSecret: () => 'sk_test_123' },
+      ),
+    (error) => error instanceof HttpsError && error.code === 'invalid-argument',
+  );
+  await assert.rejects(
+    () =>
+      createCheckoutSession(
+        { ...memberRequest, data: { ...memberRequest.data, type: 'court booking' } },
+        { getSecret: () => 'sk_test_123' },
+      ),
+    (error) => error instanceof HttpsError && error.code === 'invalid-argument',
+  );
 });
