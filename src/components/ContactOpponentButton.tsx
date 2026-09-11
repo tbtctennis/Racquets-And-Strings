@@ -46,10 +46,10 @@ export const iconButtonCls = (variant: 'outline' | 'white' | 'clay') => {
  * `preferred` narrows, never adds; empty/absent means every filled-in channel is offered.
  */
 export const contactChannels = (c: {
-  phone?: string;
-  email?: string;
-  whatsappContact?: string;
-  preferred?: ContactMethod[];
+  phone?: string | undefined;
+  email?: string | undefined;
+  whatsappContact?: string | undefined;
+  preferred?: ContactMethod[] | undefined;
 }): Channel[] => {
   const phoneE164 = toE164Phone(c.phone);
   const waNumber = c.whatsappContact || phoneE164;
@@ -82,14 +82,14 @@ export const contactChannels = (c: {
  */
 export const ContactOpponentButton: React.FC<{
   name: string;
-  phone?: string;
-  email?: string;
-  whatsappContact?: string;
+  phone?: string | undefined;
+  email?: string | undefined;
+  whatsappContact?: string | undefined;
   /** Their `contacts.preferred_mode_of_contact`. Empty/absent = offer every channel they have. */
-  preferred?: ContactMethod[];
-  size?: 'sm' | 'md';
-  variant?: 'outline' | 'white';
-  className?: string;
+  preferred?: ContactMethod[] | undefined;
+  size?: 'sm' | 'md' | undefined;
+  variant?: 'outline' | 'white' | undefined;
+  className?: string | undefined;
 }> = ({ name, phone, email, whatsappContact, preferred, variant = 'white', className }) => {
   const channels = contactChannels({ phone, email, whatsappContact, preferred });
   if (channels.length === 0) return null;

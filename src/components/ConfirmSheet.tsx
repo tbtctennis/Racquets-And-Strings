@@ -9,10 +9,10 @@ export type ConfirmSheetProps = {
   message: React.ReactNode;
   onConfirm: () => void;
   onClose: () => void;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  isLoading?: boolean;
-  confirmDisabled?: boolean;
+  confirmLabel?: string | undefined;
+  cancelLabel?: string | undefined;
+  isLoading?: boolean | undefined;
+  confirmDisabled?: boolean | undefined;
 };
 
 /**

@@ -7,19 +7,19 @@ export type DoublesPoolMatchRef = {
   eventId: string;
   player1Uid: string;
   player2Uid: string;
-  winnerUid?: string;
+  winnerUid?: string | undefined;
   status: string;
-  category?: string;
-  tournamentChoice?: string;
+  category?: string | undefined;
+  tournamentChoice?: string | undefined;
 };
 
 export type DoublesPoolParticipantRef = {
   uid: string;
   eventId: string;
-  userName?: string;
-  partnerUid?: string;
-  partnerName?: string;
-  tournamentChoice?: string;
+  userName?: string | undefined;
+  partnerUid?: string | undefined;
+  partnerName?: string | undefined;
+  tournamentChoice?: string | undefined;
 };
 
 export const isDoublesMatch = (match: Pick<DoublesPoolMatchRef, 'category' | 'tournamentChoice'>): boolean =>

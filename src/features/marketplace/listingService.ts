@@ -58,9 +58,12 @@ export async function createListing(
 
   try {
     for (let i = 0; i < draft.files.length; i++) {
+      const file = draft.files[i];
+      const path = photoPaths[i];
+      if (!file || !path) continue;
       await new Promise<void>((resolve, reject) => {
-        const task = uploadBytesResumable(ref(storage, photoPaths[i]), draft.files[i], {
-          contentType: draft.files[i].type,
+        const task = uploadBytesResumable(ref(storage, path), file, {
+          contentType: file.type,
         });
         task.on(
           'state_changed',
@@ -116,9 +119,12 @@ export async function updateListing(
 
   try {
     for (let i = 0; i < draft.files.length; i++) {
+      const file = draft.files[i];
+      const path = newPhotoPaths[i];
+      if (!file || !path) continue;
       await new Promise<void>((resolve, reject) => {
-        const task = uploadBytesResumable(ref(storage, newPhotoPaths[i]), draft.files[i], {
-          contentType: draft.files[i].type,
+        const task = uploadBytesResumable(ref(storage, path), file, {
+          contentType: file.type,
         });
         task.on(
           'state_changed',

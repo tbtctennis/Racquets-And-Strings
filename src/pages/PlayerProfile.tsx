@@ -42,12 +42,19 @@ const deriveResults = (mine: TournamentMatch[], uid: string) => {
     if (idx > bestIdx) bestIdx = idx;
     if (m.round === 'F' && m.status === 'complete' && m.winner_uid === uid) wonFinal = true;
   }
-  const bestFinish = bestIdx >= 0 ? ROUND_LABEL[ROUND_ORDER[bestIdx]] : '—';
+  const bestRound = bestIdx >= 0 ? ROUND_ORDER[bestIdx] : undefined;
+  const bestFinish = bestRound ? (ROUND_LABEL[bestRound] ?? '—') : '—';
   let bestResult = '—';
   if (wonFinal) bestResult = 'Champion';
-  else if (bestIdx >= 0) {
-    const r = ROUND_ORDER[bestIdx];
-    bestResult = r === 'F' ? 'Finalist' : r === 'SF' ? 'Semifinalist' : r === 'QF' ? 'Quarterfinalist' : ROUND_LABEL[r];
+  else if (bestRound) {
+    bestResult =
+      bestRound === 'F'
+        ? 'Finalist'
+        : bestRound === 'SF'
+          ? 'Semifinalist'
+          : bestRound === 'QF'
+            ? 'Quarterfinalist'
+            : (ROUND_LABEL[bestRound] ?? '—');
   }
   return { bestFinish, bestResult };
 };

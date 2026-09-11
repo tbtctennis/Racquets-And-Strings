@@ -27,6 +27,7 @@ export function assignRosterKeys(courts: ParsedCourt[]): CsvCourt[] {
 /** Parse the source court export into the normalized shape used by map and task flows. */
 export function parseCourts(csvText: string): CsvCourt[] {
   const [headerLine, ...lines] = csvText.split(/\r?\n/).filter(Boolean);
+  if (!headerLine) return [];
   const headers = parseCsvLine(headerLine);
   const idx = (col: string) => headers.indexOf(col);
   const iName = idx('Name'),
@@ -58,7 +59,7 @@ export function parseCourts(csvText: string): CsvCourt[] {
         lng,
         address: cells[iAddress]?.trim() || '',
         courtType: cells[iType]?.trim() || '',
-        numCourts: parseInt(cells[iCourts]) || 0,
+        numCourts: parseInt(cells[iCourts] ?? '') || 0,
         lights: cells[iLights]?.trim().toLowerCase() === 'yes',
         winterPlay: iWinterPlay >= 0 && cells[iWinterPlay]?.trim().toLowerCase() === 'yes',
         website: iWebsite >= 0 ? cells[iWebsite]?.trim() || '' : '',

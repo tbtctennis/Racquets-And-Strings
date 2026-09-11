@@ -12,13 +12,13 @@ export interface Provider {
   id: string;
   name: string;
   area: string;
-  phone?: string;
-  email?: string;
-  certified?: boolean;
+  phone?: string | undefined;
+  email?: string | undefined;
+  certified?: boolean | undefined;
   /** Their member account, when they have one — used for the profile photo beside their name. */
-  uid?: string;
+  uid?: string | undefined;
   offers: Reward[];
-  roles?: ProviderRecord['roles'];
+  roles?: ProviderRecord['roles'] | undefined;
 }
 
 /** The services catalog, active entries only, grouped by category then provider. */

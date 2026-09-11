@@ -5,7 +5,7 @@
 | **Task id**    | TASK-664                                                                      |
 | **Title**      | Enable stricter TypeScript indexed and optional-property checks               |
 | **TLDR**       | Incrementally enable noUncheckedIndexedAccess and exactOptionalPropertyTypes. |
-| **Status**     | new                                                                           |
+| **Status**     | inprogress                                                                    |
 | **Tags**       | QA                                                                            |
 | **Sprint**     | DC06 Spiderman                                                                |
 | **Legacy ids** | BLG0062                                                                       |
@@ -46,3 +46,5 @@ When **execute sprint spiderman** reaches this item:
 | Date       | Who                    | Note                                                                                 |
 | ---------- | ---------------------- | ------------------------------------------------------------------------------------ |
 | 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live. |
+| 2026-09-11 | Anuj Raja · Grok Build | Started on `agent/main-TASK-664`. Enable both flags in the root tsconfig and fix only what `tsc --noEmit` reports. |
+| 2026-09-11 | Anuj Raja · Grok Build | Root `tsconfig.json` now sets `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes`. Optional call-site `undefined` is allowed as `prop?: T \| undefined`; indexed access is guarded. `tsc --noEmit` is green. Coordinator: mark completed after integration. |

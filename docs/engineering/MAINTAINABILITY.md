@@ -34,9 +34,11 @@ group bonuses use the same callable boundary.
 ## Quality commands
 
 - `npm run typecheck` runs the TypeScript compiler without emitting files.
-- The root `tsconfig.json` enables full TypeScript `strict` mode plus no-implicit-return and
-  no-fallthrough checks. `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` remain
-  intentionally deferred because they require a broad legacy data-model migration.
+- The root `tsconfig.json` enables full TypeScript `strict` mode plus no-implicit-return,
+  no-fallthrough, `noUncheckedIndexedAccess`, and `exactOptionalPropertyTypes`. Optional
+  properties that callers pass as explicit `undefined` are typed `prop?: T | undefined`.
+  Indexed access is narrowed at the use site (guards, defaults) rather than by rewriting
+  the data model.
 - `npm run lint` runs ESLint over first-party React/TypeScript source, scripts, tests, and Functions.
   Existing warnings for legacy hook dependency choices, explicit `any`, and unused legacy values
   remain visible; new errors fail the command.

@@ -395,6 +395,7 @@ export const Matches: React.FC = () => {
     const pool = rerollSource.filter((r) => !shownIds.has(r.user_id) && !activePartnerIds.has(r.user_id));
     if (pool.length === 0) return;
     const pick = pool[Math.floor(Math.random() * pool.length)];
+    if (!pick) return;
     const next: RandState = {
       slots: already ? rand.slots : [...rand.slots, i],
       overrides: { ...rand.overrides, [i]: pick.user_id },
@@ -781,7 +782,7 @@ export const Matches: React.FC = () => {
                                 type="button"
                                 onClick={() => randomizeSlot(slot)}
                                 disabled={!canRandomize}
-                                whileTap={canRandomize ? tapScale.whileTap : undefined}
+                                {...(canRandomize ? { whileTap: tapScale.whileTap } : {})}
                                 transition={tapScale.transition}
                                 title={canRandomize ? 'Randomize this slot' : 'No randomizes left this week'}
                                 className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-fg/5 text-fg/70 hover:text-fg transition-colors disabled:cursor-not-allowed shrink-0"

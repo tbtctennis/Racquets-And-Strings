@@ -96,7 +96,7 @@ const asRecord = (t: Partial<TaskProgress> | null | undefined) => (t || {}) as R
 // bonus points (Matchday, zone sweeps, …) awarded server-side (see functions/groupAwards.js).
 export const taskPoints = (t: Partial<TaskProgress> | null | undefined): number => {
   const rec = asRecord(t);
-  const tiers = ALL_TIERS.reduce((n, tier) => n + (rec[tier.id] ? TIER_POINTS[tier.id] : 0), 0);
+  const tiers = ALL_TIERS.reduce((n, tier) => n + (rec[tier.id] ? (TIER_POINTS[tier.id] ?? 0) : 0), 0);
   const bonus = typeof t?.bonusPoints === 'number' ? t.bonusPoints : 0;
   return (t?.setupComplete ? SETUP_POINTS : 0) + tiers + bonus;
 };

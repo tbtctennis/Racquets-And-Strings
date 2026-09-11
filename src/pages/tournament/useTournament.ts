@@ -982,6 +982,7 @@ export const useTournament = (eventIdOverride?: string) => {
     const groupsToFix: Array<{ gi: number; players: TournamentPlayer[] }> = [];
     for (let i = 0; i < rrGroupIndices.length; i++) {
       const gi = rrGroupIndices[i];
+      if (gi === undefined) continue;
       const groupPlayers = rrGroups[i] ?? [];
       const cleaned = groupPlayers.filter((p) => !siblingIds.has(p.uid));
       if (cleaned.length < groupPlayers.length) groupsToFix.push({ gi, players: cleaned });
@@ -2257,10 +2258,10 @@ export const useTournament = (eventIdOverride?: string) => {
   // Players may write only the scheduling fields (Firestore rules carve-out); scores stay
   // organizer-only. Preview (ungenerated) matches have no doc, so they're guarded out.
   type SchedulePatch = {
-    schedule_requested?: boolean;
-    proposed_date?: string;
-    proposed_slot?: 'AM' | 'PM';
-    schedule_status?: string;
+    schedule_requested?: boolean | undefined;
+    proposed_date?: string | undefined;
+    proposed_slot?: 'AM' | 'PM' | undefined;
+    schedule_status?: string | undefined;
   };
   const writeSchedule = async (matchId: string, patch: SchedulePatch, successText: string) => {
     if (!matchId || matchId.startsWith('preview_')) return;

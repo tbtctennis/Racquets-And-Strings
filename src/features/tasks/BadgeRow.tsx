@@ -4,8 +4,11 @@ import { BADGE_BY_ID, BADGE_PILL_CLASS } from './badges';
 // The badges a player chose to display, as text pills. Used on profile cards.
 // Deliberately not rendered beside leaderboard names — three text pills there crowded the
 // player name out of the row on a phone.
-export const BadgeRow: React.FC<{ ids?: string[]; className?: string }> = ({ ids, className }) => {
-  const badges = (ids || []).map((id) => BADGE_BY_ID[id]).filter(Boolean);
+export const BadgeRow: React.FC<{ ids?: string[] | undefined; className?: string | undefined }> = ({
+  ids,
+  className,
+}) => {
+  const badges = (ids || []).map((id) => BADGE_BY_ID[id]).filter((badge) => badge != null);
   if (badges.length === 0) return null;
   return (
     <span className={`inline-flex flex-wrap items-center gap-1.5 ${className ?? ''}`}>

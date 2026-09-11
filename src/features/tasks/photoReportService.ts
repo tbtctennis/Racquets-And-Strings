@@ -85,9 +85,12 @@ export async function submitPhotoReport(args: {
   const photosMeta = await Promise.all(storedFiles.map(extractPhotoMetadata));
 
   for (let i = 0; i < storedFiles.length; i++) {
+    const file = storedFiles[i];
+    const path = photoPaths[i];
+    if (!file || !path) continue;
     await new Promise<void>((resolve, reject) => {
-      const task = uploadBytesResumable(ref(storage, photoPaths[i]), storedFiles[i], {
-        contentType: storedFiles[i].type,
+      const task = uploadBytesResumable(ref(storage, path), file, {
+        contentType: file.type,
       });
       task.on(
         'state_changed',

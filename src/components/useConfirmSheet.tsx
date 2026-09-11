@@ -4,7 +4,7 @@ import { ConfirmSheet } from './ConfirmSheet';
 type Confirmation = {
   title: string;
   message: React.ReactNode;
-  confirmLabel?: string;
+  confirmLabel?: string | undefined;
   onConfirm: () => void | Promise<void>;
 };
 

@@ -3,11 +3,11 @@ import { cn } from '../lib/cn';
 import { FieldError } from './FieldError';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  error?: string;
-  hint?: React.ReactNode;
-  startAdornment?: React.ReactNode;
-  endAdornment?: React.ReactNode;
+  label?: string | undefined;
+  error?: string | undefined;
+  hint?: React.ReactNode | undefined;
+  startAdornment?: React.ReactNode | undefined;
+  endAdornment?: React.ReactNode | undefined;
 }
 
 /** One field chrome: 44px control, 16px value, clay focus, badge-loss error. */

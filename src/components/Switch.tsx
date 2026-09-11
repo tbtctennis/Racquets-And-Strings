@@ -4,7 +4,7 @@ export const Switch: React.FC<{
   checked: boolean;
   onChange: (checked: boolean) => void;
   label: string;
-  disabled?: boolean;
+  disabled?: boolean | undefined;
 }> = ({ checked, onChange, label, disabled }) => (
   <button
     type="button"

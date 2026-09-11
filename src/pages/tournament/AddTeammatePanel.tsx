@@ -6,7 +6,7 @@ import { field, fieldLabelCls } from '../../components/Input';
 import { MemberSearchInput, type MemberPick } from '../../features/members/MemberSearchInput';
 
 type Props = {
-  currentUserId?: string;
+  currentUserId?: string | undefined;
   saving: boolean;
   onSave: (partnerName: string, partnerInApp: 'yes' | 'no', combinedSkill: number | null) => void;
 };

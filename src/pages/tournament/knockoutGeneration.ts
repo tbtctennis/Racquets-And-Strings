@@ -21,7 +21,7 @@ export const buildKnockoutDrawPlan = (args: {
   players: readonly TournamentPlayer[];
   drawsize: number;
   started: boolean;
-  slotOverrides?: Record<number, TournamentPlayer | null>;
+  slotOverrides?: Record<number, TournamentPlayer | null> | undefined;
   freezeSeeds: boolean;
 }): KnockoutDrawPlan => {
   const { eventId, draw, drawsize, started, freezeSeeds } = args;

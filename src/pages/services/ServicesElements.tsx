@@ -62,7 +62,7 @@ type LinkCandidate = { uid: string; name: string };
 
 export const AddServiceForm: React.FC<{
   byCategory: Map<ServiceCategory, Provider[]>;
-  editingReward?: Reward;
+  editingReward?: Reward | undefined;
   onClose: () => void;
   onCreated: () => void;
 }> = ({ byCategory, editingReward, onClose, onCreated }) => {
@@ -542,8 +542,8 @@ const OfferCard: React.FC<{
   busy: boolean;
   onBook: () => void;
   onRedeem: () => void;
-  onEdit?: () => void;
-  onDelete?: () => void;
+  onEdit?: (() => void) | undefined;
+  onDelete?: (() => void) | undefined;
 }> = ({ reward, balance, alreadyOpen, busy, onBook, onRedeem, onEdit, onDelete }) => {
   const affordable = balance >= reward.points_cost;
 
@@ -627,7 +627,7 @@ const OfferCard: React.FC<{
 // The provider's own uploaded profile photo, resolved through the uid stamped on their offers.
 // Falls back to their initial, so a provider without a member account (or without a photo) still
 // gets the same round marker and the rows stay aligned.
-const ProviderAvatar: React.FC<{ name: string; src?: string }> = ({ name, src }) => (
+const ProviderAvatar: React.FC<{ name: string; src?: string | undefined }> = ({ name, src }) => (
   <Avatar src={src} name={name} size="row" className="bg-fg/10 text-fg/70" />
 );
 

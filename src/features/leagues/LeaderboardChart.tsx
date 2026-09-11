@@ -16,7 +16,7 @@ const yAt = (value: number, lo: number, hi: number, inverted: boolean) => {
 };
 
 const lineFor = (xs: number[], ys: number[]) =>
-  xs.map((x, i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
+  xs.map((x, i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${(ys[i] ?? 0).toFixed(1)}`).join(' ');
 
 export const LeaderboardChart: React.FC<{ points: ProgressPoint[]; className?: string }> = ({ points, className }) => {
   const shown = points.slice(-LAST_FIVE_MATCHES);
@@ -70,14 +70,14 @@ export const LeaderboardChart: React.FC<{ points: ProgressPoint[]; className?: s
         const hideMid = edge ? '' : ' max-[360px]:hidden';
         return (
           <g key={i}>
-            <circle data-series="pg" data-index={i} cx={xs[i]} cy={pgYs[i]} r="3" className="fill-clay" />
-            <circle data-series="rank" data-index={i} cx={xs[i]} cy={rankYs[i]} r="3" className="fill-fg" />
+            <circle data-series="pg" data-index={i} cx={xs[i] ?? 0} cy={pgYs[i] ?? 0} r="3" className="fill-clay" />
+            <circle data-series="rank" data-index={i} cx={xs[i] ?? 0} cy={rankYs[i] ?? 0} r="3" className="fill-fg" />
             <text
               data-series="pg"
               data-index={i}
               data-edge={edge ? 'true' : 'false'}
-              x={xs[i]}
-              y={pgYs[i] - 8}
+              x={xs[i] ?? 0}
+              y={(pgYs[i] ?? 0) - 8}
               textAnchor={anchor}
               className={`fill-clay text-xs${hideMid}`}
             >
@@ -87,8 +87,8 @@ export const LeaderboardChart: React.FC<{ points: ProgressPoint[]; className?: s
               data-series="rank"
               data-index={i}
               data-edge={edge ? 'true' : 'false'}
-              x={xs[i]}
-              y={rankYs[i] + 16}
+              x={xs[i] ?? 0}
+              y={(rankYs[i] ?? 0) + 16}
               textAnchor={anchor}
               className={`fill-fg text-xs${hideMid}`}
             >

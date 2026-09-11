@@ -14,18 +14,18 @@ export type SelectSheetProps = {
   options: readonly SelectSheetOption[];
   onChange: (value: string) => void;
   /** Trigger text when nothing is selected. Not added as a choice. */
-  placeholder?: string;
+  placeholder?: string | undefined;
   /** Extra empty-value choice shown at the top of the modal. */
-  emptyLabel?: string;
-  disabled?: boolean;
-  required?: boolean;
-  id?: string;
+  emptyLabel?: string | undefined;
+  disabled?: boolean | undefined;
+  required?: boolean | undefined;
+  id?: string | undefined;
   /** Extra classes on the trigger button. */
-  className?: string;
+  className?: string | undefined;
   /** Extra classes on the outer wrap. */
-  wrapperClassName?: string;
+  wrapperClassName?: string | undefined;
   /** Hide the field label. The trigger and modal still use `label` as the accessible name. */
-  hideLabel?: boolean;
+  hideLabel?: boolean | undefined;
 };
 
 /**

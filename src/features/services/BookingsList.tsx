@@ -18,7 +18,7 @@ function bookingTitle(booking: Booking, titles?: Record<string, string>): string
 
 export const BookingsList: React.FC<{
   items: Booking[];
-  titles?: Record<string, string>;
+  titles?: Record<string, string> | undefined;
 }> = ({ items, titles }) => {
   const { open, past } = partitionBookings(items);
   if (open.length === 0 && past.length === 0) return null;

@@ -299,7 +299,8 @@ export const Tournament: React.FC = () => {
       setSearchParams(
         (p) => {
           const n = new URLSearchParams(p);
-          n.set('event', tabEvents[0].id);
+          const firstEvent = tabEvents[0];
+          if (firstEvent) n.set('event', firstEvent.id);
           return n;
         },
         { replace: true },
@@ -416,7 +417,7 @@ export const Tournament: React.FC = () => {
               key={size}
               disabled={currentMatches.length > 0 && !editMode}
               onClick={() => void handleSetPreviewDrawSize(currentDraw.label, size)}
-              whileTap={currentMatches.length > 0 && !editMode ? undefined : tapScale.whileTap}
+              {...(currentMatches.length > 0 && !editMode ? {} : { whileTap: tapScale.whileTap })}
               transition={tapScale.transition}
               className={`px-3 py-1 rounded-xl text-xs font-bold transition-colors ${
                 currentDrawSize === size

@@ -27,7 +27,7 @@ export type OrganizerOverviewPerson = {
  */
 export const selectOrganizerOverviewParticipants = (
   participants: readonly EventParticipant[],
-  viewerUid?: string | null,
+  viewerUid?: string | null | undefined,
 ): OrganizerOverviewPerson[] => {
   const seen = new Set<string>();
   const people: OrganizerOverviewPerson[] = [];

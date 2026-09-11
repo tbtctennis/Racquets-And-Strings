@@ -18,8 +18,8 @@ export type TemplateMatch = {
   round: string;
   player_1: number | string;
   player_2: number | string;
-  next_match_id?: string;
-  next_slot?: 'player_1' | 'player_2';
+  next_match_id?: string | undefined;
+  next_slot?: 'player_1' | 'player_2' | undefined;
 };
 
 // No contact fields here — ContactOpponentButton resolves channels from `contacts` at display time.
@@ -27,9 +27,9 @@ export type TournamentPlayer = {
   uid: string;
   name: string;
   participantId: string;
-  skillLevel?: number;
-  preferredCourts?: string[];
-  seed?: number;
+  skillLevel?: number | undefined;
+  preferredCourts?: string[] | undefined;
+  seed?: number | undefined;
 };
 
 /** A schedule request in the organizer's cross-tournament queue — hence the event title. */
@@ -45,9 +45,9 @@ export type UnplacedEntry = {
   name: string;
   eventId: string;
   eventTitle: string;
-  division?: string;
-  tournamentChoice?: string;
-  skill?: number;
+  division?: string | undefined;
+  tournamentChoice?: string | undefined;
+  skill?: number | undefined;
   zone: string;
 };
 
@@ -57,9 +57,9 @@ export type ScoreForm = {
   sets: Array<{ mine: string; opponent: string }>;
   court: string;
   /** Legacy field retained for old drafts; new submissions reject no-show results. */
-  noShow?: boolean;
+  noShow?: boolean | undefined;
   /** Organizer-only zero-score walkover. */
-  walkover?: boolean;
+  walkover?: boolean | undefined;
 };
 
 export type ScoreSubmission = {
@@ -71,7 +71,7 @@ export type ScoreSubmission = {
   set_2_player_2: number;
   set_3_player_1: number;
   set_3_player_2: number;
-  court?: string;
+  court?: string | undefined;
 };
 
 export type RRConfig = {
@@ -97,8 +97,8 @@ export type DrawConfig = {
   skillGroup: SkillGroup;
   // Set only on a merged singles skill draw (skillGroup: 'All') — which adjacent pair it merges,
   // so participant-inclusion and BYE-ordering know which two bands to pull from.
-  mergedFrom?: SkillMergePair;
+  mergedFrom?: SkillMergePair | undefined;
   // Zone bucket id (see ZoneDrawConfig) — undefined means the event has no zone dimension, so
   // this draw's key/behavior is byte-identical to how it worked before zones existed.
-  zone?: string;
+  zone?: string | undefined;
 };

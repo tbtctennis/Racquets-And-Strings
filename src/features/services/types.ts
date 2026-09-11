@@ -7,9 +7,9 @@ export interface ProviderRecord {
   id: string;
   name: string;
   roles: ProviderRole[];
-  member_uid?: string;
-  area?: string;
-  updated_at?: string;
+  member_uid?: string | undefined;
+  area?: string | undefined;
+  updated_at?: string | undefined;
 }
 
 export const CATEGORY_LABEL: Record<ServiceCategory, string> = {
@@ -32,21 +32,21 @@ export interface Reward {
    * a provider who isn't a member (or hasn't been linked yet) simply falls back to an initial.
    * Without it the only way to resolve provider_id → uid is a full scan of `preferences`.
    */
-  uid?: string;
-  contact_phone?: string;
-  contact_email?: string;
+  uid?: string | undefined;
+  contact_phone?: string | undefined;
+  contact_email?: string | undefined;
   area: string;
   offer: string;
   /** Free text, e.g. "Head, Kirschbaum, MSV" — rendered as chips. Blank for coaching. */
-  brands?: string;
+  brands?: string | undefined;
   discount: number;
   total_price: number;
   discounted_price: number;
   points_cost: number;
   /** Coaching only — shown as a credential badge on the provider row. */
-  certified?: boolean;
-  active?: boolean;
-  sort?: number;
+  certified?: boolean | undefined;
+  active?: boolean | undefined;
+  sort?: number | undefined;
 }
 
 export type RedemptionStatus =
@@ -71,14 +71,14 @@ export interface Redemption {
   user_name: string;
   status: RedemptionStatus;
   created_at: string;
-  used_at?: string;
-  used_by?: string;
-  flagged_at?: string;
-  flag_note?: string;
-  cancel_requested_at?: string;
-  cancel_reason?: string;
-  cancelled_at?: string;
-  reviewer_note?: string;
+  used_at?: string | undefined;
+  used_by?: string | undefined;
+  flagged_at?: string | undefined;
+  flag_note?: string | undefined;
+  cancel_requested_at?: string | undefined;
+  cancel_reason?: string | undefined;
+  cancelled_at?: string | undefined;
+  reviewer_note?: string | undefined;
 }
 
 // A coupon still in play — the player can't redeem the same offer again, and the provider
@@ -97,12 +97,12 @@ export interface Booking {
   uid: string;
   user_name: string;
   status: BookingStatus;
-  note?: string;
+  note?: string | undefined;
   created_at: string;
   updated_at: string;
-  marked_completed_at?: string;
-  completed_at?: string;
-  cancelled_at?: string;
+  marked_completed_at?: string | undefined;
+  completed_at?: string | undefined;
+  cancelled_at?: string | undefined;
 }
 
 /** Cheapest thing in the catalog — drives the "unlock a reward" threshold across the app. */

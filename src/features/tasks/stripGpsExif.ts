@@ -214,6 +214,7 @@ function stripGpsFromJpeg(bytes: Uint8Array): Uint8Array {
     }
 
     const marker = bytes[offset + 1];
+    if (marker === undefined) break;
     if (marker === JPEG_SOS) {
       parts.push(bytes.subarray(offset));
       break;
@@ -232,7 +233,7 @@ function stripGpsFromJpeg(bytes: Uint8Array): Uint8Array {
       break;
     }
 
-    const length = (bytes[offset + 2] << 8) | bytes[offset + 3];
+    const length = ((bytes[offset + 2] ?? 0) << 8) | (bytes[offset + 3] ?? 0);
     const segmentEnd = offset + 2 + length;
     if (length < 2 || segmentEnd > bytes.length) {
       parts.push(bytes.subarray(offset));
@@ -262,13 +263,22 @@ function stripExifFromPng(bytes: Uint8Array): Uint8Array {
   let offset = 8;
   let changed = false;
   while (offset + 12 <= bytes.length) {
-    const length = (bytes[offset] << 24) | (bytes[offset + 1] << 16) | (bytes[offset + 2] << 8) | bytes[offset + 3];
+    const length =
+      ((bytes[offset] ?? 0) << 24) |
+      ((bytes[offset + 1] ?? 0) << 16) |
+      ((bytes[offset + 2] ?? 0) << 8) |
+      (bytes[offset + 3] ?? 0);
     const chunkEnd = offset + 12 + length;
     if (length < 0 || chunkEnd > bytes.length) {
       parts.push(bytes.subarray(offset));
       break;
     }
-    const type = String.fromCharCode(bytes[offset + 4], bytes[offset + 5], bytes[offset + 6], bytes[offset + 7]);
+    const type = String.fromCharCode(
+      bytes[offset + 4] ?? 0,
+      bytes[offset + 5] ?? 0,
+      bytes[offset + 6] ?? 0,
+      bytes[offset + 7] ?? 0,
+    );
     if (type === 'eXIf') changed = true;
     else parts.push(bytes.subarray(offset, chunkEnd));
     offset = chunkEnd;

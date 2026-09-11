@@ -17,9 +17,9 @@ export type ZoneDrawConfig = {
   enabled: boolean;
   buckets: ZoneBucket[];
   includeUnassigned: boolean;
-  reallocatedAt?: string;
+  reallocatedAt?: string | undefined;
   /** sourceBucketId -> targetBucketId. A source in here produces no draws of its own. */
-  merges?: Record<string, string>;
+  merges?: Record<string, string> | undefined;
 };
 
 export const UNASSIGNED_ZONE_ID = 'unassigned';
@@ -27,14 +27,14 @@ export const UNASSIGNED_ZONE_ID = 'unassigned';
 // No contact fields here — ContactOpponentButton resolves channels from `contacts` at display time.
 export type TournamentMatch = {
   id: string;
-  category?: 'singles' | 'doubles' | 'rally' | 'challenge' | 'score_submission';
+  category?: 'singles' | 'doubles' | 'rally' | 'challenge' | 'score_submission' | undefined;
   event_id: string;
   tournament_choice: 'Singles' | 'Doubles';
   division: string;
   skill_group: SkillGroup;
   // Zone bucket id this match belongs to (see ZoneDrawConfig) — absent for events that never
   // enabled zone draws, or for draws with no zone dimension (doubles).
-  zone?: string;
+  zone?: string | undefined;
   drawsize: number;
   match_id: string;
   round: string;
@@ -45,42 +45,42 @@ export type TournamentMatch = {
   player_1_uid: string;
   player_2_name: string;
   player_2_uid: string;
-  winner_name?: string;
-  winner_uid?: string;
-  set_1_player_1?: number;
-  set_1_player_2?: number;
-  set_2_player_1?: number;
-  set_2_player_2?: number;
-  set_3_player_1?: number;
-  set_3_player_2?: number;
-  next_match_id?: string;
-  next_slot?: 'player_1' | 'player_2' | '';
+  winner_name?: string | undefined;
+  winner_uid?: string | undefined;
+  set_1_player_1?: number | undefined;
+  set_1_player_2?: number | undefined;
+  set_2_player_1?: number | undefined;
+  set_2_player_2?: number | undefined;
+  set_3_player_1?: number | undefined;
+  set_3_player_2?: number | undefined;
+  next_match_id?: string | undefined;
+  next_slot?: 'player_1' | 'player_2' | '' | undefined;
   status: MatchStatus;
-  bracket?: string | null;
+  bracket?: string | null | undefined;
   started: boolean;
-  created_at?: string;
-  completed_at?: string;
-  score_edited_at?: string;
-  score_disputed?: boolean;
-  format?: TournamentFormat;
-  rr_group?: number;
-  rr_round?: number;
-  rr_advancement_count?: number;
-  rr_group_label?: string;
-  rr_label_custom?: boolean;
+  created_at?: string | undefined;
+  completed_at?: string | undefined;
+  score_edited_at?: string | undefined;
+  score_disputed?: boolean | undefined;
+  format?: TournamentFormat | undefined;
+  rr_group?: number | undefined;
+  rr_round?: number | undefined;
+  rr_advancement_count?: number | undefined;
+  rr_group_label?: string | undefined;
+  rr_label_custom?: boolean | undefined;
   // Idempotency stamp written on every match of a group in the same batch that pays the group's
   // +5 completion bonus. Its presence is the only proof the bonus was actually paid (the bonus
   // is a separate, best-effort commit) — reversal must check it.
-  rr_groupbonus?: boolean;
-  walkover?: boolean;
+  rr_groupbonus?: boolean | undefined;
+  walkover?: boolean | undefined;
   // League points actually paid when the result was applied. The group table reads these.
-  points_winner?: number;
-  points_loser?: number;
-  court?: string;
+  points_winner?: number | undefined;
+  points_loser?: number | undefined;
+  court?: string | undefined;
   // Scheduling — players may edit only these fields (Firestore rules carve-out); scores stay
   // organizer-only. Absent schedule_status is treated as 'unscheduled'.
-  schedule_status?: 'unscheduled' | 'scheduled';
-  proposed_date?: string; // YYYY-MM-DD
-  proposed_slot?: 'AM' | 'PM';
-  schedule_requested?: boolean; // player asked the organizer to schedule
+  schedule_status?: 'unscheduled' | 'scheduled' | undefined;
+  proposed_date?: string | undefined; // YYYY-MM-DD
+  proposed_slot?: 'AM' | 'PM' | undefined;
+  schedule_requested?: boolean | undefined; // player asked the organizer to schedule
 };

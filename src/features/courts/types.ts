@@ -14,5 +14,5 @@ export type CsvCourt = {
   website: string;
   clubInfo: string;
   zone: string;
-  bookingUrl?: string;
+  bookingUrl?: string | undefined;
 };

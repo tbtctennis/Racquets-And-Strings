@@ -774,8 +774,9 @@ export const CourtMap: React.FC = () => {
                   if (action) {
                     e.preventDefault();
                     if (action.type === 'open' || action.type === 'move') setSuggestionIndex(action.index);
-                    else if (action.type === 'select' && suggestions[action.index]) {
-                      applySuggestion(suggestions[action.index]);
+                    else if (action.type === 'select') {
+                      const suggestion = suggestions[action.index];
+                      if (suggestion) applySuggestion(suggestion);
                     } else if (action.type === 'close') setSuggestions([]);
                     return;
                   }

@@ -17,11 +17,11 @@ export type AvatarSize = keyof typeof sizeClasses;
 
 export type AvatarProps = {
   name: string;
-  src?: string;
-  size?: AvatarSize;
-  alt?: string;
-  className?: string;
-  onError?: () => void;
+  src?: string | undefined;
+  size?: AvatarSize | undefined;
+  alt?: string | undefined;
+  className?: string | undefined;
+  onError?: (() => void) | undefined;
 };
 
 /** The only person avatar primitive: 24px in rows and 96px on profile cards. */
