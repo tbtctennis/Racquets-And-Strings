@@ -40,6 +40,7 @@ const requiredDocs = [
   'docs/engineering/README.md',
   'docs/engineering/MAINTAINABILITY.md',
   'docs/engineering/SECURITY_BASELINE.md',
+  'docs/engineering/TRIAGE-DEPS-SECRETS-HISTORY.md',
   'docs/engineering/LOCAL_DEVELOPMENT.md',
   'docs/engineering/TAKEOVER_STABILIZATION_LOG.md',
   'docs/runbooks/README.md',
