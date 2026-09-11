@@ -88,7 +88,7 @@ until an authorized isolated project and verified recovery path exist.
 ## Evidence, risks, and open questions
 
 - Evidence: `firestore.rules`, `storage.rules`, `src/features/**`, `src/pages/tournament/useTournament.ts`, `functions/**`.
-- Public reads remain deliberate for profile identity, events, rankings, listings, the services catalog, and aggregate site data. `public_preferences` is deny-all. Consented preference discovery is the event-scoped projection in [PREFERENCE_PROJECTION.md](../domain/PREFERENCE_PROJECTION.md). The retired `group_lessons` collection is not on the active Rules surface.
+- Public reads remain deliberate for profile identity, events, rankings, listings, the services catalog, and aggregate site data. Field classification and projection ownership are the [public-field sensitivity contract](PUBLIC_FIELD_SENSITIVITY.md). Consented preference discovery is the event-scoped projection in [PREFERENCE_PROJECTION.md](../domain/PREFERENCE_PROJECTION.md). `preferences` is world-readable; `public_preferences` is deny-all. Operational metrics stay on `admin_stats`. The retired `group_lessons` collection is not on the active Rules surface.
 - Client-writable sensitive documents now have Rules-level type, length, and immutable-field checks. Nested event maps and tournament match payloads remain application-validated.
 - The deployed schema and historical migration state were not available for this local audit; do not infer production document shape from one code path.
 

@@ -17,15 +17,16 @@ Last verified against branch `main` (local emulator evidence; Spiderman waves 0�
 4. [Account creation](ACCOUNT_CREATION.md) — email gate, password, profile completion, throttling, duplicate-address path
 5. [Coaching pool](COACHING_POOL.md) — retired group lessons, Book / Redeem today, typed bookings and `lesson_pool` target
 6. [Authorization model](AUTHORIZATION_MODEL.md) — UI role ≠ authz; Rules and callables
-7. [Firestore schema assessment](FIRESTORE_SCHEMA_ASSESSMENT.md)
-8. [Data shape](DATA_SHAPE.md) — field-level contract and test-data pipeline
-9. [Environments and delivery](ENVIRONMENTS_AND_DEPLOYMENT.md)
-10. [Mobile path recommendation](MOBILE_PATH_RECOMMENDATION.md)
-11. [ADR-001: role authorization](ADR-001-role-authorization-model.md)
-12. [ADR-002: environment isolation](ADR-002-environment-isolation.md)
-13. [Maintainability map](../engineering/MAINTAINABILITY.md)
-14. Domain rules: [tournament](../domain/TOURNAMENT_RULES.md) · [Round Robin](../domain/ROUND_ROBIN_RULES.md) · [scoring](../domain/SCORING_AND_POINTS.md) · [contact privacy](../domain/CONTACT_PRIVACY.md) · [preference projection](../domain/PREFERENCE_PROJECTION.md) · [rewards](../domain/REWARDS_RULES.md)
-15. [Local development](../engineering/LOCAL_DEVELOPMENT.md)
+7. [Public-field sensitivity](PUBLIC_FIELD_SENSITIVITY.md) — classification, projection ownership, public-surface Rules tests
+8. [Firestore schema assessment](FIRESTORE_SCHEMA_ASSESSMENT.md)
+9. [Data shape](DATA_SHAPE.md) — field-level contract and test-data pipeline
+10. [Environments and delivery](ENVIRONMENTS_AND_DEPLOYMENT.md)
+11. [Mobile path recommendation](MOBILE_PATH_RECOMMENDATION.md)
+12. [ADR-001: role authorization](ADR-001-role-authorization-model.md)
+13. [ADR-002: environment isolation](ADR-002-environment-isolation.md)
+14. [Maintainability map](../engineering/MAINTAINABILITY.md)
+15. Domain rules: [tournament](../domain/TOURNAMENT_RULES.md) · [Round Robin](../domain/ROUND_ROBIN_RULES.md) · [scoring](../domain/SCORING_AND_POINTS.md) · [contact privacy](../domain/CONTACT_PRIVACY.md) · [preference projection](../domain/PREFERENCE_PROJECTION.md) · [rewards](../domain/REWARDS_RULES.md)
+16. [Local development](../engineering/LOCAL_DEVELOPMENT.md)
 
 ## What changed on Spiderman (D6 / Wave 1)
 

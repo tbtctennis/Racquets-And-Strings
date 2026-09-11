@@ -152,6 +152,27 @@ service cloud.firestore {
         (data.preferred_mode_of_contact is list && data.preferred_mode_of_contact.size() <= 8);
     }
 
+    // Public-field sensitivity contract: docs/architecture/PUBLIC_FIELD_SENSITIVITY.md
+    // World-readable and member-wide documents cannot grow contact/account-recovery fields.
+    // Collections with hasOnly() already exclude these; events and tournament match writes
+    // do not, so the helper is the allowlist they lack.
+    function sensitiveContactFields() {
+      return [
+        'email', 'phone', 'secondary_email', 'whatsapp_contact',
+        'whatsapp_same_as_phone', 'preferred_mode_of_contact', 'contactable',
+        'contact_phone', 'contact_email'
+      ];
+    }
+
+    function hasNoSensitiveContactFields(data) {
+      return !data.keys().hasAny(sensitiveContactFields());
+    }
+
+    function doesNotAddSensitiveContactFields() {
+      return !request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(sensitiveContactFields());
+    }
+
     function validUserShape(data, userId) {
       return data.get('uid', userId) == userId &&
         optionalBoundedString(data, 'uid', 128) &&
@@ -583,6 +604,7 @@ service cloud.firestore {
       allow read: if true;
       allow create: if hasEventCreatorRole() &&
         request.resource.data.creator_id == request.auth.uid &&
+        hasNoSensitiveContactFields(request.resource.data) &&
         validEventShape(request.resource.data) &&
         (!('type' in request.resource.data) ||
           request.resource.data.type in ['Socials', 'Tournaments', 'Specials', 'League Ladder']) &&
@@ -592,6 +614,8 @@ service cloud.firestore {
         );
       allow update: if isManagerOfEvent(eventId) &&
         request.resource.data.creator_id == resource.data.creator_id &&
+        hasNoSensitiveContactFields(request.resource.data) &&
+        doesNotAddSensitiveContactFields() &&
         validEventShape(request.resource.data) &&
         (!('type' in request.resource.data) ||
           request.resource.data.type in ['Socials', 'Tournaments', 'Specials', 'League Ladder']) &&
@@ -710,6 +734,7 @@ service cloud.firestore {
       allow read: if isAuthenticated();
 
       allow create: if isAuthenticated() &&
+        hasNoSensitiveContactFields(request.resource.data) &&
         !request.resource.data.keys().hasAny(['no_show', 'rr_groupbonus', 'rr_group_bonus_v2']) && (
         // A player opens their own rally / challenge (incl. a proposed conversion).
         (
@@ -730,6 +755,8 @@ service cloud.firestore {
       );
 
       allow update: if isAuthenticated() &&
+        hasNoSensitiveContactFields(request.resource.data) &&
+        doesNotAddSensitiveContactFields() &&
         !request.resource.data.keys().hasAny(['no_show']) && (
         // Recipient accepts / declines / rejects a still-open rally or challenge.
         (

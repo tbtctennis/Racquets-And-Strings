@@ -20,6 +20,11 @@ Firebase Auth supplies identity. Firestore Rules are the effective client author
 ## Important current controls
 
 - Contacts are not globally readable; event creators do not gain unrelated contact access.
+- Public documents follow the [public-field sensitivity contract](PUBLIC_FIELD_SENSITIVITY.md).
+  World-readable collections must not accumulate contact or account-recovery fields.
+  `public_contacts` and partner-pool contacts are server-owned projections; `public_preferences`
+  remains reserved deny-all. `services.contact_phone` / `contact_email` stay a recorded catalog
+  exception until booking connections land.
 - `connections` and `public_contacts` are write-denied to clients.
 - `providers`, `services`, `bookings`, `offers`, protected stats/reward fields, `redemptions`, aggregate stats, ranking history, and notifications creation are server-controlled.
 - Reward redemption review is limited to the super-admin bootstrap; event creators cannot review,
@@ -47,7 +52,7 @@ Firebase Auth supplies identity. Firestore Rules are the effective client author
 - Partner-pool membership is own-uid create/delete. Contact projections under
   `partner_pool/{eventId}/contacts` are server-only writes and pool-member reads.
 - Storage writes require an owner UID for member paths and image/type/size constraints; anonymous court reports use a fixed anonymous prefix.
-- Sensitive client writes (profiles, contacts, stats, preferences, event preference projections, listings, events, tasks, participants, partner-pool membership, court reports, claims, rally/challenge creates) enforce types, length bounds, and immutable identity fields. Missing optional fields and string-or-list contact methods remain compatible.
+- Sensitive client writes (profiles, contacts, stats, preferences, event preference projections, listings, events, tasks, participants, partner-pool membership, court reports, claims, rally/challenge creates) enforce types, length bounds, and immutable identity fields. Missing optional fields and string-or-list contact methods remain compatible. Event and tournament match writes also reject `sensitiveContactFields()`.
 
 ## Target role model
 

@@ -50,3 +50,13 @@ path.
 **Code:** `firestore.rules` (`ownerContactFields`, `/contacts/{userId}`).
 
 **Regression test:** `tests/rules/firestore.rules.test.mjs`.
+
+## Public documents
+
+World-readable collections must not accumulate contact or account-recovery fields. Listing and
+partner-pool contact rows are server-owned projections; they never copy `secondary_email`.
+`services.contact_phone` / `contact_email` remain a recorded catalog exception until booking
+connections land. The full classification is
+[public-field sensitivity](../architecture/PUBLIC_FIELD_SENSITIVITY.md).
+
+**Regression test:** `tests/rules/firestore.publicFields.test.mjs`.
