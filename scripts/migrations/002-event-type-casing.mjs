@@ -1,4 +1,11 @@
-import { createMigrationDb, parseMigrationArgs, scanCollection } from './lib/cli.mjs';
+import {
+  createMigrationDb,
+  emptyReport,
+  finalizeMigration,
+  parseMigrationArgs,
+  printReport,
+  scanCollection,
+} from './lib/cli.mjs';
 import { EVENT_TYPES, normalizeEventType, planEventTypeUpdates } from '../lib/event-type-casing.mjs';
 
 const options = parseMigrationArgs(process.argv.slice(2), { supportsPaging: true });
@@ -32,11 +39,20 @@ if (!options.dryRun) {
   }
 }
 
-console.log(`scanned: ${snapshot.size}`);
-console.log(`eligible: ${plan.updates.length}`);
-console.log(`changed: ${options.dryRun ? 0 : plan.updates.length}`);
-console.log(`skipped: ${plan.skipped}`);
-console.log('failed: 0');
-if (options.dryRun) console.log(`planned: ${plan.updates.length}`);
+printReport(
+  await finalizeMigration(
+    db,
+    {
+      ...emptyReport(),
+      scanned: snapshot.size,
+      eligible: plan.updates.length,
+      changed: options.dryRun ? 0 : plan.updates.length,
+      skipped: plan.skipped,
+      planned: options.dryRun ? plan.updates.length : 0,
+    },
+    options,
+  ),
+  options,
+);
 console.log(`allowed values: ${EVENT_TYPES.join(', ')}`);
 console.log(`normalizer available: ${typeof normalizeEventType === 'function'}`);
