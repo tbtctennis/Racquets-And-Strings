@@ -92,6 +92,235 @@ service cloud.firestore {
       ];
     }
 
+    function rallyChallengeFields() {
+      return [
+        'category', 'player_1_uid', 'player_1_name', 'player_2_uid', 'player_2_name',
+        'status', 'created_at', 'event_id', 'division'
+      ];
+    }
+
+    function courtVisitFields() {
+      return [
+        'type', 'uid', 'user_name', 'court_key', 'court_name', 'zone',
+        'lat', 'lng', 'dist_m', 'created_at', 'day', 'match_type', 'visit_type'
+      ];
+    }
+
+    function courtReportFields() {
+      return [
+        'type', 'uid', 'user_name', 'court_key', 'court_name',
+        'photo_paths', 'photos_meta', 'note', 'racquets_in_queue', 'waiting_boards',
+        'status', 'created_at'
+      ];
+    }
+
+    function volunteerHostClaimFields() {
+      return [
+        'type', 'uid', 'user_name', 'event_id', 'event_title', 'note', 'status',
+        'created_at', 'meetup_title', 'meetup_date'
+      ];
+    }
+
+    // Type/length guards for remaining client-writable sensitive docs. Missing fields stay
+    // compatible. Person-name length is 320 so email-as-display-name documents still write.
+    function boundedString(value, max) {
+      return value is string && value.size() <= max;
+    }
+
+    function optionalBoundedString(data, field, max) {
+      return !(field in data) || boundedString(data[field], max);
+    }
+
+    function optionalBool(data, field) {
+      return !(field in data) || data[field] is bool;
+    }
+
+    function optionalNumberIn(data, field, min, max) {
+      return !(field in data) || (data[field] is number && data[field] >= min && data[field] <= max);
+    }
+
+    function optionalBoundedList(data, field, maxItems) {
+      return !(field in data) || (data[field] is list && data[field].size() <= maxItems);
+    }
+
+    function optionalTime(data, field) {
+      return !(field in data) || data[field] is timestamp || boundedString(data[field], 40);
+    }
+
+    function optionalContactMethods(data) {
+      return !('preferred_mode_of_contact' in data) ||
+        boundedString(data.preferred_mode_of_contact, 32) ||
+        (data.preferred_mode_of_contact is list && data.preferred_mode_of_contact.size() <= 8);
+    }
+
+    function validUserShape(data, userId) {
+      return data.get('uid', userId) == userId &&
+        optionalBoundedString(data, 'uid', 128) &&
+        optionalBoundedString(data, 'name', 320) &&
+        optionalBoundedString(data, 'avatar', 500) &&
+        optionalBoundedString(data, 'bio', 300) &&
+        optionalBoundedList(data, 'display_badges', 3) &&
+        optionalTime(data, 'created_at') &&
+        optionalTime(data, 'lastActive') &&
+        optionalBool(data, 'isVerified') &&
+        optionalBool(data, 'welcomeEmailSent');
+    }
+
+    function validContactShape(data) {
+      return optionalBoundedString(data, 'email', 320) &&
+        optionalBoundedString(data, 'secondary_email', 320) &&
+        optionalBoundedString(data, 'phone', 32) &&
+        optionalBoundedString(data, 'whatsapp_contact', 32) &&
+        optionalBool(data, 'whatsapp_same_as_phone') &&
+        optionalBool(data, 'contactable') &&
+        optionalTime(data, 'updated_at') &&
+        optionalContactMethods(data);
+    }
+
+    function validOwnerStatsShape(data, userId) {
+      return data.get('uid', userId) == userId &&
+        optionalBoundedString(data, 'uid', 128) &&
+        optionalBoundedString(data, 'name', 320) &&
+        optionalBoundedString(data, 'league', 80) &&
+        optionalNumberIn(data, 'skill_level', 0, 8) &&
+        (!('tournament_preference' in data) ||
+          data.tournament_preference in ['Beginners', 'Challengers', 'Masters']);
+    }
+
+    function validOwnerPreferenceShape(data, userId) {
+      return data.get('uid', userId) == userId &&
+        optionalBoundedString(data, 'uid', 128) &&
+        optionalBoundedString(data, 'scheduling_preference', 200) &&
+        optionalBoundedString(data, 'preferred_zone', 80) &&
+        optionalBoundedList(data, 'preferred_courts', 50) &&
+        optionalBoundedList(data, 'favourite_players', 50) &&
+        optionalBoundedList(data, 'availability_tags', 20) &&
+        optionalBool(data, 'preferred_zone_manual') &&
+        optionalBool(data, 'email_notifications') &&
+        optionalBool(data, 'available_to_play');
+    }
+
+    function validOwnerTaskShape(data) {
+      return optionalBoundedString(data, 'uid', 128) &&
+        optionalBoundedString(data, 'name', 320) &&
+        optionalTime(data, 'updatedAt') &&
+        optionalBool(data, 'followSocial') &&
+        optionalBool(data, 'tagPost') &&
+        optionalBool(data, 'whatsappGroup') &&
+        optionalBool(data, 'profileComplete') &&
+        optionalBool(data, 'profilePhoto');
+    }
+
+    function validListingShape(data) {
+      return optionalBoundedString(data, 'title', 120) &&
+        optionalBoundedString(data, 'description', 2000) &&
+        optionalBoundedString(data, 'pickup', 200) &&
+        optionalBoundedString(data, 'duration', 80) &&
+        optionalBoundedString(data, 'user_name', 320) &&
+        optionalBoundedString(data, 'id', 128) &&
+        optionalBoundedList(data, 'photo_paths', 3) &&
+        optionalNumberIn(data, 'price', 0, 100000) &&
+        optionalTime(data, 'created_at') &&
+        optionalTime(data, 'updated_at') &&
+        (!('condition' in data) || data.condition in ['New', 'Like new', 'Good', 'Fair']);
+    }
+
+    function validEventShape(data) {
+      return optionalBoundedString(data, 'title', 200) &&
+        optionalBoundedString(data, 'location', 200) &&
+        optionalBoundedString(data, 'about', 5000) &&
+        optionalBoundedString(data, 'description', 5000) &&
+        optionalBoundedString(data, 'image', 500) &&
+        optionalBoundedString(data, 'organizer', 320) &&
+        optionalBoundedString(data, 'creator_id', 128) &&
+        optionalBoundedString(data, 'id', 128) &&
+        optionalBoundedString(data, 'start_date', 40) &&
+        optionalBoundedString(data, 'end_date', 40) &&
+        optionalBoundedString(data, 'join_last_date', 40) &&
+        optionalBoundedString(data, 'time', 40) &&
+        optionalBoundedString(data, 'skill_level', 40) &&
+        optionalTime(data, 'created_at') &&
+        optionalBoundedList(data, 'zones', 20) &&
+        optionalBoundedList(data, 'organizer_ids', 50);
+    }
+
+    function validParticipantShape(data) {
+      return optionalBoundedString(data, 'id', 128) &&
+        optionalBoundedString(data, 'uid', 128) &&
+        optionalBoundedString(data, 'user_name', 320) &&
+        optionalBoundedString(data, 'event_id', 128) &&
+        optionalBoundedString(data, 'event_name', 200) &&
+        optionalBoundedString(data, 'partner_uid', 128) &&
+        optionalBoundedString(data, 'partner_name', 320) &&
+        optionalBoundedString(data, 'withdrawn_note', 500) &&
+        optionalBoundedString(data, 'new_zone', 80) &&
+        optionalBoundedString(data, 'zone', 80) &&
+        optionalNumberIn(data, 'skill', 0, 8) &&
+        optionalNumberIn(data, 'seed', 0, 256) &&
+        optionalBoundedList(data, 'dateselected', 31) &&
+        optionalTime(data, 'created_at') &&
+        optionalTime(data, 'withdrawn_at') &&
+        optionalTime(data, 'zone_change_requested_at');
+    }
+
+    function validPoolMemberShape(data, uid) {
+      return data.get('uid', uid) == uid &&
+        optionalBoundedString(data, 'uid', 128) &&
+        optionalBoundedString(data, 'name', 320) &&
+        optionalTime(data, 'created_at') &&
+        optionalNumberIn(data, 'skill', 0, 8) &&
+        (!('category' in data) || data.category in ['mens', 'womens', 'mixed']);
+    }
+
+    function validRallyChallengeShape(data) {
+      return boundedString(data.player_1_uid, 128) &&
+        boundedString(data.player_2_uid, 128) &&
+        optionalBoundedString(data, 'player_1_name', 320) &&
+        optionalBoundedString(data, 'player_2_name', 320) &&
+        optionalBoundedString(data, 'event_id', 128) &&
+        optionalBoundedString(data, 'division', 40) &&
+        optionalTime(data, 'created_at');
+    }
+
+    function validCourtVisitShape(data) {
+      return boundedString(data.court_key, 120) &&
+        boundedString(data.created_at, 40) &&
+        data.dist_m is number && data.dist_m >= 0 && data.dist_m <= 400 &&
+        optionalBoundedString(data, 'user_name', 320) &&
+        optionalBoundedString(data, 'court_name', 120) &&
+        optionalBoundedString(data, 'zone', 80) &&
+        optionalBoundedString(data, 'day', 16) &&
+        optionalBoundedString(data, 'match_type', 40) &&
+        optionalBoundedString(data, 'visit_type', 40) &&
+        optionalNumberIn(data, 'lat', -90, 90) &&
+        optionalNumberIn(data, 'lng', -180, 180);
+    }
+
+    function validCourtReportShape(data) {
+      return boundedString(data.court_key, 120) &&
+        data.note is string && data.note.size() > 0 && data.note.size() <= 2000 &&
+        data.photo_paths is list && data.photo_paths.size() <= 3 &&
+        optionalBoundedString(data, 'user_name', 320) &&
+        optionalBoundedString(data, 'court_name', 120) &&
+        optionalBoundedList(data, 'photos_meta', 3) &&
+        optionalNumberIn(data, 'racquets_in_queue', 0, 100) &&
+        optionalNumberIn(data, 'waiting_boards', 0, 100) &&
+        optionalTime(data, 'created_at');
+    }
+
+    function validTaskClaimShape(data) {
+      return optionalBoundedString(data, 'uid', 128) &&
+        optionalBoundedString(data, 'user_name', 320) &&
+        optionalBoundedString(data, 'event_id', 128) &&
+        optionalBoundedString(data, 'event_title', 200) &&
+        optionalBoundedString(data, 'note', 500) &&
+        optionalBoundedString(data, 'invitee_id', 128) &&
+        optionalBoundedString(data, 'invitee_name', 320) &&
+        optionalBoundedString(data, 'meetup_title', 200) &&
+        optionalBoundedString(data, 'meetup_date', 40) &&
+        optionalTime(data, 'created_at');
+    }
+
     // Order-independent id for a pair of players. MUST match pairId() in functions/connections.js
     // exactly — the trigger writes the doc, this recomputes the same name to look it up.
     function pairId(a, b) {
@@ -192,15 +421,15 @@ service cloud.firestore {
           'uid', 'name', 'avatar', 'bio', 'display_badges',
           'created_at', 'lastActive', 'isVerified', 'welcomeEmailSent'
         ]) &&
-        (!request.resource.data.keys().hasAny(['uid']) || request.resource.data.uid == userId);
+        validUserShape(request.resource.data, userId);
       allow update: if isOwner(userId) &&
         request.resource.data.keys().hasOnly([
           'uid', 'name', 'avatar', 'bio', 'display_badges',
           'created_at', 'lastActive', 'isVerified', 'welcomeEmailSent'
         ]) &&
-        (!request.resource.data.keys().hasAny(['uid']) || request.resource.data.uid == userId) &&
+        validUserShape(request.resource.data, userId) &&
         !request.resource.data.diff(resource.data).affectedKeys()
-          .hasAny(['secondary_email', 'created_at']) &&
+          .hasAny(['uid', 'secondary_email', 'created_at']) &&
         (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['welcomeEmailSent'])
           || request.resource.data.welcomeEmailSent == true) &&
         (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['isVerified'])
@@ -222,9 +451,11 @@ service cloud.firestore {
       // keeps the access mutual and avoids a client-readable roster or a privileged coach flag.
       allow read: if isOwner(userId) || isConnectedTo(userId);
       allow create: if isOwner(userId) &&
-        request.resource.data.keys().hasOnly(ownerContactFields());
+        request.resource.data.keys().hasOnly(ownerContactFields()) &&
+        validContactShape(request.resource.data);
       allow update: if isOwner(userId) &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(ownerContactFields());
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(ownerContactFields()) &&
+        validContactShape(request.resource.data);
       allow delete: if false;
     }
 
@@ -238,19 +469,14 @@ service cloud.firestore {
             'uid', 'name', 'skill_level', 'tournament_preference', 'league',
             'leaguePoints26', 'wins', 'loses', 'matchesPlayed', 'tournamentsPlayed'
           ]) &&
-          request.resource.data.get('uid', userId) == userId &&
+          validOwnerStatsShape(request.resource.data, userId) &&
           request.resource.data.get('leaguePoints26', 0) == 0 &&
           request.resource.data.get('wins', 0) == 0 &&
           request.resource.data.get('loses', 0) == 0 &&
           request.resource.data.get('matchesPlayed', 0) == 0 &&
-          request.resource.data.get('tournamentsPlayed', 0) == 0 &&
-          request.resource.data.get('name', '') is string &&
-          request.resource.data.get('skill_level', 2) is number &&
-          request.resource.data.get('league', '') is string &&
-          request.resource.data.get('tournament_preference', 'Challengers') in
-            ['Beginners', 'Challengers', 'Masters'];
+          request.resource.data.get('tournamentsPlayed', 0) == 0;
       allow update: if isOwner(userId) &&
-          request.resource.data.get('uid', userId) == userId &&
+          validOwnerStatsShape(request.resource.data, userId) &&
           request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['skill_level', 'tournament_preference', 'name', 'uid', 'league']);
       allow delete: if false;
@@ -263,11 +489,11 @@ service cloud.firestore {
       allow read: if true;
       allow create: if isOwner(userId) &&
         request.resource.data.keys().hasOnly(ownerPreferenceFields()) &&
-        request.resource.data.get('uid', userId) == userId &&
+        validOwnerPreferenceShape(request.resource.data, userId) &&
         request.resource.data.event_creator == false;
       allow update: if isSuperAdmin() ||
         (isOwner(userId) &&
-          request.resource.data.get('uid', userId) == userId &&
+          validOwnerPreferenceShape(request.resource.data, userId) &&
           request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly([
               'uid', 'preferred_courts', 'favourite_players',
@@ -317,6 +543,7 @@ service cloud.firestore {
       allow read: if true;
       allow create: if hasEventCreatorRole() &&
         request.resource.data.creator_id == request.auth.uid &&
+        validEventShape(request.resource.data) &&
         (!('type' in request.resource.data) ||
           request.resource.data.type in ['Socials', 'Tournaments', 'Specials', 'League Ladder']) &&
         (
@@ -325,10 +552,11 @@ service cloud.firestore {
         );
       allow update: if isManagerOfEvent(eventId) &&
         request.resource.data.creator_id == resource.data.creator_id &&
+        validEventShape(request.resource.data) &&
         (!('type' in request.resource.data) ||
           request.resource.data.type in ['Socials', 'Tournaments', 'Specials', 'League Ladder']) &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny([
-          'organizer_ids', 'assigned_organizer_uids', 'organizer_uids'
+          'creator_id', 'organizer_ids', 'assigned_organizer_uids', 'organizer_uids'
         ]);
       allow delete: if false;
     }
@@ -360,9 +588,11 @@ service cloud.firestore {
     match /tasks/{docId} {
       allow read: if true;
       allow create: if docId == request.auth.uid &&
-        request.resource.data.keys().hasOnly(ownerTaskFields());
+        request.resource.data.keys().hasOnly(ownerTaskFields()) &&
+        validOwnerTaskShape(request.resource.data);
       allow update: if docId == request.auth.uid &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(ownerTaskFields());
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(ownerTaskFields()) &&
+        validOwnerTaskShape(request.resource.data);
       allow delete: if false;
     }
 
@@ -378,10 +608,12 @@ service cloud.firestore {
           isManagerOfEvent(request.resource.data.event_id)
         ) &&
         request.resource.data.keys().hasOnly(eventParticipantFields()) &&
+        validParticipantShape(request.resource.data) &&
         request.resource.data.event_id is string &&
         request.resource.data.created_at is string;
 
       allow update: if isAuthenticated() &&
+        validParticipantShape(request.resource.data) &&
         (
           (
             isManagerOfEvent(resource.data.event_id) &&
@@ -416,7 +648,8 @@ service cloud.firestore {
     match /partner_pool/{eventId}/members/{uid} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() && uid == request.auth.uid &&
-        request.resource.data.keys().hasOnly(['uid', 'name', 'category', 'skill', 'created_at']);
+        request.resource.data.keys().hasOnly(['uid', 'name', 'category', 'skill', 'created_at']) &&
+        validPoolMemberShape(request.resource.data, uid);
       allow update: if false;
       allow delete: if isAuthenticated() &&
         (uid == request.auth.uid || isManagerOfEvent(eventId));
@@ -441,6 +674,8 @@ service cloud.firestore {
         // A player opens their own rally / challenge (incl. a proposed conversion).
         (
           request.resource.data.category in ['rally', 'challenge'] &&
+          request.resource.data.keys().hasOnly(rallyChallengeFields()) &&
+          validRallyChallengeShape(request.resource.data) &&
           request.resource.data.player_1_uid == request.auth.uid &&
           request.resource.data.status == 'open' &&
           playableLocationPair(request.resource.data.player_1_uid, request.resource.data.player_2_uid)
@@ -560,23 +795,17 @@ service cloud.firestore {
       allow create: if isAuthenticated() && request.resource.data.type == 'check-in' &&
         request.resource.data.uid == request.auth.uid &&
         id.matches(request.auth.uid + '_.*') &&
-        request.resource.data.court_key is string &&
-        request.resource.data.dist_m is number &&
-        request.resource.data.dist_m <= 400 &&
-        request.resource.data.created_at is string;
+        request.resource.data.keys().hasOnly(courtVisitFields()) &&
+        validCourtVisitShape(request.resource.data);
       allow create: if isAuthenticated() && request.resource.data.type == 'attendance' &&
         request.resource.data.uid == request.auth.uid &&
         id.matches(request.auth.uid + '_.*') &&
-        request.resource.data.court_key is string &&
-        request.resource.data.dist_m is number &&
-        request.resource.data.dist_m <= 400 &&
-        request.resource.data.created_at is string;
+        request.resource.data.keys().hasOnly(courtVisitFields()) &&
+        validCourtVisitShape(request.resource.data);
       allow create: if
         request.resource.data.type in ['condition', 'waiting_board', 'queue'] &&
-        request.resource.data.court_key is string &&
-        request.resource.data.photo_paths is list &&
-        request.resource.data.note is string &&
-        request.resource.data.note.size() > 0 &&
+        request.resource.data.keys().hasOnly(courtReportFields()) &&
+        validCourtReportShape(request.resource.data) &&
         request.resource.data.status == 'approved' &&
         (
           (isAuthenticated() && request.resource.data.uid == request.auth.uid) ||
@@ -623,7 +852,9 @@ service cloud.firestore {
       allow read: if isAuthenticated() && resource.data.uid == request.auth.uid;
       allow update: if isAuthenticated() &&
         resource.data.uid == request.auth.uid &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'read_at']);
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'read_at']) &&
+        optionalBool(request.resource.data, 'read') &&
+        optionalTime(request.resource.data, 'read_at');
       allow delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
     }
 
@@ -664,13 +895,17 @@ service cloud.firestore {
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.status == 'available'
         && request.resource.data.kind in ['rent', 'sell']
-        && request.resource.data.keys().hasOnly(listingFields());
+        && request.resource.data.keys().hasOnly(listingFields())
+        && validListingShape(request.resource.data);
       allow update: if (isOwner(resource.data.uid) || isSuperAdmin())
         && request.resource.data.uid == resource.data.uid
         && request.resource.data.kind == resource.data.kind
         && request.resource.data.kind in ['rent', 'sell']
         && request.resource.data.status in ['available', 'sold', 'rented']
-        && request.resource.data.keys().hasOnly(listingFields());
+        && request.resource.data.keys().hasOnly(listingFields())
+        && validListingShape(request.resource.data)
+        && !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['uid', 'kind', 'created_at']);
       allow delete: if isOwner(resource.data.uid);
     }
 
@@ -684,10 +919,12 @@ service cloud.firestore {
       allow create: if isAuthenticated() &&
         request.resource.data.uid == request.auth.uid &&
         request.resource.data.status == 'pending' &&
+        validTaskClaimShape(request.resource.data) &&
         (
           (
             request.resource.data.type in ['volunteer', 'host'] &&
-            !id.matches('ambassador_.*')
+            !id.matches('ambassador_.*') &&
+            request.resource.data.keys().hasOnly(volunteerHostClaimFields())
           ) ||
           (
             request.resource.data.type == 'ambassador' &&
@@ -715,7 +952,8 @@ service cloud.firestore {
           id == 'ambassador_' + request.resource.data.invitee_id &&
           request.resource.data.keys().hasOnly([
             'type', 'uid', 'user_name', 'invitee_id', 'invitee_name', 'status', 'created_at'
-          ])
+          ]) &&
+          validTaskClaimShape(request.resource.data)
         );
       allow delete: if false;
     }
