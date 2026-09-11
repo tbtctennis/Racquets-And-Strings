@@ -23,4 +23,4 @@ This folder is the **working** tracker from DC06 Spiderman onward.
 The repository root `AGENTS.md` is the only agent contract. The sprint tracker is the only live
 status source; this folder contains acceptance details, durable references, and execution support.
 
-Opened 2026-09-01 on branch `spiderman` by Anuj Raja with Grok Build.
+Opened 2026-09-01 on branch `spiderman`.

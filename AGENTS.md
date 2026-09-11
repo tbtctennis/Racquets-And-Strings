@@ -7,7 +7,7 @@ This root file is the only agent contract in the repository. Do not look for or 
 `docs/development/sprint/EXECUTE.md`; live sprint status is only in
 `docs/development/sprint/tracking/<SPRINT>-TRACKER.md`.
 
-When the owner says **execute sprint spiderman**, follow the Execute section below. Do not ask for a new plan.
+When the team says **execute sprint spiderman**, follow the Execute section below. Do not ask for a new plan.
 
 ---
 
@@ -16,7 +16,7 @@ When the owner says **execute sprint spiderman**, follow the Execute section bel
 |                         |                                                                                           |
 | ----------------------- | ----------------------------------------------------------------------------------------- |
 | **What this is**        | Public product repo for Racquets & Strings                                                |
-| **Owner**               | Anuj Raja (`anujraja`, `anujrajaceo@gmail.com`)                                           |
+| **Team**                | TBTC Tennis                                                                               |
 | **GitHub**              | `https://github.com/tbtctennis/Racquets-And-Strings`                                      |
 | **origin**              | `tbtctennis/Racquets-And-Strings`                                                         |
 | **Default branch**      | `main`                                                                                    |
@@ -54,7 +54,7 @@ acceptance criteria, and evidence.
 ## 3. How we work (recorded 2026-09-01)
 
 1. **Plan first.** The coordinator resolves scope, ids, dependencies, and file ownership before dispatching a wave.
-2. **Emulator first.** Local Firebase emulators, project `rands-local`. No staging deploy and no production until the owner names an isolated project.
+2. **Emulator first.** Local Firebase emulators, project `rands-local`. No staging deploy and no production until the team names an isolated project.
 3. **Tracker is `docs/development/`.** Working ids are `TASK-501+` and `BUG-501+`. `docs/planning/` is Rahul’s behaviour source (vision, rulings, D6–D9). Do not add new working ids there.
 4. **Parallel by wave.** Dispatch 6–10 non-conflicting items at once when capacity and dependencies permit. Each worker implements only its assigned details file and explicitly owned files; never edit another worker’s files.
 5. **Isolate every worker.** Start each assignment from the latest verified `spiderman` commit in its own worktree and branch named `agent/spiderman-w<N>-<item-id>`. Workers commit issue-sized changes and push only their `origin` worker branch. They never push, merge, rebase, or force-push `spiderman`.
@@ -62,7 +62,7 @@ acceptance criteria, and evidence.
 7. **A failure the item did not already describe is a new bug**, linked to that task, next free `BUG-n` (currently next is **BUG-506**). The coordinator reserves bug ids to prevent collisions.
 8. **Status moves with the work:** `new` → `inprogress` → `completed` / `blocked`. A worker updates its owned details file; the coordinator applies the corresponding index/tracker update during integration. Do not claim completion until the integrated `spiderman` branch passes the required gate.
 9. **At the end of the sprint**, update `docs/architecture/`, `docs/domain/`, `docs/engineering/`, and `docs/runbooks/` so they match the code.
-10. **M5 staging live waits for the owner** to name an isolated Firebase project.
+10. **M5 staging live waits for the team** to name an isolated Firebase project.
 
 ---
 
@@ -91,7 +91,7 @@ acceptance criteria, and evidence.
 | **3** | M3 / D8 + gaps                                 | `TASK-598` … `TASK-609`, `TASK-626` … `TASK-629`                               |
 | **4** | M4 / D9 Stripe **test mode**                   | `TASK-610` … `TASK-621`                                                        |
 | **5** | Emulator-local backlog pulled into this sprint | listed in `SPIDERMAN-PLANNING.md` Wave 5                                       |
-| **6** | M5 staging live                                | `TASK-622` … `TASK-625` — **stop until the owner names a staging project**     |
+| **6** | M5 staging live                                | `TASK-622` … `TASK-625` — **stop until the team names a staging project**      |
 
 Skip `completed`. Skip `blocked` unless the blocker is gone. Do not start M6–M9, wallet split, Privacy/Terms, native/PWA, or Resend DNS.
 
@@ -104,7 +104,7 @@ Skip `completed`. Skip `blocked` unless the blocker is gone. Do not start M6–M
 5. The coordinator reviews each branch for scope, canon, ownership, and tests; integrates accepted branches one at a time into `spiderman`. Resolve conflicts in the owning branch whenever possible. Never silently overwrite another worker’s changes.
 6. After each integration batch, run the relevant tests; run `npm run verify` at the wave gate and before marking integrated items `completed`. Failed branches return to their worker for repair.
 7. When the wave gate is green, the coordinator updates indexes and `docs/development/sprint/tracking/SPIDERMAN-TRACKER.md`, records the integrated commit, cleans up merged worktrees/branches, and dispatches the next wave from that verified `spiderman` SHA.
-8. Commit issue-sized. Push `origin` worker branches only; the coordinator may push the verified `spiderman` branch when the owner directs.
+8. Commit issue-sized. Push `origin` worker branches only; the coordinator may push the verified `spiderman` branch when the team directs.
 
 ### End of sprint
 
@@ -117,7 +117,7 @@ Update technical docs to match code: `docs/architecture/`, `docs/domain/`, `docs
 - Emulators first, staging second, production only after explicit approval.
 - Inspect the active Firebase project before any Firebase CLI operation.
 - Do not run generic `firebase deploy` from this checkout.
-- Do not perform destructive Firestore migrations, production deploys, DNS changes, or provider configuration changes unless the owner approved that exact action.
+- Do not perform destructive Firestore migrations, production deploys, DNS changes, or provider configuration changes unless the team approved that exact action.
 - `.env.local` is emulator-only (`VITE_USE_FIREBASE_EMULATORS=true`, `VITE_FIREBASE_PROJECT_ID=rands-local`). Never put service-account keys, Resend secrets, or Stripe live keys in a `VITE_` variable.
 
 ---
