@@ -1236,6 +1236,41 @@ export const NEW_SHAPE_FIXTURES = [
       created_at: AT,
     },
   },
+  {
+    path: 'tournament_result_audit/audit-e2e-correction',
+    data: {
+      event_id: 'e2e-tournament',
+      match_id: 'states-rr-complete',
+      actor_uid: 'organizer-a',
+      action: 'correct',
+      reason: 'Scorecard showed a different second set.',
+      before: {
+        winnerUid: 'member-a',
+        scores: {
+          set_1: { player_1: 6, player_2: 4 },
+          set_2: { player_1: 6, player_2: 2 },
+          set_3: { player_1: 0, player_2: 0 },
+        },
+        walkover: false,
+        noShow: false,
+        court: '',
+        margin: 6,
+      },
+      after: {
+        winnerUid: 'member-a',
+        scores: {
+          set_1: { player_1: 6, player_2: 4 },
+          set_2: { player_1: 7, player_2: 5 },
+          set_3: { player_1: 0, player_2: 0 },
+        },
+        walkover: false,
+        noShow: false,
+        court: '',
+        margin: 4,
+      },
+      recorded_at: AT,
+    },
+  },
 ];
 
 /**

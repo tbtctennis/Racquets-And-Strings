@@ -79,6 +79,7 @@ test('protected callables reject anonymous requests at the emulator wrapper', as
     ['requestCancellation', { code: 'RS-TEST-AA' }],
     ['reviewRedemption', { code: 'RS-TEST-AA', approve: true }],
     ['applyTournamentResult', { matchId: 'missing', scores: [] }],
+    ['correctCompletedResult', { matchId: 'missing', scores: [], reason: 'typo' }],
   ]) {
     const response = await call(name, null, data);
     assert.equal(response.status, 401, `${name}: ${JSON.stringify(response.body)}`);

@@ -26,6 +26,20 @@ export async function applyTournamentResult(intent: TournamentResultIntent) {
   return response.data;
 }
 
+export type CompletedResultCorrectionIntent = TournamentResultIntent & {
+  reason: string;
+};
+
+/** Organizer correction of a completed result: validates state, audits actor/reason/before/after, recomputes. */
+export async function correctCompletedResult(intent: CompletedResultCorrectionIntent) {
+  const callable = httpsCallable<CompletedResultCorrectionIntent, TournamentResultResponse>(
+    functions,
+    'correctCompletedResult',
+  );
+  const response = await callable(intent);
+  return response.data;
+}
+
 export async function setGroupBonus(args: {
   eventId: string;
   rrGroup: number;
