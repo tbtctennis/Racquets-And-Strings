@@ -14,9 +14,9 @@ Live board for **DC06 Spiderman**. Update this file whenever a details-file **St
 
 | Status     | Count |
 | ---------- | ----: |
-| new        |    20 |
+| new        |     4 |
 | inprogress |     0 |
-| completed  |   139 |
+| completed  |   155 |
 | blocked    |     0 |
 | backlog    |    15 |
 

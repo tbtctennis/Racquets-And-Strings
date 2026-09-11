@@ -5,7 +5,7 @@
 | First | Then |
 | --- | --- |
 | **[NOW.md](NOW.md)** | Open, blocked, staging, leftover, and backlog — pending only |
-| **[sprint/tracking/SPIDERMAN-TRACKER.md](sprint/tracking/SPIDERMAN-TRACKER.md)** | Full board and 146 / 167 counts |
+| **[sprint/tracking/SPIDERMAN-TRACKER.md](sprint/tracking/SPIDERMAN-TRACKER.md)** | Full board and 162 / 167 counts |
 | **[BACKLOG.md](BACKLOG.md)** | Post-staging / M6–M9 ids |
 
 `docs/planning/` is vision and D6–D9 behaviour. Do not add new working ids there.

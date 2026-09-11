@@ -2,9 +2,9 @@
 
 This is the runbook. Saying **execute sprint spiderman** means: follow this file.
 
-**As of 2026-09-11 on `main`:** waves 0–5 are landed (146 / 167). Remaining work is listed in
-[NOW.md](../NOW.md) — do not restart Wave 0. Wave 6 (staging) waits for an isolated Firebase
-project. The coordinator still owns dispatch, integration, the tracker, and the gate.
+**As of 2026-09-11 on `main`:** **162 / 167** closed (**97%**). All non-staging leftover tasks
+are done. Remaining work is listed in [NOW.md](../NOW.md) — do not restart Wave 0. Wave 6
+(staging TASK-622–625) waits for an isolated Firebase project. BUG-502 stays blocked.
 
 ## Files to read first (every session)
 
