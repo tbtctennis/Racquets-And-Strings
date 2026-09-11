@@ -5,7 +5,7 @@
 | **Task id**    | TASK-664                                                                      |
 | **Title**      | Enable stricter TypeScript indexed and optional-property checks               |
 | **TLDR**       | Incrementally enable noUncheckedIndexedAccess and exactOptionalPropertyTypes. |
-| **Status**     | inprogress                                                                    |
+| **Status**     | completed                                                                    |
 | **Tags**       | QA                                                                            |
 | **Sprint**     | DC06 Spiderman                                                                |
 | **Legacy ids** | BLG0062                                                                       |
