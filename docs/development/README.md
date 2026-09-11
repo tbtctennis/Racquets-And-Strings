@@ -19,8 +19,8 @@
 | [sprint/EXECUTE.md](sprint/EXECUTE.md) | How to run the Spiderman sprint |
 | [sprint/SPIDERMAN-PLANNING.md](sprint/SPIDERMAN-PLANNING.md) | Sprint planning |
 | [sprint/tracking/SPIDERMAN-TRACKER.md](sprint/tracking/SPIDERMAN-TRACKER.md) | Complete inventory |
-| [task/](task/) | One `TASK-n-DETAILS.md` from TASK-501 |
-| [bug/](bug/) | One `BUG-n-DETAILS.md` from BUG-501 |
+| [task/README.md](task/README.md) | All 174 tasks with counts; status matches each details file |
+| [bug/README.md](bug/README.md) | All 8 bugs with counts |
 | [BACKLOG.md](BACKLOG.md) | Later work |
 | [TAGS.md](TAGS.md) | Allowed tags |
 | [LEGACY-TO-MODERN.md](LEGACY-TO-MODERN.md) | Old D-sprint / BLG ids → TASK/BUG |
