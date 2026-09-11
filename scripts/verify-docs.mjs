@@ -50,6 +50,7 @@ const requiredDocs = [
   'docs/domain/SCORING_AND_POINTS.md',
   'docs/domain/REWARDS_RULES.md',
   'docs/domain/CONTACT_PRIVACY.md',
+  'docs/domain/PREFERENCE_PROJECTION.md',
 ];
 
 const documentationRequirements = [
@@ -70,6 +71,7 @@ const documentationRequirements = [
       'docs/architecture/AUTHORIZATION_MODEL.md',
       'docs/architecture/DATA_MODEL.md',
       'docs/engineering/SECURITY_BASELINE.md',
+      'docs/domain/PREFERENCE_PROJECTION.md',
     ],
   },
   {

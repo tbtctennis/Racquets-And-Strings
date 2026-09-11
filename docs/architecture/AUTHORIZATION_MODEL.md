@@ -25,7 +25,11 @@ Firebase Auth supplies identity. Firestore Rules are the effective client author
 - Reward redemption review is limited to the super-admin bootstrap; event creators cannot review,
   use, flag, or receive global coupon notifications unless they separately own the provider record.
 - Preferences are publicly readable projections; writes remain owner-scoped and role fields cannot be self-assigned.
-  `public_preferences` remains reserved deny-all.
+  `public_preferences` remains reserved deny-all. The approved cross-member discovery path is the
+  consented event-scoped slice `events/{eventId}/preference_projections/{uid}`
+  ([PREFERENCE_PROJECTION.md](../domain/PREFERENCE_PROJECTION.md)): owner writes consent and
+  allowlisted courts/zone/availability fields; managers or same-event consented members may read;
+  revocation and every other cross-member projection read fail closed.
 - Tournament result, ladder challenge, and group-bonus mutations use callable Functions; client match
   writes remain limited to scheduling, rally/challenge lifecycle, and other allowlisted fields.
   Correcting a completed tournament result is `correctCompletedResult` (event organizer or
@@ -43,7 +47,7 @@ Firebase Auth supplies identity. Firestore Rules are the effective client author
 - Partner-pool membership is own-uid create/delete. Contact projections under
   `partner_pool/{eventId}/contacts` are server-only writes and pool-member reads.
 - Storage writes require an owner UID for member paths and image/type/size constraints; anonymous court reports use a fixed anonymous prefix.
-- Sensitive client writes (profiles, contacts, stats, preferences, listings, events, tasks, participants, partner-pool membership, court reports, claims, rally/challenge creates) enforce types, length bounds, and immutable identity fields. Missing optional fields and string-or-list contact methods remain compatible.
+- Sensitive client writes (profiles, contacts, stats, preferences, event preference projections, listings, events, tasks, participants, partner-pool membership, court reports, claims, rally/challenge creates) enforce types, length bounds, and immutable identity fields. Missing optional fields and string-or-list contact methods remain compatible.
 
 ## Target role model
 
@@ -54,7 +58,9 @@ Everyone remains a Member. Organizer, Provider, and Admin stack on top of member
 - Event assignment uses `events.organizer_ids`. Writes go through `assignEventOrganizers`, which
   records actor, event target, before/after `organizer_ids`, and time on `organizer_assignment_audit`.
   Clients cannot write `organizer_ids`. A durable assignment UI remains future work.
-- Cross-member preference decoration fails closed until an approved event-scoped or consented projection exists.
+- `preferences/{uid}` remains world-readable (R7 compatibility residue). Consented discovery must
+  use `events/{eventId}/preference_projections/{uid}`; missing, revoked, or `public_preferences`
+  rows fail closed.
 - The hardcoded super-admin UID is operationally brittle and requires a documented bootstrap/recovery process. **Owner ruling 2026-08-31: it stays hardcoded** ([VISION.md](../planning/VISION.md) §10.6) — the brittleness is accepted and the recovery process is still owed. One consequence is load-bearing: the deployed rules must carry a UID that exists in the project they are deployed to, and a second Firebase project has its own Auth tenant, so staging otherwise has no super-admin at all.
 - Provider access is the `providers/{id}` row linked by `member_uid`. Preference flags do not grant it.
 - Admin SDK functions bypass Firestore Rules, so trigger/callable authorization and input validation need separate tests.

@@ -47,10 +47,10 @@ Run only against an isolated non-production project populated with synthetic or 
 
 ## Open engineering work
 
-`preferences/{uid}` is private and `public_preferences/{uid}` is deny-all. Do not backfill a
-preference projection: existing records do not prove consent. A future migration must first define
-the exact fields, audience, consent source, deletion behavior, staging validation, and rollback.
-Rollback must delete projections without changing private source documents.
+`public_preferences/{uid}` is deny-all. The approved discovery path is the per-event consented
+slice in [PREFERENCE_PROJECTION.md](../domain/PREFERENCE_PROJECTION.md). Do not backfill it:
+existing `preferences/{uid}` records do not prove consent. Rollback deletes projection documents
+without changing the private source.
 
 Provider-role cutover (`scripts/migrations/004-provider-role.mjs`) is additive. Rollback unlinks
 `providers/{id}.member_uid` on rows the migration wrote or merged; it does not rewrite leftover

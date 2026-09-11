@@ -285,6 +285,20 @@ export const SHAPE_REFERENCE = {
     updated_at: '2026-08-26T12:00:00.000Z',
   },
 
+  // events/{eventId}/preference_projections/{uid} — TASK-654 consented discovery slice.
+  // Owner-written. Live consent is required for any cross-member read. Notifications,
+  // scheduling, role flags, and contact channels never appear here.
+  event_preference_projections: {
+    uid: 'shape-user',
+    event_id: 'shape-event',
+    consented: true,
+    preferred_courts: ['Ramsden Park'],
+    preferred_zone: 'Downtown - Midtown',
+    availability_tags: ['weekday-evenings'],
+    available_to_play: true,
+    updated_at: '2026-08-20T18:00:00.000Z',
+  },
+
   // event_participants — L12 one `status` replacing the `removal` flag and the RR withdrawn list,
   // L15 per-event zone plus the kept req_zone_change / new_zone pair, L18 doubles partner.
   event_participants: {

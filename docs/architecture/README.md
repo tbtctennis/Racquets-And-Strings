@@ -24,7 +24,7 @@ Last verified against branch `main` (local emulator evidence; Spiderman waves 0�
 11. [ADR-001: role authorization](ADR-001-role-authorization-model.md)
 12. [ADR-002: environment isolation](ADR-002-environment-isolation.md)
 13. [Maintainability map](../engineering/MAINTAINABILITY.md)
-14. Domain rules: [tournament](../domain/TOURNAMENT_RULES.md) · [Round Robin](../domain/ROUND_ROBIN_RULES.md) · [scoring](../domain/SCORING_AND_POINTS.md) · [contact privacy](../domain/CONTACT_PRIVACY.md) · [rewards](../domain/REWARDS_RULES.md)
+14. Domain rules: [tournament](../domain/TOURNAMENT_RULES.md) · [Round Robin](../domain/ROUND_ROBIN_RULES.md) · [scoring](../domain/SCORING_AND_POINTS.md) · [contact privacy](../domain/CONTACT_PRIVACY.md) · [preference projection](../domain/PREFERENCE_PROJECTION.md) · [rewards](../domain/REWARDS_RULES.md)
 15. [Local development](../engineering/LOCAL_DEVELOPMENT.md)
 
 ## What changed on Spiderman (D6 / Wave 1)

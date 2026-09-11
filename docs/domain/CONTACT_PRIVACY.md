@@ -20,7 +20,9 @@ the provider. There is no live writer of `reason: coaching session`.
 **Partner-pool contacts** are a third projection: `partner_pool/{eventId}/contacts/{uid}`,
 written by Functions, readable only by members of that event's pool. Empty channels are omitted.
 See [partner-pool diagram](../architecture/diagrams/partner-pool.md) and
-[coaching pool](../architecture/COACHING_POOL.md).
+[coaching pool](../architecture/COACHING_POOL.md). Consented play-discovery fields (courts, zone,
+availability) are a separate event-scoped projection, not a contact channel — see
+[preference projection](PREFERENCE_PROJECTION.md).
 
 **Ruled change (2026-08-31, organizer download not yet implemented):** Ruling 8 gives an event
 organizer the contacts of everyone who joined their _own_ event, and the September beta ships a

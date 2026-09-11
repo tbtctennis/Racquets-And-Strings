@@ -481,6 +481,19 @@ export const NEW_SHAPE_FIXTURES = [
     data: { draw_key: 'draw-a', event_id: 'e2e-round-robin', status: 'draft', groups: [] },
   },
 
+  // events/{eventId}/preference_projections/{uid} — TASK-654 consented discovery slice.
+  {
+    path: 'events/states-tournament/preference_projections/member-a',
+    data: {
+      uid: 'member-a',
+      event_id: 'states-tournament',
+      consented: true,
+      preferred_courts: ['Synthetic Court'],
+      preferred_zone: 'Downtown - Midtown',
+      availability_tags: ['weekday-evenings'],
+    },
+  },
+
   // event_participants — L12 status, L15 zone request, L18 doubles partner.
   {
     path: 'event_participants/e2e-organizer',
