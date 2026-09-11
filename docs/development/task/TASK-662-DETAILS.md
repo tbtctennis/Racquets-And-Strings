@@ -5,7 +5,7 @@
 | **Task id**    | TASK-662                                                  |
 | **Title**      | Complete remaining Rules-level type and length validation |
 | **TLDR**       | Sensitive writes enforce types, bounds, immutable fields. |
-| **Status**     | new                                                       |
+| **Status**     | completed                                                 |
 | **Tags**       | Rules, Firebase, QA                                       |
 | **Sprint**     | DC06 Spiderman                                            |
 | **Legacy ids** | BLG0060                                                   |
@@ -45,6 +45,8 @@ When **execute sprint spiderman** reaches this item:
 
 ## Comments
 
-| Date       | Who                    | Note                                                                                 |
-| ---------- | ---------------------- | ------------------------------------------------------------------------------------ |
-| 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live. |
+| Date       | Who                    | Note                                                                                                                                              |
+| ---------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live.                                                              |
+| 2026-09-11 | Grok Build             | Started. Remaining type/length/immutable checks go on client-writable sensitive paths in firestore.rules, with emulator coverage in tests/rules.  |
+| 2026-09-11 | Grok Build             | Sensitive writes now enforce types, bounds, and immutable identity fields. `npm run test:rules` 53/53. No deploy. Coordinator owns tracker close. |

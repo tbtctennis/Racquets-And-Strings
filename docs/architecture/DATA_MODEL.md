@@ -86,7 +86,7 @@ until an authorized isolated project and verified recovery path exist.
 
 - Evidence: `firestore.rules`, `storage.rules`, `src/features/**`, `src/pages/tournament/useTournament.ts`, `functions/**`.
 - Public reads remain deliberate for profile identity, events, rankings, listings, the services catalog, and aggregate site data. Private preferences and operational metrics are not publicly enumerable. The retired `group_lessons` collection is not on the active Rules surface.
-- Many documents have application-level validation but not complete rules-level type/length validation.
+- Client-writable sensitive documents now have Rules-level type, length, and immutable-field checks. Nested event maps and tournament match payloads remain application-validated.
 - The deployed schema and historical migration state were not available for this local audit; do not infer production document shape from one code path.
 
 ### Sprint D5 component and service review

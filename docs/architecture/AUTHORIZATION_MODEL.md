@@ -38,6 +38,7 @@ Firebase Auth supplies identity. Firestore Rules are the effective client author
 - Partner-pool membership is own-uid create/delete. Contact projections under
   `partner_pool/{eventId}/contacts` are server-only writes and pool-member reads.
 - Storage writes require an owner UID for member paths and image/type/size constraints; anonymous court reports use a fixed anonymous prefix.
+- Sensitive client writes (profiles, contacts, stats, preferences, listings, events, tasks, participants, partner-pool membership, court reports, claims, rally/challenge creates) enforce types, length bounds, and immutable identity fields. Missing optional fields and string-or-list contact methods remain compatible.
 
 ## Target role model
 
