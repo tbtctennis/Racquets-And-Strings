@@ -151,9 +151,12 @@ Evidence: `src/pages/services/ServicesElements.tsx`, `src/features/services/serv
 ## Target state, risks, and open questions
 
 - Tournament result application now has one server-authoritative transaction. Challenge results
-  use `challengeResults`. Rally points use `onRallyConfirmedAwardPoints`. The browser refuses
-  completed-result reset/cancellation and Round Robin bonus mutations rather than retaining a
-  second points authority; those controls can be re-enabled only through bounded server operations.
+  use `challengeResults`. Rally points use `onRallyConfirmedAwardPoints`. Completed-result
+  corrections go through `correctCompletedResult`: an event organizer or super-admin supplies the
+  new bounded score and a reason; the callable validates the match is complete, records
+  actor/reason/before/after on `tournament_result_audit`, and reverses then repays points in one
+  transaction. The winner cannot change once the next match already has a result. Round Robin
+  bonus mutations remain a separate bounded server operation.
 - BUG-507: a valid rally-report update currently hits a Rules evaluator error. Do not treat the
   rally-report Rules path as green.
 - BUG-508: Functions emulator integration still has timeout/request failures on the final gate.

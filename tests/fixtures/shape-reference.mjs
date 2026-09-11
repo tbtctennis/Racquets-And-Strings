@@ -749,6 +749,41 @@ export const SHAPE_REFERENCE = {
     after: ['shape-assigned-organizer'],
     created_at: '2026-09-11T12:00:00.000Z',
   },
+
+  // tournament_result_audit/{id} — append-only actor/reason/before/after for completed-result
+  // corrections. Clients never write; correctCompletedResult is the path.
+  tournament_result_audit: {
+    event_id: 'shape-event',
+    match_id: 'shape-match',
+    actor_uid: 'shape-organizer',
+    action: 'correct',
+    reason: 'Scorecard showed a different second set.',
+    before: {
+      winnerUid: 'shape-member',
+      scores: {
+        set_1: { player_1: 6, player_2: 4 },
+        set_2: { player_1: 6, player_2: 2 },
+        set_3: { player_1: 0, player_2: 0 },
+      },
+      walkover: false,
+      noShow: false,
+      court: '',
+      margin: 6,
+    },
+    after: {
+      winnerUid: 'shape-member',
+      scores: {
+        set_1: { player_1: 6, player_2: 4 },
+        set_2: { player_1: 7, player_2: 5 },
+        set_3: { player_1: 0, player_2: 0 },
+      },
+      walkover: false,
+      noShow: false,
+      court: '',
+      margin: 4,
+    },
+    recorded_at: '2026-09-11T16:00:00.000Z',
+  },
 };
 
 /**

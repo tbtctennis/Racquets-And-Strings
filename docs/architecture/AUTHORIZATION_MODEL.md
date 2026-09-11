@@ -28,6 +28,8 @@ Firebase Auth supplies identity. Firestore Rules are the effective client author
   `public_preferences` remains reserved deny-all.
 - Tournament result, ladder challenge, and group-bonus mutations use callable Functions; client match
   writes remain limited to scheduling, rally/challenge lifecycle, and other allowlisted fields.
+  Correcting a completed tournament result is `correctCompletedResult` (event organizer or
+  super-admin only) and writes `tournament_result_audit`.
   Declined rallies/challenges stay stored as `declined` so they remain off the rejector's tab after
   refresh. Cancelling an **accepted** rally or challenge is `cancelMatch`; the other player is notified.
   Retracting an **open** challenge is still a sender delete (`ladder_cancelled`).

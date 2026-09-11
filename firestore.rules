@@ -604,6 +604,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Completed-result corrections are callable-owned (`correctCompletedResult`). Every
+    // authorized rescore writes an append-only actor/reason/before/after row. Clients never write.
+    match /tournament_result_audit/{id} {
+      allow read: if isSuperAdmin();
+      allow write: if false;
+    }
+
     // ===============================================================
     // Mailing List
     // ===============================================================
