@@ -58,3 +58,12 @@ above. Do not restore direct `firebase-admin` initialization in an operational s
 Every migration must document whether rollback is possible. Prefer additive or reversible writes.
 For destructive changes, require a verified backup or export and a tested restore path before an
 apply mode is implemented. The `_archive_database_consolidation` collection is not a backup.
+
+## Non-production rehearsal
+
+`scripts/lib/migration-rehearsal.mjs` rehearses event-type casing, `loses` strip, draw-hiding
+strip, and provider-role lift against a synthetic `rands-local` snapshot. It records before/after
+counts, recompute-and-diff output from `planRecomputeDiff` (TASK-647), and rollback restoration.
+The confirmation triple still refuses `toronto-tennis-league`; this is never a production action.
+Evidence: [MIGRATION_REHEARSAL.md](../../docs/engineering/MIGRATION_REHEARSAL.md) and
+`tests/unit/migrationRehearsal.test.mjs`. This is not a backup/restore drill.

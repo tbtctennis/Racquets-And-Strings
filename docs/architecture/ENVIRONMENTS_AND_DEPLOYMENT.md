@@ -76,9 +76,18 @@ Production should be explicit, separately selected, and protected by a deploy gu
 
 No backup/export configuration, restore drill, or staging project alias was found in the checkout. The operational procedure is documented in [Firestore backup and recovery](../runbooks/FIRESTORE_BACKUP_AND_RECOVERY.md). Treat production recovery as an open operational gate. Do not run destructive migrations until an export/restore procedure has been tested against a non-production copy. The migration framework (`scripts/migrations/lib/cli.mjs`) always finishes through recompute-and-diff and refuses unexplained award, R6, or baseline+replay drift. The provider-role migration (`scripts/migrations/004-provider-role.mjs`) is additive: it upserts `providers/{id}.member_uid` from leftover preference flags and leaves those flags in place.
 
+Non-production migration rehearsal evidence lives in
+[MIGRATION_REHEARSAL.md](../engineering/MIGRATION_REHEARSAL.md)
+(`scripts/lib/migration-rehearsal.mjs`). The `rands-local` fixture records before/after counts,
+recompute-and-diff output against `paidAward` / R6, and rollback restoration. Never a production
+action: `toronto-tennis-league` is refused by the same confirmation triple as every other
+migration. This is not a backup/restore drill and does not authorize staging or production.
+
 ## Evidence, risks, and open questions
 
-- Evidence: `.firebaserc`, `firebase.json`, `package.json`, `src/lib/firebase.ts`, `.gitignore`.
+- Evidence: `.firebaserc`, `firebase.json`, `package.json`, `src/lib/firebase.ts`, `.gitignore`,
+  [MIGRATION_REHEARSAL.md](../engineering/MIGRATION_REHEARSAL.md) (non-production before/after
+  counts, recompute-and-diff, rollback; no production action).
 - Risk: an operator can still explicitly target a production project; deployment wrappers retain
   their separate project and approval checks.
 - Local CLI evidence: root `devDependencies.firebase-tools` is pinned to `15.27.0`; emulator and Hosting scripts use that repository-local binary.

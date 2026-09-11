@@ -54,5 +54,8 @@ authorize or provide evidence of a staging or production migration.
 
 Evidence: `firestore.rules`, `functions/lib/providers.js`, `src/features/services/providerRole.ts`,
 and `scripts/migrations/004-provider-role.mjs`. Provider checks use `providers/{id}.member_uid`
-only; leftover preference flags are compatibility residue. External gates remain: an authorized
-staging project, migration rehearsal, production backup evidence, and production approval.
+only; leftover preference flags are compatibility residue. Local non-production rehearsal
+evidence is [MIGRATION_REHEARSAL.md](../engineering/MIGRATION_REHEARSAL.md)
+(`scripts/lib/migration-rehearsal.mjs`; `rands-local` before/after counts, recompute-and-diff,
+rollback; never a production action). External gates remain: an authorized staging project,
+production backup evidence, and production approval.

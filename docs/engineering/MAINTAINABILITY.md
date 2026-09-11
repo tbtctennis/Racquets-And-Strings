@@ -80,7 +80,10 @@ boundary is introduced. Numbered migrations complete through `finalizeMigration`
 `completeMigration`, which replay paid awards, check R6, and refuse unexplained drift.
 Provider-role authority is `providers/{id}.member_uid`;
 `scripts/migrations/004-provider-role.mjs` is the bounded planner that lifts leftover preference
-inference onto those rows.
+inference onto those rows. Non-production rehearsal evidence is
+[MIGRATION_REHEARSAL.md](MIGRATION_REHEARSAL.md) (`scripts/lib/migration-rehearsal.mjs`): a
+`rands-local` fixture records before/after counts, recompute-and-diff, and rollback, and it is
+never a production action.
 
 The comparison baseline is always the `dev-anuj` branch, resolved through
 `scripts/lib/comparison-base.mjs`: an explicit `ARCHITECTURE_BASE_SHA` first (CI supplies the real

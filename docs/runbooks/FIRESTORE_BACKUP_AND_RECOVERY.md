@@ -15,6 +15,11 @@ This runbook separates repository-verifiable preparation from Firebase/GCP conso
 - `.firebaserc` has no production default and contains only `local -> rands-local`; this is safer
   for routine CLI use, but it does not replace a staging project or a tested recovery workflow.
 - Firestore rules include an Admin SDK-only archive path, but that path is not a backup system and must not be treated as recovery evidence.
+- Non-production migration rehearsal evidence is
+  [MIGRATION_REHEARSAL.md](../engineering/MIGRATION_REHEARSAL.md)
+  (`scripts/lib/migration-rehearsal.mjs`). The `rands-local` fixture records before/after counts,
+  recompute-and-diff, and rollback. It is never a production action and is not a backup/restore
+  drill.
 
 ## Required authorized console work
 

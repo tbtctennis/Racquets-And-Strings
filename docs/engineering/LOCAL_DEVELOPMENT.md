@@ -157,6 +157,10 @@ reward, friendly, and tournament mutations also remain covered at the callable/t
 - Follow the [migration framework](../../scripts/migrations/README.md). It is dry-run by default,
   requires an explicit project, never makes production implicit, and refuses completion when
   recompute-and-diff finds unexplained drift.
+- Non-production rehearsal evidence is [MIGRATION_REHEARSAL.md](MIGRATION_REHEARSAL.md). The
+  `rands-local` fixture records before/after counts, recompute-and-diff, and rollback; never a
+  production action. Pin: `node scripts/lib/migration-rehearsal.mjs --project rands-local` and
+  `node --test tests/unit/migrationRehearsal.test.mjs`.
 
 ## Know what has and has not been verified
 
