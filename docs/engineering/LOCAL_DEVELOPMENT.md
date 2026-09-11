@@ -186,6 +186,16 @@ node scripts/bootstrap-providers.mjs --input /path/to/providers.json --apply --p
 
 The script rejects the production project id and does not run from the normal client workflow.
 
+Existing accounts that still carry `preferences.stringer_id` / `coach_id` are lifted onto
+`providers/{id}.member_uid` by the additive, dry-run-first migration:
+
+```text
+node scripts/migrations/004-provider-role.mjs --project rands-local --key serviceAccount.json --dry-run
+```
+
+Apply is opt-in. Rollback unlinks `member_uid` on migration-written rows; leftover preference
+flags are not deleted. Preference flags do not grant provider checks.
+
 ## Troubleshooting
 
 - **`java` is missing:** install Java 21, set `JAVA_HOME` if needed, and rerun `java -version`.

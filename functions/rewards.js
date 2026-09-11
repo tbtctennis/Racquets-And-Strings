@@ -22,7 +22,7 @@ const { notify, adminUids } = require('./lib/notify');
 const { assertCouponStatus } = require('./lib/redemptionState');
 const { safeId } = require('./lib/logging');
 const { recordServiceLead } = require('./lib/serviceLeads');
-const { providerIdForRole } = require('./lib/providers');
+const { providerIdForUid } = require('./lib/providers');
 const OPEN_REDEMPTION_STATUSES = Object.freeze(['active', 'flagged', 'cancel_requested']);
 
 const db = () => admin.firestore();
@@ -40,17 +40,9 @@ const randomCode = () => {
 
 const isRewardAdmin = (uid) => uid === SUPER_ADMIN_UID;
 
-// Providers are server-issued. Keep the legacy preference fallback read-only while existing
-// coupons are rolled over; it cannot grant write access because Rules and service callables use
-// the providers row for authorization.
+// Providers are server-issued. Leftover preference flags are not an authorization path.
 async function providerIdFor(uid) {
-  const providerId = (await providerIdForRole(uid, 'stringer')) || (await providerIdForRole(uid, 'coach'));
-  if (providerId) return providerId;
-  const prefs = await db().doc(`preferences/${uid}`).get();
-  const data = prefs.exists ? prefs.data() : {};
-  if (data.stringer === true && typeof data.stringer_id === 'string') return data.stringer_id;
-  if (data.coach === true && typeof data.coach_id === 'string') return data.coach_id;
-  return null;
+  return providerIdForUid(uid);
 }
 
 /** Reads the three inputs to a player's redeemable balance inside a transaction. */

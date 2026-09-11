@@ -93,8 +93,8 @@ until an authorized isolated project and verified recovery path exist.
 
 The component primitives now have typed, accessible contracts for people, stat tiles, pills,
 fields, empty/error states, switches, checkboxes, and progress rings. Providers, services, and
-bookings have callable-owned lifecycle boundaries; provider role flags in `preferences` remain a
-read-only compatibility fallback while the server-issued `providers` rows are bootstrapped. Task
+bookings have callable-owned lifecycle boundaries; provider checks use `providers/{id}.member_uid`
+only. Leftover preference stringer/coach flags are compatibility residue, not a grant. Task
 claims route volunteer/host review to the event manager and ambassador claims auto-approve. The
 retired monthly group-lesson collection and callables are no longer part of the client or Rules
 surface. Validation is local-only; no production deployment or data mutation was performed, and

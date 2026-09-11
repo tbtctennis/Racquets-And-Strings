@@ -943,11 +943,11 @@ describe('Firestore authorization boundaries', () => {
   });
 
   test('redemptions are readable by the player and the assigned provider but not unrelated members', async () => {
-    await seedDoc('preferences/provider-a', {
-      uid: 'provider-a',
-      event_creator: false,
-      stringer: true,
-      stringer_id: 'synthetic-stringer',
+    await seedDoc('providers/synthetic-stringer', {
+      id: 'synthetic-stringer',
+      name: 'Synthetic Stringer',
+      roles: ['stringer'],
+      member_uid: 'provider-a',
     });
     await seedDoc('preferences/member-b', {
       uid: 'member-b',
@@ -974,6 +974,42 @@ describe('Firestore authorization boundaries', () => {
         points_cost: 1,
       }),
     );
+  });
+
+  test('provider reads require a providers row, not leftover preference flags', async () => {
+    await seedDoc('preferences/legacy-provider', {
+      uid: 'legacy-provider',
+      event_creator: false,
+      stringer: true,
+      stringer_id: 'shop-a',
+    });
+    await seedDoc('redemptions/CODE-001', {
+      uid: 'member-a',
+      stringer_id: 'shop-a',
+      stringer_name: 'Shop A',
+      status: 'active',
+      offer: 'Restring',
+    });
+    await seedDoc('bookings/book-001', {
+      uid: 'member-a',
+      provider_id: 'shop-a',
+      status: 'lead',
+    });
+
+    await assertFails(getDoc(doc(dbFor('legacy-provider'), 'redemptions/CODE-001')));
+    await assertFails(getDoc(doc(dbFor('legacy-provider'), 'bookings/book-001')));
+
+    await seedDoc('providers/shop-a', {
+      id: 'shop-a',
+      name: 'Shop A',
+      roles: ['stringer'],
+      member_uid: 'canonical-provider',
+    });
+
+    await assertSucceeds(getDoc(doc(dbFor('canonical-provider'), 'redemptions/CODE-001')));
+    await assertSucceeds(getDoc(doc(dbFor('canonical-provider'), 'bookings/book-001')));
+    await assertFails(getDoc(doc(dbFor('legacy-provider'), 'redemptions/CODE-001')));
+    await assertFails(getDoc(doc(dbFor('member-b'), 'redemptions/CODE-001')));
   });
 
   test('a member cannot write their own reward balance or spend ledger', async () => {

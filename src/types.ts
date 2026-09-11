@@ -88,13 +88,9 @@ export interface UserPreferences {
   availability_tags?: string[];
   /** When false, challenge and rally cards show the member as Away. */
   available_to_play?: boolean;
-  // Rewards: a stringer is an ordinary account flagged here, with `stringer_id` naming the
-  // rewards-catalog entry they own. Same role-flag shape as `event_creator`. It only unlocks
-  // the "your shop" coupon list (mark used / flag) — never anything points-related.
+  // Leftover compatibility fields. Provider checks read `providers/{id}.member_uid`, not these.
   stringer?: boolean;
   stringer_id?: string;
-  // Coaching uses the same admin-assigned provider-role shape as stringing. The normalized role
-  // is required by the monthly group-lesson roster and provider coupon views.
   coach?: boolean;
   coach_id?: string;
 }
