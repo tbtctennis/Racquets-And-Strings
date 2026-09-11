@@ -27,7 +27,7 @@ Do not start until the team names an isolated Firebase project. Not production `
 
 ---
 
-## Open on main (16)
+## Open on main (15)
 
 Can be planned or implemented without staging. Pick from here for the next sprint slice.
 
@@ -35,7 +35,6 @@ Can be planned or implemented without staging. Pick from here for the next sprin
 | --- | --- |
 | [TASK-647](task/TASK-647-DETAILS.md) | Recompute-and-diff as a first-class migration step |
 | [TASK-649](task/TASK-649-DETAILS.md) | Collect required signup fields before access gates |
-| [TASK-650](task/TASK-650-DETAILS.md) | Close remaining design-sync debt |
 | [TASK-651](task/TASK-651-DETAILS.md) | Record non-production migration and reconciliation evidence |
 | [TASK-652](task/TASK-652-DETAILS.md) | Reconcile unique residual commits from stale local planning worktrees |
 | [TASK-654](task/TASK-654-DETAILS.md) | Consent-based event-scoped preference projection |

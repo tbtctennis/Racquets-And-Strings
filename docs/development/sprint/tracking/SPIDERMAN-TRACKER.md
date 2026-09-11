@@ -39,7 +39,7 @@ Live board for **DC06 Spiderman**. Update this file whenever a details-file **St
 Pending-only list: [NOW.md](../../NOW.md).
 
 - **Staging (4):** TASK-622–625 — stopped until an isolated Firebase project is named.
-- **Open on main (16):** TASK-647, 649–652, 654–659, 661–662, 664–666.
+- **Open on main (16):** TASK-647, 649, 651–652, 654–659, 661–662, 664–666.
 - **Backlog (15):** [BACKLOG.md](../../BACKLOG.md).
 
 ## Board
@@ -191,7 +191,7 @@ Pending-only list: [NOW.md](../../NOW.md).
 | [TASK-643](../../task/TASK-643-DETAILS.md) | Past-bookings section                                                 | completed       | UI                               | DC06 Spiderman | BLG0018                      |
 | [TASK-647](../../task/TASK-647-DETAILS.md) | Recompute-and-diff as a first-class migration step                    | new       | Data, Firebase                   | DC06 Spiderman | BLG0024                      |
 | [TASK-649](../../task/TASK-649-DETAILS.md) | Collect required signup fields before access gates                    | new       | UI, Auth                         | DC06 Spiderman | BLG0040                      |
-| [TASK-650](../../task/TASK-650-DETAILS.md) | Close remaining design-sync debt                                      | new       | UI, QA                           | DC06 Spiderman | BLG0041                      |
+| [TASK-650](../../task/TASK-650-DETAILS.md) | Close remaining design-sync debt                                      | completed       | UI, QA                           | DC06 Spiderman | BLG0041                      |
 | [TASK-651](../../task/TASK-651-DETAILS.md) | Record non-production migration and reconciliation evidence           | new       | Data, QA                         | DC06 Spiderman | BLG0043                      |
 | [TASK-652](../../task/TASK-652-DETAILS.md) | Reconcile unique residual commits from stale local planning worktrees | new       | Docs, Planning                   | DC06 Spiderman | BLG0045                      |
 | [TASK-654](../../task/TASK-654-DETAILS.md) | Consent-based event-scoped preference projection                      | new       | Auth, Rules, Firebase            | DC06 Spiderman | BLG0051                      |
