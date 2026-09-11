@@ -20,9 +20,9 @@ Full journey: [account creation](ACCOUNT_CREATION.md). Diagram: [account creatio
 5. `AuthContext` observes Auth and calls `ensureUserProfileDocuments`, which creates any missing
    `users/{uid}`, `stats/{uid}`, `preferences/{uid}`, and `contacts/{uid}` (contacts seeded with
    the Auth email).
-6. Profile completion (`persistSignupProfile`) writes name, optional phone, skill, optional league,
-   courts, and derived zone in one batch. An empty `users.name` keeps the member on the completion
-   screen. Skill defaults to `2.0` if unanswered.
+6. Profile completion (`persistSignupProfile`) writes name, optional phone, explicit skill,
+   required league, preferred courts, and derived zone in one batch. An empty `users.name` keeps
+   the member on the completion screen. Unanswered skill is not stored as `2.0`.
 7. `users.welcomeEmailSent` flips true once the name is set; `sendWelcomeEmail` fires on that
    transition. `users.isVerified` is set true on first signed-in profile load.
 

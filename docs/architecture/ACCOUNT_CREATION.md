@@ -77,20 +77,21 @@ missing contacts document is **not** treated as fatal when reading the profile; 
 `stats`, or `preferences` is.
 
 Phase `preferences` is one screen (About you, Skill, Courts, League). `handleCompleteProfile`
-requires a valid name (3–80 characters, no digits). Phone is optional; if supplied it must be
-exactly ten digits. Skill, league, and preferred courts are **not** required. Skill defaults to
-`2` in form state, so an unanswered skill is stored as `2.0`. League may stay `''`. Courts may
-stay `[]`; zone is derived from selected courts (majority, or a near-border prompt for a single
-court) and written as `preferences.preferred_zone` — signup does **not** set
-`preferred_zone_manual`. Scheduling preference is not collected on the screen; the default is
-written through. `organizer` exists on form state and is unused.
+requires a valid name (3–80 characters, no digits), a Men's or Women's league, at least one
+preferred court, and an **explicit** skill choice. Phone is optional; if supplied it must be
+exactly ten digits. Skill form state starts as `null` — no box is pre-selected — so unanswered
+skill is not stored as `2.0`. An explicit 2.0 tap is a real choice and is stored as `2`. Zone is
+derived from selected courts (majority, or a near-border prompt for a single court) and written
+as `preferences.preferred_zone` — signup does **not** set `preferred_zone_manual`. Scheduling
+preference is not collected on the screen; the default is written through. `organizer` exists on
+form state and is unused.
 
 `persistSignupProfile` writes the four projections in one batch:
 
 - `users.name`
 - `contacts.email`, `contacts.phone`, `contactable` (true when a phone is present), `updated_at`
-- `stats.name`, `stats.skill_level`, and `stats.league` only when a league was chosen (`Men's` /
-  `Women's`, plus optional ` Retired Pro` or ` Juniors`)
+- `stats.name`, `stats.skill_level` (the chosen value, never an unanswered default), and
+  `stats.league` (`Men's` / `Women's`, plus optional ` Retired Pro` or ` Juniors`)
 - `preferences.preferred_courts`, `preferred_zone`, `available_to_play: true`,
   `scheduling_preference`
 
@@ -159,14 +160,14 @@ UI phases and lookup results are not Firestore fields. Stored account-creation f
 | Merge marker         | `contacts.secondary_email`                             | Former address of a merged duplicate. Blocks a third signup.                        |
 | Contactable          | `contacts.contactable`                                 | Set true when a phone is supplied at completion. Consent to offer a Contact button. |
 | Play availability    | `preferences.available_to_play`                        | Signup completion writes `true`.                                                    |
-| League               | `stats.league`                                         | `''` or `Men's` / `Women's` plus optional ` Retired Pro` / ` Juniors`.              |
+| League               | `stats.league`                                         | `Men's` / `Women's` (+ optional suffix) at completion; `''` until then.             |
 
 ## Target state
 
 Keep the email gate on a callable (no anonymous `contacts` reads). Keep App Check and the hashed
 source window on deployed instances. Do not revive an email-verification step unless a later
-ruling says so. Completeness should remain "name present"; required league, courts, and an
-explicit unanswered skill are backlog, not current code.
+ruling says so. Completeness for reopening the completion screen remains "name present". Signup
+completion itself requires league, preferred courts, and an explicit skill choice.
 
 ## Evidence
 
@@ -194,8 +195,10 @@ explicit unanswered skill are backlog, not current code.
   email-enumeration protection is on; the contacts queries are the real gate.
 - `sessionStorage` `profile-bootstrap-pending` / `profile-bootstrap-retry` are written and never
   read in this checkout.
-- Unanswered skill is stored as `2.0`; empty league and empty courts are allowed. That is the
-  current completion contract, not an accidental omission in this document.
+- Bootstrap still seeds `stats.skill_level: 2` so a missing stats document has a numeric shape.
+  Completion cannot finish without an explicit skill tap, so a finished signup does not store
+  unanswered skill as `2.0`. Incomplete accounts (empty `users.name`) may still carry the seed
+  until they complete.
 - Owner rules still allow a client to write `contacts.secondary_email`. No UI does; a crafted
   client write would still pass the allowlist.
 - `_account_lookup_rate_limits` is Admin-SDK-only and has no TTL worker; `expires_at` is stored
