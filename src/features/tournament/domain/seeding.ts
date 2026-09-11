@@ -9,7 +9,9 @@ import { snapshotRank } from '../../leagues/snapshotRank';
 export const seedCount = (drawSize: number) => Math.min(Math.floor(drawSize / 2), 10);
 
 /** P/G won % as pointswon / totalPointsPlayed. Missing or zero played is 0, not NaN. */
-export const pgWonRatio = (stats: { pointswon?: number; totalPointsPlayed?: number } | null | undefined): number => {
+export const pgWonRatio = (
+  stats: { pointswon?: number | undefined; totalPointsPlayed?: number | undefined } | null | undefined,
+): number => {
   const played = stats?.totalPointsPlayed ?? 0;
   if (!(played > 0)) return 0;
   return (stats?.pointswon ?? 0) / played;
@@ -18,9 +20,9 @@ export const pgWonRatio = (stats: { pointswon?: number; totalPointsPlayed?: numb
 export type SeedingEntrant = {
   uid: string;
   name: string;
-  leaguePoints26?: number;
-  pointswon?: number;
-  totalPointsPlayed?: number;
+  leaguePoints26?: number | undefined;
+  pointswon?: number | undefined;
+  totalPointsPlayed?: number | undefined;
 };
 
 export type SeededEntrant<T extends SeedingEntrant = SeedingEntrant> = T & { seed: number };
@@ -44,9 +46,9 @@ export type RRKnockoutOrderInput = {
   uid: string;
   name: string;
   groupPoints: number;
-  pointswon?: number;
-  totalPointsPlayed?: number;
-  rankPosition?: number;
+  pointswon?: number | undefined;
+  totalPointsPlayed?: number | undefined;
+  rankPosition?: number | undefined;
 };
 
 export type RRKnockoutSeeded = RRKnockoutOrderInput & { seed: number };
@@ -59,9 +61,9 @@ export type RRGroupStanding = {
 };
 
 export type RRKnockoutStats = {
-  pointswon?: number;
-  totalPointsPlayed?: number;
-  rankPosition?: number;
+  pointswon?: number | undefined;
+  totalPointsPlayed?: number | undefined;
+  rankPosition?: number | undefined;
 };
 
 const rankOrLast = (player: RRKnockoutOrderInput): number => snapshotRank(player) ?? Number.POSITIVE_INFINITY;

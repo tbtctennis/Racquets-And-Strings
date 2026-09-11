@@ -126,7 +126,7 @@ export const HowItWorks: React.FC = () => <Navigate to="/about" replace />;
 
 export const About: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = React.useState(ABOUT_TABS[0].id);
+  const [activeTab, setActiveTab] = React.useState(ABOUT_TABS[0]?.id ?? 'intro');
   React.useEffect(() => {
     document.title = 'About Us · Racquets & Strings';
   }, []);

@@ -20,13 +20,16 @@ export const seedNumber = (seed?: number): number | undefined =>
 
 export const seedForUid = (
   uid: string | undefined,
-  players: ReadonlyArray<{ uid: string; seed?: number }>,
+  players: ReadonlyArray<{ uid: string; seed?: number | undefined }>,
 ): number | undefined => {
   if (!uid) return undefined;
   return seedNumber(players.find((player) => player.uid === uid)?.seed);
 };
 
-export const SeedBadge: React.FC<{ seed?: number; className?: string }> = ({ seed, className }) => {
+export const SeedBadge: React.FC<{ seed?: number | undefined; className?: string | undefined }> = ({
+  seed,
+  className,
+}) => {
   const displaySeed = seedNumber(seed);
   if (displaySeed === undefined) return null;
   return (
@@ -38,18 +41,18 @@ export const SeedBadge: React.FC<{ seed?: number; className?: string }> = ({ see
 
 export const PersonRow: React.FC<{
   name: string;
-  seed?: number;
-  subtitle?: React.ReactNode;
-  avatar?: string;
-  zone?: React.ReactNode;
-  editControls?: React.ReactNode;
-  action?: React.ReactNode;
-  density?: PersonRowDensity;
-  className?: string;
+  seed?: number | undefined;
+  subtitle?: React.ReactNode | undefined;
+  avatar?: string | undefined;
+  zone?: React.ReactNode | undefined;
+  editControls?: React.ReactNode | undefined;
+  action?: React.ReactNode | undefined;
+  density?: PersonRowDensity | undefined;
+  className?: string | undefined;
   /** When set, the name opens that member profile. Empty / sentinel uids stay plain text. */
-  nameHref?: string;
+  nameHref?: string | undefined;
   /** Expands the identity block; edit controls stay outside this button. */
-  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
   'aria-expanded'?: boolean;
 }> = ({
   name,

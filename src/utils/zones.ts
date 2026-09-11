@@ -17,7 +17,17 @@ type Pt = [number, number]; // [lng, lat]
 // Real street/highway/river centerlines from the City of Toronto Centreline dataset (4 decimals),
 // one polyline per boundary road. Hwy 407 isn't in that dataset (provincial route), so Steeles Ave
 // stands in — the northernmost arterial it has, and Toronto's actual city-limit road there.
-const ROADS: Record<string, Pt[]> = {
+const ROADS: {
+  stClair: Pt[];
+  dundas: Pt[];
+  dufferin: Pt[];
+  bathurst: Pt[];
+  eglinton: Pt[];
+  hwy401: Pt[];
+  steeles: Pt[];
+  lawrence: Pt[];
+  waterfront: Pt[];
+} = {
   stClair: [
     [-79.5, 43.6661031201333],
     [-79.497, 43.6665058361744],
@@ -1000,12 +1010,19 @@ function crossAt(x1: number, y1: number, x2: number, y2: number, x: number, y: n
 
 // Which side of a west->east polyline a point falls on (bracketed by longitude). Positive = north.
 function sideByLng(poly: Pt[], lng: number, lat: number): number {
-  const n = poly.length - 1;
-  if (lng <= poly[0][0]) return crossAt(poly[0][0], poly[0][1], poly[1][0], poly[1][1], lng, lat);
-  if (lng >= poly[n][0]) return crossAt(poly[n - 1][0], poly[n - 1][1], poly[n][0], poly[n][1], lng, lat);
-  for (let i = 0; i < n; i++) {
-    const [x1, y1] = poly[i],
-      [x2, y2] = poly[i + 1];
+  const first = poly[0];
+  const second = poly[1];
+  const last = poly[poly.length - 1];
+  const prev = poly[poly.length - 2];
+  if (!first || !second || !last || !prev) return 0;
+  if (lng <= first[0]) return crossAt(first[0], first[1], second[0], second[1], lng, lat);
+  if (lng >= last[0]) return crossAt(prev[0], prev[1], last[0], last[1], lng, lat);
+  for (let i = 0; i < poly.length - 1; i++) {
+    const a = poly[i];
+    const b = poly[i + 1];
+    if (!a || !b) continue;
+    const [x1, y1] = a;
+    const [x2, y2] = b;
     const lo = Math.min(x1, x2),
       hi = Math.max(x1, x2);
     if (lng >= lo && lng <= hi) return crossAt(x1, y1, x2, y2, lng, lat);
@@ -1015,12 +1032,19 @@ function sideByLng(poly: Pt[], lng: number, lat: number): number {
 
 // Which side of a south->north polyline a point falls on (bracketed by latitude). Positive = west.
 function sideByLat(poly: Pt[], lng: number, lat: number): number {
-  const n = poly.length - 1;
-  if (lat <= poly[0][1]) return crossAt(poly[0][0], poly[0][1], poly[1][0], poly[1][1], lng, lat);
-  if (lat >= poly[n][1]) return crossAt(poly[n - 1][0], poly[n - 1][1], poly[n][0], poly[n][1], lng, lat);
-  for (let i = 0; i < n; i++) {
-    const [x1, y1] = poly[i],
-      [x2, y2] = poly[i + 1];
+  const first = poly[0];
+  const second = poly[1];
+  const last = poly[poly.length - 1];
+  const prev = poly[poly.length - 2];
+  if (!first || !second || !last || !prev) return 0;
+  if (lat <= first[1]) return crossAt(first[0], first[1], second[0], second[1], lng, lat);
+  if (lat >= last[1]) return crossAt(prev[0], prev[1], last[0], last[1], lng, lat);
+  for (let i = 0; i < poly.length - 1; i++) {
+    const a = poly[i];
+    const b = poly[i + 1];
+    if (!a || !b) continue;
+    const [x1, y1] = a;
+    const [x2, y2] = b;
     const lo = Math.min(y1, y2),
       hi = Math.max(y1, y2);
     if (lat >= lo && lat <= hi) return crossAt(x1, y1, x2, y2, lng, lat);
@@ -2060,8 +2084,10 @@ export function zoneFromCourts(
   zones.forEach((z) => counts.set(z, (counts.get(z) ?? 0) + 1));
   const maxCount = Math.max(...counts.values());
   const tied = [...counts.entries()].filter(([, n]) => n === maxCount).map(([z]) => z);
-  if (tied.length === 1) return tied[0];
-  return tied.includes('Downtown - Midtown') ? 'Downtown - Midtown' : tied[0];
+  const firstTied = tied[0];
+  if (!firstTied) return '';
+  if (tied.length === 1) return firstTied;
+  return tied.includes('Downtown - Midtown') ? 'Downtown - Midtown' : firstTied;
 }
 
 export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {

@@ -22,13 +22,15 @@ const BAND_ORDER: Record<string, number> = { Masters: 0, Challengers: 1, Beginne
 // Zone suffix for a set of players: the single shared zone, or '' when unassigned/mixed.
 export const sharedZone = (players: TournamentPlayer[], zoneOf: (p: TournamentPlayer) => string): string => {
   const zones = [...new Set(players.map(zoneOf).filter(Boolean))];
-  return zones.length === 1 ? zones[0] : '';
+  const zone = zones[0];
+  return zone && zones.length === 1 ? zone : '';
 };
 
 // Band suffix for a set of players: the single shared band, or '' when mixed.
 export const sharedBand = (players: TournamentPlayer[], bandOf: (p: TournamentPlayer) => string): string => {
   const bands = [...new Set(players.map(bandOf).filter(Boolean))];
-  return bands.length === 1 ? bands[0] : '';
+  const band = bands[0];
+  return band && bands.length === 1 ? band : '';
 };
 
 // Auto label: "Group X · Band · Zone", dropping any segment that isn't shared.
@@ -111,8 +113,9 @@ export function buildZoneTierGroups(
     const sIdx = grouped.findIndex((g) => g.players.length === 1);
     if (sIdx === -1 || grouped.length <= 1) break;
     const solo = grouped[sIdx];
+    if (!solo) break;
     const target = grouped
-      .filter((_, i) => i !== sIdx && grouped[i].players.length < 5)
+      .filter((_, i) => i !== sIdx && (grouped[i]?.players.length ?? 0) < 5)
       .sort((a, b) => {
         const sa = a.band === solo.band ? 0 : 1;
         const sb = b.band === solo.band ? 0 : 1;
@@ -138,8 +141,8 @@ export function buildRRGroupMatchFields(
     drawKey: string;
     draw: DrawConfig;
     groupIndex: number;
-    groupLabel?: string;
-    labelCustom?: boolean;
+    groupLabel?: string | undefined;
+    labelCustom?: boolean | undefined;
     groupPlayers: TournamentPlayer[];
     pairings: [number, number][];
     advancementCount: number;
@@ -213,8 +216,8 @@ export function buildSafeGroupRewrite(params: {
   drawKey: string;
   draw: DrawConfig;
   groupIndex: number;
-  groupLabel?: string;
-  labelCustom?: boolean;
+  groupLabel?: string | undefined;
+  labelCustom?: boolean | undefined;
   oldMatches: TournamentMatch[];
   newPlayers: TournamentPlayer[];
   advancementCount: number;
@@ -353,8 +356,8 @@ export function buildRRKnockoutDocs(params: {
   draw: DrawConfig;
   advancingPlayers: TournamentPlayer[];
   started: boolean;
-  drawsize?: number;
-  manualFill?: boolean;
+  drawsize?: number | undefined;
+  manualFill?: boolean | undefined;
 }): Array<{ docId: string; fields: Record<string, unknown> }> {
   const { eventId, drawKey, draw, advancingPlayers, started, manualFill } = params;
   const n = advancingPlayers.length;

@@ -39,12 +39,12 @@ export const formatScheduledDate = (d?: string, slot?: string) => {
 
 // Any doc shape carrying the six set-score fields — a TournamentMatch or a ScoreSubmission(Doc).
 type ScoredSets = {
-  set_1_player_1?: number;
-  set_1_player_2?: number;
-  set_2_player_1?: number;
-  set_2_player_2?: number;
-  set_3_player_1?: number;
-  set_3_player_2?: number;
+  set_1_player_1?: number | undefined;
+  set_1_player_2?: number | undefined;
+  set_2_player_1?: number | undefined;
+  set_2_player_2?: number | undefined;
+  set_3_player_1?: number | undefined;
+  set_3_player_2?: number | undefined;
 };
 
 export const formatSetScores = (m: ScoredSets): string => {
@@ -91,12 +91,12 @@ export type MatchDisplayFlags = {
 export const getMatchDisplayFlags = (
   match: TournamentMatch,
   opts: {
-    editMode?: boolean;
+    editMode?: boolean | undefined;
     hasEditHandler: boolean;
-    isCreator?: boolean;
+    isCreator?: boolean | undefined;
     hasSubmitHandler: boolean;
-    submittableMatchIds?: Set<string>;
-    pendingMatchIds?: Set<string>;
+    submittableMatchIds?: Set<string> | undefined;
+    pendingMatchIds?: Set<string> | undefined;
   },
 ): MatchDisplayFlags => {
   const { editMode, hasEditHandler, isCreator, hasSubmitHandler, submittableMatchIds, pendingMatchIds } = opts;
@@ -171,11 +171,11 @@ export const getParticipantDisplayName = (participant: EventParticipant, userDat
 export const parseDateValue = (value: unknown) => parseValidDate(value as FirestoreDateLike);
 
 export const getEventDate = (event: {
-  startDate?: unknown;
-  start_date?: unknown;
-  date?: unknown;
-  endDate?: unknown;
-  end_date?: unknown;
+  startDate?: unknown | undefined;
+  start_date?: unknown | undefined;
+  date?: unknown | undefined;
+  endDate?: unknown | undefined;
+  end_date?: unknown | undefined;
 }) => parseDateValue(event.startDate || event.start_date || event.date || event.endDate || event.end_date);
 
 export const isTournamentStarted = (
@@ -222,8 +222,8 @@ export const skillBand = tournamentSkillBand;
 // Derive the display state of a match's scheduling for a given viewer.
 export type ScheduleState = {
   status: 'unscheduled' | 'scheduled';
-  date?: string;
-  slot?: 'AM' | 'PM';
+  date?: string | undefined;
+  slot?: 'AM' | 'PM' | undefined;
   requested: boolean;
 };
 export const getScheduleState = (m: TournamentMatch): ScheduleState => ({
@@ -242,7 +242,12 @@ export const getDrawSize = (count: number, _tournamentChoice: 'Singles' | 'Doubl
 export const fallbackTemplate = (drawsize: number): TemplateMatch[] => {
   const order = seedAnchors(drawsize);
   const firstRound: Array<[number, number]> = [];
-  for (let i = 0; i < order.length; i += 2) firstRound.push([order[i], order[i + 1]]);
+  for (let i = 0; i < order.length; i += 2) {
+    const left = order[i];
+    const right = order[i + 1];
+    if (left === undefined || right === undefined) continue;
+    firstRound.push([left, right]);
+  }
   const rounds =
     drawsize === 2
       ? ['F']
@@ -257,11 +262,13 @@ export const fallbackTemplate = (drawsize: number): TemplateMatch[] => {
   const matches: TemplateMatch[] = [];
   let matchNumber = 1;
   let previousRoundIds: string[] = [];
+  const firstRoundName = rounds[0];
+  if (!firstRoundName) return matches;
 
   firstRound.forEach(([p1, p2]) => {
     const matchId = `m${matchNumber++}`;
     previousRoundIds.push(matchId);
-    matches.push({ match_id: matchId, round: rounds[0], player_1: p1, player_2: p2 });
+    matches.push({ match_id: matchId, round: firstRoundName, player_1: p1, player_2: p2 });
   });
 
   for (let roundIndex = 1; roundIndex < rounds.length; roundIndex += 1) {
@@ -269,11 +276,13 @@ export const fallbackTemplate = (drawsize: number): TemplateMatch[] => {
     for (let i = 0; i < previousRoundIds.length; i += 2) {
       const matchId = `m${matchNumber++}`;
       currentRoundIds.push(matchId);
+      const roundName = rounds[roundIndex];
+      if (!roundName) continue;
       matches.push({
         match_id: matchId,
-        round: rounds[roundIndex],
-        player_1: `winner ${previousRoundIds[i]}`,
-        player_2: `winner ${previousRoundIds[i + 1]}`,
+        round: roundName,
+        player_1: `winner ${previousRoundIds[i] ?? ''}`,
+        player_2: `winner ${previousRoundIds[i + 1] ?? ''}`,
       });
       const src1 = matches.find((m) => m.match_id === previousRoundIds[i]);
       const src2 = matches.find((m) => m.match_id === previousRoundIds[i + 1]);
@@ -358,7 +367,7 @@ export const filterParticipantsForDraw = (
   draw: DrawConfig,
   statsMap: Record<string, UserStats> = {},
   zoneMap: Record<string, string> = {},
-  zoneConfig?: ZoneDrawConfig,
+  zoneConfig?: ZoneDrawConfig | undefined,
 ): EventParticipant[] => {
   const filtered = participants.filter((p) => {
     // Soft-deleted by the organizer — keeps the row for the record, out of every future draw.
@@ -469,7 +478,7 @@ export const buildMatchFields = (
     tournamentChoice: 'Singles' | 'Doubles';
     division: string;
     skillGroup: SkillGroup;
-    zone?: string;
+    zone?: string | undefined;
     drawsize: number;
     allMatches: TemplateMatch[];
   },

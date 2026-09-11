@@ -47,7 +47,7 @@ export function FilterSelect({
   value: string;
   options: { value: string; label: string }[];
   onChange: (v: string) => void;
-  disabled?: boolean;
+  disabled?: boolean | undefined;
 }) {
   return (
     <div className={`flex flex-col gap-0.5 ${disabled ? 'opacity-35 pointer-events-none' : ''}`}>
@@ -183,7 +183,7 @@ interface CourtResultsProps {
   totalCourts: number;
   loading: boolean;
   userCoords: { lat: number; lng: number } | null;
-  membersOnly?: boolean;
+  membersOnly?: boolean | undefined;
   onSelectCourt: (court: CourtWithCount) => void;
   /** Drill into this court's programs. Same action as the map popup's button. */
   onViewPrograms: (court: CourtWithCount) => void;

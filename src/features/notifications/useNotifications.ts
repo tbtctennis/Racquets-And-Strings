@@ -109,18 +109,18 @@ export interface AppNotification {
   uid: string;
   type: NotificationType | string;
   title: string;
-  body?: string;
-  link?: string; // in-app route to open on tap
-  read?: boolean;
-  read_at?: string; // set when marked read — read items are purged 24h after this
+  body?: string | undefined;
+  link?: string | undefined; // in-app route to open on tap
+  read?: boolean | undefined;
+  read_at?: string | undefined; // set when marked read — read items are purged 24h after this
   created_at: string;
   // Legacy fields from the pre-bell schedule_request docs (no title/body/link).
-  event_id?: string;
-  event_title?: string;
-  match_round?: string;
-  player_1_name?: string;
-  player_2_name?: string;
-  requested_by_name?: string;
+  event_id?: string | undefined;
+  event_title?: string | undefined;
+  match_round?: string | undefined;
+  player_1_name?: string | undefined;
+  player_2_name?: string | undefined;
+  requested_by_name?: string | undefined;
 }
 
 const FEED_LIMIT = 30;

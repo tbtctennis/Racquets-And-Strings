@@ -7,22 +7,22 @@ import { SeedBadge } from './PersonRow';
 
 /** The small amount of identity a pair row needs; the uid is optional for display-only pairs. */
 export type PersonPairMember = {
-  uid?: string;
+  uid?: string | undefined;
   name: string;
-  seed?: number;
+  seed?: number | undefined;
 };
 
 export type PersonPairRowProps = {
   player1: PersonPairMember;
   player2: PersonPairMember;
   /** The winning member's uid. The value is ignored when either member has no uid. */
-  winnerId?: string;
+  winnerId?: string | undefined;
   /** A score, status, or other supporting detail shown below the pair. */
-  meta?: React.ReactNode;
+  meta?: React.ReactNode | undefined;
   /** A score, approve action, or other trailing control. */
-  action?: React.ReactNode;
-  density?: 'compact' | 'default' | 'comfortable';
-  className?: string;
+  action?: React.ReactNode | undefined;
+  density?: 'compact' | 'default' | 'comfortable' | undefined;
+  className?: string | undefined;
 };
 
 const paddingByDensity = {

@@ -58,7 +58,13 @@ export function useEvents() {
       resolveStorageUrl(path)
         .then((url) => {
           if (cancelled || !url) return;
-          setEvents((prev) => prev.map((e) => (e.imagePath === path ? { ...e, image: url, imagePath: undefined } : e)));
+          setEvents((prev) =>
+            prev.map((e) => {
+              if (e.imagePath !== path) return e;
+              const { imagePath: _imagePath, ...rest } = e;
+              return { ...rest, image: url };
+            }),
+          );
         })
         .catch(() => {
           /* image stays unset; the card renders its placeholder */

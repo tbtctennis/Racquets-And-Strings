@@ -33,7 +33,7 @@ import { useConfirmSheet } from '../../components/useConfirmSheet';
 
 // ─── Listing board ────────────────────────────────────────────────────────────────────────────
 
-const ListingPhoto: React.FC<{ path?: string; alt: string }> = ({ path, alt }) => {
+const ListingPhoto: React.FC<{ path?: string | undefined; alt: string }> = ({ path, alt }) => {
   const url = useImageUrl(path);
   return (
     <div className="w-20 h-20 shrink-0 rounded-xl bg-fg/[0.06] overflow-hidden flex items-center justify-center">
@@ -48,7 +48,7 @@ const ListingPhoto: React.FC<{ path?: string; alt: string }> = ({ path, alt }) =
 
 const ListingCard: React.FC<{
   listing: Listing;
-  seller?: ContactData;
+  seller?: ContactData | undefined;
   isMine: boolean;
   signedIn: boolean;
   onEdit: () => void;

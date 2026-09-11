@@ -9,16 +9,16 @@ import { cn } from '../lib/cn';
 export const Accordion: React.FC<{
   id: string;
   title: React.ReactNode;
-  right?: React.ReactNode;
+  right?: React.ReactNode | undefined;
   open: boolean;
   onToggle: (id: string) => void;
-  locked?: boolean;
-  highlight?: boolean; // clay border — "this is the live/current section"
+  locked?: boolean | undefined;
+  highlight?: boolean | undefined; // clay border — "this is the live/current section"
   /** `amber` is the organizer-queue tone (ReviewPanel). */
-  tone?: 'default' | 'amber';
-  className?: string;
-  titleClassName?: string;
-  bodyClassName?: string;
+  tone?: 'default' | 'amber' | undefined;
+  className?: string | undefined;
+  titleClassName?: string | undefined;
+  bodyClassName?: string | undefined;
   children: React.ReactNode;
 }> = ({
   id,

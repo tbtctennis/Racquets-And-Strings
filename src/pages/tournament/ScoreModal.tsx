@@ -27,15 +27,15 @@ type Props = {
   onChange: (form: ScoreForm) => void;
   onClose: () => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void> | void;
-  isCreatorSubmit?: boolean;
+  isCreatorSubmit?: boolean | undefined;
   /** Organizer-only all-zero result that advances the selected winner. */
-  walkover?: { checked: boolean; onChange: (checked: boolean) => void };
+  walkover?: { checked: boolean; onChange: (checked: boolean) => void } | undefined;
   /**
    * Organizer-only, and only for a match that already has a score: wipe the result and the points
    * it awarded, returning the match to unplayed. Omitted for an unplayed match — there is nothing
    * to reset — and for players, who can't write the official record at all.
    */
-  onReset?: () => Promise<void> | void;
+  onReset?: (() => Promise<void> | void) | undefined;
 };
 
 // Mobile-first score entry (wireframe 1d): winner picked with two large tap-cards and scores
@@ -84,7 +84,8 @@ export const ScoreModal: React.FC<Props> = ({
 
   const setSetValue = (index: number, side: 'mine' | 'opponent', v: string) => {
     const sets = [...scoreForm.sets];
-    sets[index] = { ...sets[index], [side]: String(v) };
+    const current = sets[index] ?? { mine: '', opponent: '' };
+    sets[index] = { ...current, [side]: String(v) };
     onChange({ ...scoreForm, sets });
   };
 
@@ -126,6 +127,7 @@ export const ScoreModal: React.FC<Props> = ({
             const idx = winnerOptions.findIndex((p) => p.uid === scoreForm.winnerUserId);
             const delta = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1;
             const next = winnerOptions[(Math.max(idx, 0) + delta + winnerOptions.length) % winnerOptions.length];
+            if (!next) return;
             onChange({ ...scoreForm, winnerUserId: next.uid || '' });
           }}
         >

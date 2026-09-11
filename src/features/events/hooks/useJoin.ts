@@ -16,7 +16,7 @@ interface Params {
   profile: {
     user: { name: string };
     stats: { skill_level: number; league?: string };
-    preferences?: { preferred_zone?: string; preferred_courts?: string[] };
+    preferences?: { preferred_zone?: string; preferred_courts?: string[] } | undefined;
   } | null;
   hasJoinedRegularEvent: (id: string) => boolean;
   hasJoinedTournamentChoice: (id: string, choice: 'Singles' | 'Doubles') => boolean;

@@ -18,8 +18,8 @@ export type PickleballEntry = {
 export type PickleballOnlyCourt = {
   location: string;
   entries: PickleballEntry[];
-  lat?: number;
-  lng?: number;
+  lat?: number | undefined;
+  lng?: number | undefined;
 };
 
 export type CourtWithCount = CsvCourt & {
@@ -42,9 +42,9 @@ export type TennisProgram = {
   maxAgeYr: number | null;
   status: string;
   activityUrl: string;
-  lat?: number;
-  lng?: number;
-  matchedDropdown?: string; // dropdown of the court this program maps to (for filtering)
+  lat?: number | undefined;
+  lng?: number | undefined;
+  matchedDropdown?: string | undefined; // dropdown of the court this program maps to (for filtering)
 };
 
 export type NearestCourt = CourtWithCount & { distKm: number };
@@ -318,11 +318,14 @@ export function formatDist(km: number): string {
 
 export function parseDateStr(s: string): Date | null {
   const parts = s.trim().split('-');
-  if (parts.length !== 3) return null;
-  const m = MONTH_ABBR[parts[0]];
+  const monthKey = parts[0];
+  const dayPart = parts[1];
+  const yearPart = parts[2];
+  if (!monthKey || !dayPart || !yearPart || parts.length !== 3) return null;
+  const m = MONTH_ABBR[monthKey];
   if (m === undefined) return null;
-  const yr = parseInt(parts[2]);
-  const day = parseInt(parts[1]);
+  const yr = parseInt(yearPart);
+  const day = parseInt(dayPart);
   if (isNaN(yr) || isNaN(day)) return null;
   return new Date(yr, m, day);
 }
@@ -331,16 +334,20 @@ export function formatDateRange(dateRange: string): string {
   const parts = dateRange.split(' to ');
   const fmt = (s: string) => {
     const p = s.trim().split('-');
-    if (p.length < 2) return s.trim();
-    return `${p[0]} ${parseInt(p[1])}`;
+    const month = p[0];
+    const day = p[1];
+    if (!month || !day) return s.trim();
+    return `${month} ${parseInt(day)}`;
   };
-  if (parts.length === 2) return `${fmt(parts[0])} – ${fmt(parts[1])}`;
+  const start = parts[0];
+  const end = parts[1];
+  if (start && end && parts.length === 2) return `${fmt(start)} – ${fmt(end)}`;
   return dateRange;
 }
 
 export function getProgramStatus(dateRange: string, today: Date): 'ongoing' | 'upcoming' | 'past' | null {
   const parts = dateRange.split(' to ');
-  const start = parseDateStr(parts[0]?.trim() || '');
+  const start = parseDateStr(parts[0]?.trim() ?? '');
   const end = parts[1] ? parseDateStr(parts[1].trim()) : null;
   if (!start) return null;
   if (end && end < today) return 'past';
@@ -380,6 +387,7 @@ export function parsePrograms(
   byName: Map<string, CsvCourt>,
 ): TennisProgram[] {
   const [headerLine, ...lines] = programCsv.split(/\r?\n/).filter(Boolean);
+  if (!headerLine) return [];
   const headers = parseCsvLine(headerLine);
   const pIdx = (col: string) => headers.indexOf(col);
 
@@ -553,7 +561,7 @@ export function courtMarkerHtml(court: CourtWithCount, busiestCount = 0): string
   const hasPlayers = court.count > 0;
   const bands = markerSizeBands(busiestCount);
   const tier = court.count <= bands.small ? 0 : court.count <= bands.medium ? 1 : court.count <= bands.large ? 2 : 3;
-  const s = !hasPlayers ? 12 : MARKER_SIZES[tier];
+  const s = !hasPlayers ? 12 : (MARKER_SIZES[tier] ?? 16);
   const label = String(court.count);
   // Three-digit counts need to shrink to stay inside the circle.
   const fs = label.length >= 3 ? 8 : label.length === 2 ? 10 : 11;

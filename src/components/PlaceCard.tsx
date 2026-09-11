@@ -5,9 +5,9 @@ export type PlaceCardDensity = 'default' | 'compact';
 
 export type PlaceCardProps = {
   court: CourtWithCount;
-  density?: PlaceCardDensity;
-  onViewPrograms?: () => void;
-  onSuggest?: () => void;
+  density?: PlaceCardDensity | undefined;
+  onViewPrograms?: (() => void) | undefined;
+  onSuggest?: (() => void) | undefined;
 };
 
 const badgeClass = 'inline-flex items-center rounded-xl px-1.5 py-0.5 text-xs font-semibold leading-tight';

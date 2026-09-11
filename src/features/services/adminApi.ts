@@ -4,18 +4,18 @@ import { ServiceCategory } from './types';
 
 export interface NewOfferInput {
   category: ServiceCategory;
-  providerId?: string;
+  providerId?: string | undefined;
   providerName: string;
   area: string;
-  phone?: string;
-  email?: string;
-  certified?: boolean;
+  phone?: string | undefined;
+  email?: string | undefined;
+  certified?: boolean | undefined;
   offer: string;
-  brands?: string;
+  brands?: string | undefined;
   totalPrice: number;
   discount: number;
   pointsCost: number;
-  linkUid?: string;
+  linkUid?: string | undefined;
 }
 
 const upsertService = httpsCallable(functions, 'upsertService');

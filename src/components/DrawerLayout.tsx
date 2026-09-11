@@ -15,8 +15,8 @@ export type DrawerStat = {
 export const DrawerTile: React.FC<{
   label: string;
   value: React.ReactNode;
-  span?: boolean;
-  className?: string;
+  span?: boolean | undefined;
+  className?: string | undefined;
 }> = ({ label, value, span, className }) => (
   <div className={cn('flex flex-col rounded-xl bg-fg/[0.03] px-2 py-2 text-center', span && 'col-span-2', className)}>
     <div className="flex flex-1 items-center justify-center text-sm font-bold text-fg">{value}</div>
@@ -29,14 +29,14 @@ export const DrawerTile: React.FC<{
  * columns at every breakpoint so four tiles form a 2×2 instead of a 3+1 remainder.
  */
 export const DrawerLayout: React.FC<{
-  id?: string;
+  id?: string | undefined;
   open: boolean;
-  pills?: React.ReactNode;
-  stats?: DrawerStat[];
+  pills?: React.ReactNode | undefined;
+  stats?: DrawerStat[] | undefined;
   /** Offset the body under a leading rank column (`w-6` + `gap-3` = `pl-9`). */
-  indent?: boolean;
-  children?: React.ReactNode;
-  className?: string;
+  indent?: boolean | undefined;
+  children?: React.ReactNode | undefined;
+  className?: string | undefined;
 }> = ({ id, open, pills, stats, indent = false, children, className }) => (
   <AnimatePresence initial={false}>
     {open && (

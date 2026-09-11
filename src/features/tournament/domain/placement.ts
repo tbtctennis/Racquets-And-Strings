@@ -17,9 +17,9 @@ export const DEFAULT_ZONE_BUCKETS: ZoneBucket[] = ZONE_NAMES.map((z) => ({
 export const resolveMergedZone = (bucketId: string, merges: Record<string, string> = {}): string => {
   let current = bucketId;
   const seen = new Set<string>([current]);
-  while (merges[current]) {
+  while (true) {
     const next = merges[current];
-    if (seen.has(next)) break;
+    if (!next || seen.has(next)) break;
     seen.add(next);
     current = next;
   }

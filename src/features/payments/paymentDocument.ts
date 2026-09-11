@@ -29,14 +29,14 @@ export interface Payment {
   state: PaymentState;
   stripe_checkout_session_id: string;
   stripe_payment_intent_id: string;
-  stripe_refund_id?: string;
+  stripe_refund_id?: string | undefined;
   created_at: string;
   paid_at: string;
-  cancellation_requested_at?: string;
-  cancellation_requested_by?: string;
-  cancellation_status?: CancellationStatus;
-  refunded_at?: string;
-  refunded_by?: string;
+  cancellation_requested_at?: string | undefined;
+  cancellation_requested_by?: string | undefined;
+  cancellation_status?: CancellationStatus | undefined;
+  refunded_at?: string | undefined;
+  refunded_by?: string | undefined;
 }
 
 export const PAYMENT_FIELDS = [
@@ -61,10 +61,10 @@ export const PAYMENT_FIELDS = [
 ] as const;
 
 export type PaymentInput = Omit<Payment, 'currency' | 'season' | 'state' | 'created_at'> & {
-  currency?: string;
-  season?: PaymentSeason;
-  state?: PaymentState;
-  created_at?: string;
+  currency?: string | undefined;
+  season?: PaymentSeason | undefined;
+  state?: PaymentState | undefined;
+  created_at?: string | undefined;
 };
 
 const PAYMENT_FIELD_SET = new Set<string>(PAYMENT_FIELDS);

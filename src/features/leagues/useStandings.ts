@@ -13,7 +13,7 @@ export type { LeagueRow } from './types';
 
 // Points-or-games win rate. Shared because every player row in the app now shows this same tile —
 // leaderboard, challenges, rallies, upcoming matches and the RR groups.
-export const pgWinPct = (r: { pointswon?: number; totalPointsPlayed?: number }) =>
+export const pgWinPct = (r: { pointswon?: number | undefined; totalPointsPlayed?: number | undefined }) =>
   (r.totalPointsPlayed ?? 0) > 0 ? `${Math.round(((r.pointswon ?? 0) / (r.totalPointsPlayed ?? 1)) * 100)}%` : '—';
 
 export type DivTab = 'mens' | 'womens' | 'doubles';

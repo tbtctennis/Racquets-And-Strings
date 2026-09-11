@@ -2,15 +2,16 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/cn';
 import { tapScale } from '../lib/motion';
+import { omitUndefined } from '../lib/exactOptional';
 import { Spinner } from './Spinner';
 
 interface ButtonProps extends Omit<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
   'onDrag' | 'onDragStart' | 'onDragEnd' | 'onAnimationStart'
 > {
-  variant?: 'secondary' | 'outline' | 'ghost' | 'clay' | 'white';
-  size?: 'sm' | 'md' | 'lg';
-  isLoading?: boolean;
+  variant?: 'secondary' | 'outline' | 'ghost' | 'clay' | 'white' | undefined;
+  size?: 'sm' | 'md' | 'lg' | undefined;
+  isLoading?: boolean | undefined;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -39,18 +40,20 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <motion.button
-      whileTap={disabled || isLoading ? undefined : tapScale.whileTap}
+      {...(omitUndefined({
+        ...props,
+        ...(disabled || isLoading ? {} : { whileTap: tapScale.whileTap }),
+        ...(isLoading ? { 'aria-busy': true as const } : {}),
+      }) as React.ComponentProps<typeof motion.button>)}
       transition={tapScale.transition}
       type={props.type ?? 'button'}
-      aria-busy={isLoading || undefined}
       className={cn(
         'inline-flex items-center justify-center rounded-2xl border border-transparent font-semibold transition-colors duration-motion disabled:cursor-not-allowed focus-visible',
         variants[variant],
         sizes[size],
         className,
       )}
-      disabled={disabled || isLoading}
-      {...props}
+      disabled={!!(disabled || isLoading)}
     >
       {isLoading ? <Spinner size="sm" tone="current" className="mr-2" aria-hidden /> : null}
       {children}

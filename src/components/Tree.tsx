@@ -85,15 +85,15 @@ export const TreeGroup: React.FC<{
 export const TreeRow: React.FC<{
   label: React.ReactNode;
   /** Right-hand value, e.g. "14/16". Ignored when `fill` is given. */
-  right?: React.ReactNode;
+  right?: React.ReactNode | undefined;
   /** Renders a thin fill bar instead of a plain "count/size" fraction. */
-  fill?: { count: number; size: number };
+  fill?: { count: number; size: number } | undefined;
   /** Small clay dot before the right value — callers supply their own legend via Tree's footnote. */
-  dot?: boolean;
-  active?: boolean;
-  disabled?: boolean;
-  onClick?: () => void;
-  level?: 0 | 1;
+  dot?: boolean | undefined;
+  active?: boolean | undefined;
+  disabled?: boolean | undefined;
+  onClick?: (() => void) | undefined;
+  level?: 0 | 1 | undefined;
 }> = ({ label, right, fill, dot, active, disabled, onClick, level = 0 }) => {
   // The indent is a left MARGIN plus a smaller padding, not one big padding. The selected row
   // paints a solid background, and with the whole indent as padding that background started at
