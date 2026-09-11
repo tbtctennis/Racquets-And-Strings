@@ -84,3 +84,19 @@ export type TournamentMatch = {
   proposed_slot?: 'AM' | 'PM' | undefined;
   schedule_requested?: boolean | undefined; // player asked the organizer to schedule
 };
+
+/** A schedule request in the organizer's cross-tournament queue — hence the event title. */
+export type ScheduleRequest = TournamentMatch & { event_title: string };
+
+/** A registrant seated in no match. `zone` is '' when they've selected no courts — "No zone". */
+export type UnplacedEntry = {
+  participantId: string;
+  uid: string;
+  name: string;
+  eventId: string;
+  eventTitle: string;
+  division?: string | undefined;
+  tournamentChoice?: string | undefined;
+  skill?: number | undefined;
+  zone: string;
+};

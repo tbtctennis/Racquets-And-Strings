@@ -5,7 +5,7 @@
 | **Task id**    | TASK-665                                                               |
 | **Title**      | Extract mixed route hooks into focused boundaries                      |
 | **TLDR**       | High-risk hooks gain smaller responsibilities and regression coverage. |
-| **Status**     | new                                                                    |
+| **Status**     | completed                                                              |
 | **Tags**       | UI, API                                                                |
 | **Sprint**     | DC06 Spiderman                                                         |
 | **Legacy ids** | BLG0063                                                                |
@@ -46,3 +46,5 @@ When **execute sprint spiderman** reaches this item:
 | Date       | Who                    | Note                                                                                 |
 | ---------- | ---------------------- | ------------------------------------------------------------------------------------ |
 | 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live. |
+| 2026-09-11 | Anuj Raja · Grok Build | Started on `agent/spiderman-TASK-665`. Extract mixed logic from `useTournament` and `useServices` without rewriting UI. |
+| 2026-09-11 | Anuj Raja · Grok Build | Organizer queues live in `organizerQueues.ts` + `tournamentSubscriptions.ts`; Marketplace catalog in `catalog.ts` + `servicesRepository.ts`; event registration counts in `eventRegistrationState.ts`. Hook contracts unchanged. Regression tests cover unplaced/zone-change, catalog fallback, and joined-registration mapping. Coordinator: mark tracker completed after integration. |

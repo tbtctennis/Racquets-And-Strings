@@ -1,8 +1,9 @@
 # Client layer map
 
 Intended dependency direction. The app is partway through this shape: tournament scoring, signup
-validation, event registration, courts, partner pool, and rally services already sit under
-`src/features/`. Some page modules still keep compatibility exports.
+validation, event registration, courts, partner pool, rally services, organizer queues, and the
+Marketplace catalog already sit under `src/features/`. Some page modules still keep compatibility
+exports.
 
 ```mermaid
 flowchart TB

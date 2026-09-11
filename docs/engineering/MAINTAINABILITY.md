@@ -17,7 +17,13 @@ primitives now live in `src/features/tournament/domain/`; page compatibility exp
 callers stable while further persistence extraction can happen without a rewrite. Signup field
 validation is similarly isolated in `src/features/signup/signupForm.ts`. Event registration and
 tournament-slot lookup now use `src/features/events/services/eventRepository.ts`, with the document
-shape tested independently in `eventParticipant.ts`.
+shape tested independently in `eventParticipant.ts`. Participant counts and joined-registration
+mapping live in `eventRegistrationState.ts`; the Events hook subscribes only.
+Organizer schedule-request and unplaced-registrant queues are selected in
+`src/features/tournament/domain/organizerQueues.ts` from subscription/load helpers in
+`tournamentSubscriptions.ts`. The Marketplace catalog is assembled in
+`src/features/services/catalog.ts` from `servicesRepository.ts`; `useServicesCatalog` groups the
+already-built rows for presentation.
 Shared tournament-match and leaderboard row types now live under feature-owned type modules rather
 than making data-access code import from a page or hook. Tournament placement, zone normalization,
 and skill-band rules are likewise owned by `src/features/tournament/domain/placement.ts`; page
@@ -152,8 +158,10 @@ The pinned source and update procedure remain in `docs/engineering/AGENT_SKILLS.
 
 ## Known debt
 
-- Some route hooks still mix Firestore subscriptions and presentation state; extract only when a
-  repository boundary centralizes paths, normalization, or transaction behavior.
+- Some route hooks still mix Firestore subscriptions and presentation state. TASK-665 extracted
+  the tournament organizer queues, event registration counts, and Marketplace catalog grouping;
+  extract further only when a repository boundary centralizes paths, normalization, or transaction
+  behavior.
 - Tournament result application, ladder challenge points, and Round Robin group bonuses are
   Function-authoritative. Production deployment and migration remain out of scope; staging waits
   for an authorized project and verified recovery path.

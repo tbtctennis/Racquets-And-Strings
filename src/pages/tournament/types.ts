@@ -1,4 +1,4 @@
-import type { SkillGroup, TournamentMatch } from '../../features/tournament/types';
+import type { SkillGroup } from '../../features/tournament/types';
 
 export type { MatchStatus, SkillGroup, TournamentFormat, TournamentMatch } from '../../features/tournament/types';
 export { BYE, DOUBLES_DIVISIONS, PLAYER_LOADING, UNASSIGNED_ZONE_ID } from '../../features/tournament/types';
@@ -32,24 +32,10 @@ export type TournamentPlayer = {
   seed?: number | undefined;
 };
 
-/** A schedule request in the organizer's cross-tournament queue — hence the event title. */
-export type ScheduleRequest = TournamentMatch & { event_title: string };
+export type { ScheduleRequest, UnplacedEntry } from '../../features/tournament/types';
 
 /** An empty slot in the current draw that an unplaced player can be seated into. */
 export type OpenDrawSlot = { matchId: string; slot: 'player_1' | 'player_2'; label: string };
-
-/** A registrant seated in no match. `zone` is '' when they've selected no courts — "No zone". */
-export type UnplacedEntry = {
-  participantId: string;
-  uid: string;
-  name: string;
-  eventId: string;
-  eventTitle: string;
-  division?: string | undefined;
-  tournamentChoice?: string | undefined;
-  skill?: number | undefined;
-  zone: string;
-};
 
 export type ScoreForm = {
   matchDocId: string;

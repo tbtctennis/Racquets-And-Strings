@@ -34,6 +34,9 @@ Evidence: `src/pages/Signup.tsx`, `src/features/signup/signupValidation.ts`,
 
 1. The member reads public `events` and creates an `event_participants` document.
 2. An organizer reads participants and writes event/draw configuration or a nested RR draft.
+   Cross-event schedule requests and unplaced-registrant rows are selected from match and
+   participant documents in `organizerQueues.ts`; the Tournament hook does not re-implement the
+   draw-vs-event or zone-change filters.
 3. Draw generation creates or updates `matches`; the connection trigger can link real player pairs.
 4. Players create untrusted score submissions; an event owner or explicitly assigned organizer
    confirms a result through the `applyTournamentResult` callable.
@@ -43,6 +46,8 @@ Evidence: `src/pages/Signup.tsx`, `src/features/signup/signupValidation.ts`,
 6. History and rankings read the resulting `matches`, `stats`, and `ranking_history` projections.
 
 Evidence: `src/features/events/hooks/useJoin.ts`, `src/pages/tournament/useTournament.ts`,
+`src/features/tournament/domain/organizerQueues.ts`,
+`src/features/tournament/services/tournamentSubscriptions.ts`,
 `src/features/tournament/services/tournamentResultService.ts`, `functions/tournamentResults.js`,
 `functions/lib/tournamentResult.js`, `src/pages/tournament/rrGeneration.ts`.
 
@@ -74,7 +79,9 @@ Evidence: `src/features/tournament/domain/scoreSubmission.ts`, `src/pages/tourna
 4. The client calls callable Functions for redeem, coupon use/flagging, cancellation, review, and booking transitions (`book`, `racquetDropped`, completion, `cancelLead`). The retired monthly roster has no join or leave callable.
 5. The client reads projections such as `offers/{uid}`, notifications, and task progress.
 
-Evidence: `src/features/tasks/**`, `src/features/services/servicesApi.ts`, `functions/taskPoints.js`, `functions/groupAwards.js`, `functions/rewards.js`, `functions/bookings.js`.
+Evidence: `src/features/tasks/**`, `src/features/services/servicesApi.ts`,
+`src/features/services/catalog.ts`, `src/features/services/servicesRepository.ts`,
+`functions/taskPoints.js`, `functions/groupAwards.js`, `functions/rewards.js`, `functions/bookings.js`.
 
 ## 4. Marketplace listing and contact reveal
 
