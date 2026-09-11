@@ -1,4 +1,4 @@
-import { createMigrationDb, parseMigrationArgs } from './lib/cli.mjs';
+import { createMigrationDb, finalizeMigration, parseMigrationArgs, printReport } from './lib/cli.mjs';
 import { migrateProviderRoles } from '../lib/provider-role.mjs';
 
 const options = parseMigrationArgs(process.argv.slice(2));
@@ -9,7 +9,5 @@ if (options.help) {
   process.exit(0);
 }
 
-const report = await migrateProviderRoles(createMigrationDb(options), options);
-Object.entries(report).forEach(([key, value]) => {
-  if (key !== 'updates') console.log(`${key}: ${value}`);
-});
+const db = createMigrationDb(options);
+printReport(await finalizeMigration(db, await migrateProviderRoles(db, options), options), options);

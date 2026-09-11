@@ -5,7 +5,7 @@
 | **Task id**    | TASK-647                                                                               |
 | **Title**      | Recompute-and-diff as a first-class migration step                                     |
 | **TLDR**       | Migration framework invokes reconciliation and blocks completion on unexplained drift. |
-| **Status**     | new                                                                                    |
+| **Status**     | completed                                                                              |
 | **Tags**       | Data, Firebase                                                                         |
 | **Sprint**     | DC06 Spiderman                                                                         |
 | **Legacy ids** | BLG0024                                                                                |
@@ -45,6 +45,8 @@ When **execute sprint spiderman** reaches this item:
 
 ## Comments
 
-| Date       | Who                    | Note                                                                                 |
-| ---------- | ---------------------- | ------------------------------------------------------------------------------------ |
-| 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live. |
+| Date       | Who                    | Note                                                                                                                                                                                                                                           |
+| ---------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-01 | Anuj Raja · Grok Build | Promoted into DC06 Spiderman: can be done on the emulator before M5 staging is live.                                                                                                                                                           |
+| 2026-09-11 | Grok Build · worker    | Started. D5 described a standalone recompute-and-diff harness; the migration CLI reported counts and stopped. Followed BLG0024: completion is the harness.                                                                                     |
+| 2026-09-11 | Grok Build · worker    | `finalizeMigration` / `completeMigration` replay paid awards, check R6, and refuse unexplained drift. Numbered migrations 001–005 go through that step. Tests in `tests/unit/migrations.test.mjs`. No deploy. Tracker left to the coordinator. |

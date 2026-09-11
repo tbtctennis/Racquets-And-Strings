@@ -70,7 +70,9 @@ group bonuses use the same callable boundary.
 documents and fails when a mapped architecture-sensitive change set has no directly relevant
 documentation review. The mapping covers Firebase configuration/rules, callable and reward
 boundaries, tournament/data-access modules, and migration tooling. Expand it when a new durable
-boundary is introduced. Provider-role authority is `providers/{id}.member_uid`;
+boundary is introduced. Numbered migrations complete through `finalizeMigration` /
+`completeMigration`, which replay paid awards, check R6, and refuse unexplained drift.
+Provider-role authority is `providers/{id}.member_uid`;
 `scripts/migrations/004-provider-role.mjs` is the bounded planner that lifts leftover preference
 inference onto those rows.
 

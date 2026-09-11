@@ -1,6 +1,7 @@
 import admin from 'firebase-admin';
 import fs from 'node:fs';
 import path from 'node:path';
+import { assertReconciled, reconcileFromDb } from '../../lib/recompute-diff.mjs';
 
 export const PRODUCTION_PROJECT = 'toronto-tennis-league';
 const PRODUCTION_CONFIRMATION = 'I_UNDERSTAND_PRODUCTION_MIGRATION';
@@ -85,11 +86,31 @@ export const scanCollection = async (db, collectionName, { limit = null, resume 
 
 export const emptyReport = () => ({ scanned: 0, eligible: 0, changed: 0, skipped: 0, failed: 0, planned: 0 });
 
-export const printReport = (report, { dryRun }) => {
-  console.log(`scanned: ${report.scanned}`);
-  console.log(`eligible: ${report.eligible}`);
-  console.log(`changed: ${report.changed}`);
-  console.log(`skipped: ${report.skipped}`);
-  console.log(`failed: ${report.failed}`);
-  if (dryRun) console.log(`planned: ${report.planned}`);
+export const printReconciliation = (reconciliation, logger = console) => {
+  if (!reconciliation || !logger) return;
+  logger.log(`recompute-diff scanned: ${reconciliation.scanned}`);
+  logger.log(`recompute-diff unexplained: ${reconciliation.unexplained.length}`);
 };
+
+export const printReport = (report, { dryRun, logger = console } = {}) => {
+  logger.log(`scanned: ${report.scanned}`);
+  logger.log(`eligible: ${report.eligible}`);
+  logger.log(`changed: ${report.changed}`);
+  logger.log(`skipped: ${report.skipped}`);
+  logger.log(`failed: ${report.failed}`);
+  if (dryRun) logger.log(`planned: ${report.planned}`);
+  printReconciliation(report.reconciliation, logger);
+};
+
+/** Refuse completion unless recompute-and-diff ran and found no unexplained drift. */
+export const completeMigration = (report, reconciliation) => {
+  if (!reconciliation || !Array.isArray(reconciliation.unexplained)) {
+    throw new Error('Recompute-and-diff is required to complete a migration.');
+  }
+  assertReconciled(reconciliation);
+  return { ...report, reconciliation };
+};
+
+/** First-class completion step: recompute derived stats, diff, and block on unexplained drift. */
+export const finalizeMigration = async (db, report, options = {}) =>
+  completeMigration(report, await reconcileFromDb(db, options));

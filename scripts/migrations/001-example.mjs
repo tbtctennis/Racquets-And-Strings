@@ -1,4 +1,5 @@
-import { emptyReport, parseMigrationArgs, printReport, usage } from './lib/cli.mjs';
+import { completeMigration, emptyReport, parseMigrationArgs, printReport, usage } from './lib/cli.mjs';
+import { planRecomputeDiff } from '../lib/recompute-diff.mjs';
 
 // Synthetic records make this executable example safe in every environment. Copy this file for
 // A real migration should replace the fixture scan with scanCollection() and opt into bounded
@@ -31,7 +32,7 @@ const main = () => {
     report.planned += 1;
     console.log(`[dry-run] would change ${row.id}`);
   }
-  printReport(report, args);
+  printReport(completeMigration(report, planRecomputeDiff([], [])), args);
 };
 
 try {

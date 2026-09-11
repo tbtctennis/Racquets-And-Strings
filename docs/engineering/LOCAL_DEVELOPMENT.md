@@ -154,7 +154,8 @@ reward, friendly, and tournament mutations also remain covered at the callable/t
 - Review [security baseline](SECURITY_BASELINE.md), `firestore.rules`, and `storage.rules` before
   changing a read or write boundary.
 - Follow the [migration framework](../../scripts/migrations/README.md). It is dry-run by default,
-  requires an explicit project, and never makes production implicit.
+  requires an explicit project, never makes production implicit, and refuses completion when
+  recompute-and-diff finds unexplained drift.
 
 ## Know what has and has not been verified
 
